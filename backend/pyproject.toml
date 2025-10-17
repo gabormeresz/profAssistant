@@ -5,12 +5,15 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "fastapi>=0.119.0",
     "gradio>=5.49.1",
     "langchain-community>=0.3.31",
     "langchain-openai>=0.3.35",
     "langgraph>=0.6.10",
     "langsmith>=0.4.37",
+    "openai>=2.4.0",
     "python-dotenv>=1.1.1",
+    "uvicorn>=0.37.0",
 ]
 
 [dependency-groups]
