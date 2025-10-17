@@ -1,4 +1,6 @@
 import type { StreamingState } from "../hooks/useWebSocket";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface OutputSectionProps {
   streamingState: StreamingState;
@@ -67,10 +69,10 @@ export default function OutputSection({
       )}
 
       {currentMessage && (
-        <div className="prose prose-gray max-w-none">
-          <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+        <div className="markdown-content">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {currentMessage}
-          </div>
+          </ReactMarkdown>
         </div>
       )}
     </div>
