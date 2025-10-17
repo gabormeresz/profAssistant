@@ -1,9 +1,15 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 
+export interface LessonPlanRequest {
+  message: string;
+  topic: string;
+  number_of_classes: number;
+}
+
 interface UseWebSocketReturn {
   currentMessage: string;
   loading: boolean;
-  sendMessage: (message: string) => void;
+  sendMessage: (data: LessonPlanRequest) => void;
   clearMessage: () => void;
 }
 
@@ -17,7 +23,7 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
   }, []);
 
   const sendMessage = useCallback(
-    (message: string) => {
+    (data: LessonPlanRequest) => {
       // Clear previous message and start loading
       setCurrentMessage("");
       setLoading(true);
@@ -33,7 +39,8 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
 
       ws.onopen = () => {
         console.log("WebSocket connection established");
-        ws.send(message);
+        // Send structured JSON data
+        ws.send(JSON.stringify(data));
       };
 
       ws.onmessage = (event) => {
