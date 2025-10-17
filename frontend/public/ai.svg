@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="title desc">
+  <title id="title">AI</title>
+  <desc id="desc">Large centered graduation cap icon with very soft contrast on indigo background.</desc>
+
+  <!-- Background -->
+  <rect width="64" height="64" rx="12" fill="#4F46E5"/>
+
+  <!-- Large academic cap, softer contrast and lifted center -->
+  <g transform="translate(32 30)">
+    <!-- Mortarboard -->
+    <path d="M-24 0l24-10 24 10-24 10-24-10z" fill="#CBD5F5"/>
+    <!-- Headband -->
+    <path d="M-16 2v5c0 3 8 6 16 6s16-3 16-6V2" fill="#CBD5F5"/>
+    <!-- Tassel -->
+    <path d="M24 0v10" stroke="#CBD5F5" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="24" cy="10" r="2" fill="#CBD5F5"/>
+  </g>
+</svg>
+
