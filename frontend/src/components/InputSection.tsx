@@ -37,7 +37,7 @@ export default function InputSection({
       case "streaming":
         return "Generating...";
       case "complete":
-        return "Add Comment";
+        return "Add New Comment";
       case "idle":
       default:
         return "Generate Course Outline";
