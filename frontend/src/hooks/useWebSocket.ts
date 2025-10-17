@@ -4,21 +4,30 @@ export interface LessonPlanRequest {
   message: string;
   topic: string;
   number_of_classes: number;
+  thread_id?: string; // Optional thread_id for conversation continuity
 }
 
 interface UseWebSocketReturn {
   currentMessage: string;
   loading: boolean;
+  threadId: string | null;
   sendMessage: (data: LessonPlanRequest) => void;
   clearMessage: () => void;
+  resetThread: () => void;
 }
 
 export const useWebSocket = (url: string): UseWebSocketReturn => {
   const [currentMessage, setCurrentMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [threadId, setThreadId] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
   const clearMessage = useCallback(() => {
+    setCurrentMessage("");
+  }, []);
+
+  const resetThread = useCallback(() => {
+    setThreadId(null);
     setCurrentMessage("");
   }, []);
 
@@ -39,13 +48,29 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
 
       ws.onopen = () => {
         console.log("WebSocket connection established");
-        // Send structured JSON data
-        ws.send(JSON.stringify(data));
+        // Include thread_id in the request if available
+        const requestData = {
+          ...data,
+          thread_id: threadId || undefined
+        };
+        ws.send(JSON.stringify(requestData));
       };
 
       ws.onmessage = (event) => {
-        setCurrentMessage((prev) => prev + event.data);
-        setLoading(false); // Stop loading as soon as first chunk arrives
+        const message = event.data;
+
+        // Check if this is a thread_id message
+        if (message.startsWith("__THREAD_ID__:")) {
+          const extractedThreadId = message
+            .replace("__THREAD_ID__:", "")
+            .trim();
+          setThreadId(extractedThreadId);
+          console.log("Thread ID set:", extractedThreadId);
+        } else {
+          // Regular content message
+          setCurrentMessage((prev) => prev + message);
+          setLoading(false); // Stop loading as soon as first chunk arrives
+        }
       };
 
       ws.onclose = () => {
@@ -60,7 +85,7 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
         wsRef.current = null;
       };
     },
-    [url]
+    [url, threadId]
   );
 
   // Cleanup on unmount
@@ -76,7 +101,9 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
   return {
     currentMessage,
     loading,
+    threadId,
     sendMessage,
-    clearMessage
+    clearMessage,
+    resetThread
   };
 };
