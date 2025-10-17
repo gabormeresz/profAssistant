@@ -6,7 +6,7 @@ dotenv.load_dotenv()
 
 client = AsyncOpenAI()
 
-async def run_agent(message: str, topic: str = "", number_of_classes: int = 1):
+async def run_llm(message: str, topic: str = "", number_of_classes: int = 1):
     """
     Run the agent with structured input.
     
