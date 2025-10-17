@@ -7,9 +7,12 @@ export interface LessonPlanRequest {
   thread_id?: string; // Optional thread_id for conversation continuity
 }
 
+export type StreamingState = "idle" | "connecting" | "streaming" | "complete";
+
 interface UseWebSocketReturn {
   currentMessage: string;
   loading: boolean;
+  streamingState: StreamingState;
   threadId: string | null;
   sendMessage: (data: LessonPlanRequest) => void;
   clearMessage: () => void;
@@ -19,16 +22,19 @@ interface UseWebSocketReturn {
 export const useWebSocket = (url: string): UseWebSocketReturn => {
   const [currentMessage, setCurrentMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [streamingState, setStreamingState] = useState<StreamingState>("idle");
   const [threadId, setThreadId] = useState<string | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
 
   const clearMessage = useCallback(() => {
     setCurrentMessage("");
+    setStreamingState("idle");
   }, []);
 
   const resetThread = useCallback(() => {
     setThreadId(null);
     setCurrentMessage("");
+    setStreamingState("idle");
   }, []);
 
   const sendMessage = useCallback(
@@ -36,6 +42,7 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
       // Clear previous message and start loading
       setCurrentMessage("");
       setLoading(true);
+      setStreamingState("connecting"); // Stage 1: Waiting for connection and model to start
 
       // Close existing connection if any
       if (wsRef.current) {
@@ -67,7 +74,8 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
           setThreadId(extractedThreadId);
           console.log("Thread ID set:", extractedThreadId);
         } else {
-          // Regular content message
+          // Regular content message - Stage 2: Streaming
+          setStreamingState("streaming");
           setCurrentMessage((prev) => prev + message);
           setLoading(false); // Stop loading as soon as first chunk arrives
         }
@@ -76,12 +84,14 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
       ws.onclose = () => {
         console.log("WebSocket connection closed");
         setLoading(false);
+        setStreamingState("complete"); // Stage 3: Streaming complete
         wsRef.current = null;
       };
 
       ws.onerror = (error) => {
         console.error("WebSocket error:", error);
         setLoading(false);
+        setStreamingState("idle");
         wsRef.current = null;
       };
     },
@@ -101,6 +111,7 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
   return {
     currentMessage,
     loading,
+    streamingState,
     threadId,
     sendMessage,
     clearMessage,

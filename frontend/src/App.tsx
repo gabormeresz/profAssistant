@@ -3,26 +3,24 @@ import { Layout, Header, InputSection, OutputSection } from "./components";
 import { useWebSocket } from "./hooks";
 
 function App() {
-  const [input, setInput] = useState("");
+  const [userComment, setUserComment] = useState("");
   const [topic, setTopic] = useState("");
   const [numberOfClasses, setNumberOfClasses] = useState(1);
 
-  const { currentMessage, loading, threadId, sendMessage, resetThread } =
+  const { currentMessage, threadId, sendMessage, resetThread, streamingState } =
     useWebSocket("ws://localhost:8000/ws");
 
   const handleSubmit = () => {
-    if (input.trim()) {
-      sendMessage({
-        message: input,
-        topic: topic,
-        number_of_classes: numberOfClasses
-      });
-    }
+    sendMessage({
+      message: userComment,
+      topic: topic,
+      number_of_classes: numberOfClasses
+    });
   };
 
   const handleNewConversation = () => {
     resetThread();
-    setInput("");
+    setUserComment("");
     setTopic("");
     setNumberOfClasses(1);
   };
@@ -50,16 +48,19 @@ function App() {
       )}
 
       <InputSection
-        input={input}
-        setInput={setInput}
+        userComment={userComment}
+        setUserComment={setUserComment}
         topic={topic}
         setTopic={setTopic}
         numberOfClasses={numberOfClasses}
         setNumberOfClasses={setNumberOfClasses}
         onSubmit={handleSubmit}
-        loading={loading}
+        streamingState={streamingState}
       />
-      <OutputSection loading={loading} currentMessage={currentMessage} />
+      <OutputSection
+        streamingState={streamingState}
+        currentMessage={currentMessage}
+      />
     </Layout>
   );
 }
