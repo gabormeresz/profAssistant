@@ -47,6 +47,7 @@ function App() {
         setNumberOfClasses={setNumberOfClasses}
         onSubmit={handleSubmit}
         streamingState={streamingState}
+        threadId={threadId}
       />
       <OutputSection
         streamingState={streamingState}

@@ -9,6 +9,7 @@ interface InputSectionProps {
   setNumberOfClasses: (value: number) => void;
   onSubmit: () => void;
   streamingState: StreamingState;
+  threadId: string | null;
 }
 
 export default function InputSection({
@@ -19,10 +20,14 @@ export default function InputSection({
   numberOfClasses,
   setNumberOfClasses,
   onSubmit,
-  streamingState
+  streamingState,
+  threadId
 }: InputSectionProps) {
   // Button should be disabled if we're connecting, streaming, or input is empty
   const isDisabled = streamingState !== "idle" && streamingState !== "complete";
+
+  // Disable topic and numberOfClasses after first submit (when thread exists)
+  const isSessionActive = threadId !== null;
 
   // Dynamic button text based on streaming state
   const getButtonText = () => {
@@ -32,10 +37,10 @@ export default function InputSection({
       case "streaming":
         return "Generating...";
       case "complete":
-        return "Complete";
+        return "Add Comment";
       case "idle":
       default:
-        return "Generate Content";
+        return "Generate Course Outline";
     }
   };
 
@@ -46,12 +51,18 @@ export default function InputSection({
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Topic / Subject
+            {isSessionActive && (
+              <span className="ml-2 text-xs text-gray-500">
+                (locked for this conversation)
+              </span>
+            )}
           </label>
           <input
             type="text"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            disabled={isSessionActive}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
             placeholder="e.g., Mathematics, History, Science..."
           />
         </div>
@@ -60,6 +71,12 @@ export default function InputSection({
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Number of Classes
+            {isSessionActive && (
+              <span className="ml-2 text-xs text-gray-500">
+                (locked for this conversation, ask in comment to add or remove
+                classes)
+              </span>
+            )}
           </label>
           <input
             type="number"
@@ -67,7 +84,8 @@ export default function InputSection({
             max="20"
             value={numberOfClasses}
             onChange={(e) => setNumberOfClasses(parseInt(e.target.value) || 1)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            disabled={isSessionActive}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
             placeholder="1"
           />
         </div>
