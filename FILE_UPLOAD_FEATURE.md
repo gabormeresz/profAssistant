@@ -1,10 +1,13 @@
 # File Upload Feature Implementation
 
 ## Overview
+
 Added file upload functionality to allow users to upload reference materials (PDF, DOCX, TXT, MD) that will be used to inform the course outline generation.
 
 ## Implementation Approach
+
 We chose **simple text extraction** over RAG for now because:
+
 - Simpler implementation for initial version
 - Works well for moderately-sized documents
 - Faster response times
@@ -15,17 +18,20 @@ We chose **simple text extraction** over RAG for now because:
 ### Frontend Changes
 
 #### 1. **InputSection.tsx**
+
 - Added file upload UI with drag-and-drop zone
 - File validation (type and size checking - max 10MB)
 - Display uploaded files with ability to remove them
 - Supported file types: PDF, DOCX, TXT, MD
 
 #### 2. **App.tsx**
+
 - Added `uploadedFiles` state management
 - Passes files to the WebSocket hook
 - Clears files on new conversation
 
 #### 3. **useWebSocket.ts**
+
 - Modified to handle file uploads via HTTP POST before WebSocket connection
 - Uploads files to `/upload` endpoint
 - Receives extracted text content
@@ -34,12 +40,14 @@ We chose **simple text extraction** over RAG for now because:
 ### Backend Changes
 
 #### 1. **main.py**
+
 - Added CORS middleware for frontend communication
 - New `/upload` endpoint to handle file uploads
 - Processes multiple files and extracts text
 - Updated WebSocket endpoint to accept `file_contents` parameter
 
 #### 2. **agent/file_processor.py** (NEW)
+
 - FileProcessor class with text extraction methods:
   - `extract_text_from_pdf()` - Extracts text from PDF files
   - `extract_text_from_docx()` - Extracts text from Word documents
@@ -48,11 +56,13 @@ We chose **simple text extraction** over RAG for now because:
   - `process_multiple_files()` - Batch processing with error handling
 
 #### 3. **agent/graph.py**
+
 - Updated `State` class to include `file_contents` field
 - Modified `node_outline_generator()` to incorporate file contents into prompt
 - Updated `run_graph()` function to accept and pass file contents
 
 #### 4. **pyproject.toml**
+
 - Added dependencies:
   - `python-multipart` - For file upload handling
   - `pypdf` - For PDF text extraction
@@ -88,6 +98,7 @@ Frontend Upload → HTTP POST /upload → FileProcessor.process_file()
 ## Future Enhancements
 
 If needed, we can upgrade to RAG:
+
 - Add vector database (ChromaDB, Pinecone, etc.)
 - Implement document chunking
 - Add embeddings generation
@@ -98,6 +109,7 @@ If needed, we can upgrade to RAG:
 ## Testing
 
 To test the feature:
+
 1. Start backend: `cd backend && uvicorn main:app --reload`
 2. Start frontend: `cd frontend && npm run dev`
 3. Upload a PDF, DOCX, TXT, or MD file
@@ -106,5 +118,6 @@ To test the feature:
 6. Verify the LLM uses content from uploaded files
 
 ## File Size Limits
+
 - Maximum file size: 10MB per file
 - Supported formats: .pdf, .docx, .doc, .txt, .md, .markdown
