@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from typing import Annotated, Any, Dict
+from typing import Annotated, Any, Dict, List, Optional
 from langgraph.graph import StateGraph, END, START
 from langgraph.prebuilt import ToolNode, tools_condition
 from langgraph.graph.message import add_messages
@@ -31,15 +31,30 @@ class State(BaseModel):
     messages: Annotated[list[Any], add_messages]
     topic: str
     number_of_classes: int
+    file_contents: Optional[List[Dict[str, str]]] = None
 
 # Define the outline generator node
 def node_outline_generator(state: State) -> Dict[str, Any]:
     system_message = "You are a helpful educational assistant."
-    user_message = f"""
-    Please create a course outline on '{state.topic}' with {state.number_of_classes} classes.
-    You can use the available tools to gather more information any time.
-    Format the response in markdown with class titles as headings and bullet points for key topics under each class.
-    """
+    
+    # Build the user message with file contents if available
+    user_message_parts = [
+        f"Please create a course outline on '{state.topic}' with {state.number_of_classes} classes.",
+        "You can use the available tools to gather more information any time."
+    ]
+    
+    # Add file contents to the prompt if available
+    if state.file_contents and len(state.file_contents) > 0:
+        user_message_parts.append("\n\n--- Reference Materials ---")
+        for file_info in state.file_contents:
+            filename = file_info.get("filename", "Unknown file")
+            content = file_info.get("content", "")
+            user_message_parts.append(f"\n\nFile: {filename}\n{content}")
+        user_message_parts.append("\n\nUse the above reference materials to inform the course outline.")
+    
+    user_message_parts.append("\nFormat the response in markdown with class titles as headings and bullet points for key topics under each class.")
+    
+    user_message = "\n".join(user_message_parts)
 
     messages = [SystemMessage(content=system_message), HumanMessage(content=user_message)]
     messages += state.messages
@@ -60,7 +75,13 @@ graph_builder.add_edge("tools", "generate_course_outline")
 memory = MemorySaver()
 graph = graph_builder.compile(checkpointer=memory)
 
-async def run_graph(message: str, topic: str = "", number_of_classes: int = 1, thread_id: str | None = None):
+async def run_graph(
+    message: str, 
+    topic: str = "", 
+    number_of_classes: int = 1, 
+    thread_id: str | None = None,
+    file_contents: List[Dict[str, str]] | None = None
+):
     """
     Run the LangGraph with structured input and stream the results.
     
@@ -69,6 +90,7 @@ async def run_graph(message: str, topic: str = "", number_of_classes: int = 1, t
         topic: The topic/subject for the lesson plan
         number_of_classes: Number of classes in the lesson plan
         thread_id: Optional thread ID for conversation continuity. If None, creates a new one.
+        file_contents: Optional list of file contents with filename and content
     
     Returns:
         Generator that yields tuples of (content_chunk, thread_id)
@@ -89,7 +111,8 @@ async def run_graph(message: str, topic: str = "", number_of_classes: int = 1, t
         state = State(
             messages=messages,
             topic=topic if topic else "general education",
-            number_of_classes=number_of_classes if number_of_classes > 0 else 1
+            number_of_classes=number_of_classes if number_of_classes > 0 else 1,
+            file_contents=file_contents if file_contents else None
         )
         
         # First, yield the thread_id as metadata (with a special marker)

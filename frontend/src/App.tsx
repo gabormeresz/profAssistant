@@ -12,6 +12,7 @@ function App() {
   const [userComment, setUserComment] = useState("");
   const [topic, setTopic] = useState("");
   const [numberOfClasses, setNumberOfClasses] = useState(1);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const { currentMessage, threadId, sendMessage, resetThread, streamingState } =
     useWebSocket("ws://localhost:8000/ws");
@@ -20,7 +21,8 @@ function App() {
     sendMessage({
       message: userComment,
       topic: topic,
-      number_of_classes: numberOfClasses
+      number_of_classes: numberOfClasses,
+      files: uploadedFiles
     });
   };
 
@@ -29,6 +31,7 @@ function App() {
     setUserComment("");
     setTopic("");
     setNumberOfClasses(1);
+    setUploadedFiles([]);
   };
 
   return (
@@ -48,6 +51,8 @@ function App() {
         onSubmit={handleSubmit}
         streamingState={streamingState}
         threadId={threadId}
+        uploadedFiles={uploadedFiles}
+        setUploadedFiles={setUploadedFiles}
       />
       <OutputSection
         streamingState={streamingState}

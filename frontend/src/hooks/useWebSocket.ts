@@ -5,6 +5,7 @@ export interface LessonPlanRequest {
   topic: string;
   number_of_classes: number;
   thread_id?: string; // Optional thread_id for conversation continuity
+  files?: File[]; // Optional files to upload
 }
 
 export type StreamingState = "idle" | "connecting" | "streaming" | "complete";
@@ -38,7 +39,7 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
   }, []);
 
   const sendMessage = useCallback(
-    (data: LessonPlanRequest) => {
+    async (data: LessonPlanRequest) => {
       // Clear previous message and start loading
       setCurrentMessage("");
       setLoading(true);
@@ -49,51 +50,83 @@ export const useWebSocket = (url: string): UseWebSocketReturn => {
         wsRef.current.close();
       }
 
-      // Create new WebSocket connection
-      const ws = new WebSocket(url);
-      wsRef.current = ws;
+      try {
+        // If files are present, upload them first
+        let fileContents: Array<{ filename: string; content: string }> = [];
+        if (data.files && data.files.length > 0) {
+          const formData = new FormData();
+          data.files.forEach((file) => {
+            formData.append("files", file);
+          });
 
-      ws.onopen = () => {
-        console.log("WebSocket connection established");
-        // Include thread_id in the request if available
-        const requestData = {
-          ...data,
-          thread_id: threadId || undefined
-        };
-        ws.send(JSON.stringify(requestData));
-      };
+          // Upload files to backend
+          const uploadResponse = await fetch("http://localhost:8000/upload", {
+            method: "POST",
+            body: formData
+          });
 
-      ws.onmessage = (event) => {
-        const message = event.data;
+          if (!uploadResponse.ok) {
+            throw new Error("File upload failed");
+          }
 
-        // Check if this is a thread_id message
-        if (message.startsWith("__THREAD_ID__:")) {
-          const extractedThreadId = message
-            .replace("__THREAD_ID__:", "")
-            .trim();
-          setThreadId(extractedThreadId);
-          console.log("Thread ID set:", extractedThreadId);
-        } else {
-          // Regular content message - Stage 2: Streaming
-          setStreamingState("streaming");
-          setCurrentMessage((prev) => prev + message);
-          setLoading(false); // Stop loading as soon as first chunk arrives
+          const uploadResult = await uploadResponse.json();
+          fileContents = uploadResult.files || [];
         }
-      };
 
-      ws.onclose = () => {
-        console.log("WebSocket connection closed");
-        setLoading(false);
-        setStreamingState("complete"); // Stage 3: Streaming complete
-        wsRef.current = null;
-      };
+        // Create new WebSocket connection
+        const ws = new WebSocket(url);
+        wsRef.current = ws;
 
-      ws.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        ws.onopen = () => {
+          console.log("WebSocket connection established");
+          // Include thread_id and file contents in the request
+          const requestData = {
+            message: data.message,
+            topic: data.topic,
+            number_of_classes: data.number_of_classes,
+            thread_id: threadId || undefined,
+            file_contents: fileContents.length > 0 ? fileContents : undefined
+          };
+          ws.send(JSON.stringify(requestData));
+        };
+
+        ws.onmessage = (event) => {
+          const message = event.data;
+
+          // Check if this is a thread_id message
+          if (message.startsWith("__THREAD_ID__:")) {
+            const extractedThreadId = message
+              .replace("__THREAD_ID__:", "")
+              .trim();
+            setThreadId(extractedThreadId);
+            console.log("Thread ID set:", extractedThreadId);
+          } else {
+            // Regular content message - Stage 2: Streaming
+            setStreamingState("streaming");
+            setCurrentMessage((prev) => prev + message);
+            setLoading(false); // Stop loading as soon as first chunk arrives
+          }
+        };
+
+        ws.onclose = () => {
+          console.log("WebSocket connection closed");
+          setLoading(false);
+          setStreamingState("complete"); // Stage 3: Streaming complete
+          wsRef.current = null;
+        };
+
+        ws.onerror = (error) => {
+          console.error("WebSocket error:", error);
+          setLoading(false);
+          setStreamingState("idle");
+          wsRef.current = null;
+        };
+      } catch (error) {
+        console.error("Error processing request:", error);
         setLoading(false);
         setStreamingState("idle");
-        wsRef.current = null;
-      };
+        setCurrentMessage("Error: Failed to process files");
+      }
     },
     [url, threadId]
   );
