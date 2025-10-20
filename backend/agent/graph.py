@@ -1,79 +1,73 @@
 from dotenv import load_dotenv
-from pydantic import BaseModel
-from typing import Annotated, Any, Dict, List, Optional
-from langgraph.graph import StateGraph, END, START
-from langgraph.prebuilt import ToolNode, tools_condition
-from langgraph.graph.message import add_messages
-from langchain_openai import ChatOpenAI
-from langgraph.checkpoint.memory import MemorySaver
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional
+from langchain.agents import create_agent, AgentState
+from langchain.chat_models import init_chat_model
+from langchain.tools import tool
+from langchain.messages import HumanMessage
 from langchain_community.utilities import GoogleSerperAPIWrapper
-from langchain.agents import Tool
+from langgraph.checkpoint.memory import MemorySaver
 import uuid
 
 load_dotenv()
 
-# Setup tools
+# Setup tools using the new @tool decorator
 serper = GoogleSerperAPIWrapper()
-tool_search = Tool(
-    name="web_search",
-    func=serper.run,
-    description="Useful for when you need more information from an online search"
-)
-tools = [tool_search]
 
-# Setup LLM
-llm = ChatOpenAI(model="gpt-4o-mini")
-llm_with_tools = llm.bind_tools(tools)
+@tool
+def web_search(query: str) -> str:
+    """Useful for when you need more information from an online search."""
+    return serper.run(query)
 
-# Define State
-class State(BaseModel):
-    messages: Annotated[list[Any], add_messages]
+tools = [web_search]
+
+# Setup LLM using init_chat_model
+model = init_chat_model("openai:gpt-4o-mini")
+
+# Setup memory/checkpointer for conversation persistence
+memory = MemorySaver()
+
+# Define custom state extending AgentState
+class CustomAgentState(AgentState):
     topic: str
     number_of_classes: int
-    file_contents: Optional[List[Dict[str, str]]] = None
+    file_contents: Optional[List[Dict[str, str]]]
 
-# Define the outline generator node
-def node_outline_generator(state: State) -> Dict[str, Any]:
-    system_message = "You are a helpful educational assistant."
-    
-    # Build the user message with file contents if available
-    user_message_parts = [
-        f"Please create a course outline on '{state.topic}' with {state.number_of_classes} classes.",
+# Define context for runtime data
+@dataclass
+class Context:
+    thread_id: str
+
+# Build the system prompt dynamically
+def build_system_prompt(topic: str, number_of_classes: int, file_contents: Optional[List[Dict[str, str]]]) -> str:
+    """Build a comprehensive system prompt for the agent."""
+    prompt_parts = [
+        "You are a helpful educational assistant.",
+        f"Please create a course outline on '{topic}' with {number_of_classes} classes.",
         "You can use the available tools to gather more information any time."
     ]
     
     # Add file contents to the prompt if available
-    if state.file_contents and len(state.file_contents) > 0:
-        user_message_parts.append("\n\n--- Reference Materials ---")
-        for file_info in state.file_contents:
+    if file_contents and len(file_contents) > 0:
+        prompt_parts.append("\n\n--- Reference Materials ---")
+        for file_info in file_contents:
             filename = file_info.get("filename", "Unknown file")
             content = file_info.get("content", "")
-            user_message_parts.append(f"\n\nFile: {filename}\n{content}")
-        user_message_parts.append("\n\nUse the above reference materials to inform the course outline.")
+            prompt_parts.append(f"\n\nFile: {filename}\n{content}")
+        prompt_parts.append("\n\nUse the above reference materials to inform the course outline.")
     
-    user_message_parts.append("\nFormat the response in markdown with class titles as headings and bullet points for key topics under each class.")
+    prompt_parts.append("\nFormat the response in markdown with class titles as headings and bullet points for key topics under each class.")
     
-    user_message = "\n".join(user_message_parts)
+    return "\n".join(prompt_parts)
 
-    messages = [SystemMessage(content=system_message), HumanMessage(content=user_message)]
-    messages += state.messages
-
-    response = llm_with_tools.invoke(messages)
-    return {"messages": [response]}
-
-# Build the graph
-graph_builder = StateGraph(State)
-graph_builder.add_node("generate_course_outline", node_outline_generator)
-graph_builder.add_node("tools", ToolNode(tools=tools))
-
-graph_builder.add_edge(START, "generate_course_outline")
-graph_builder.add_conditional_edges("generate_course_outline", tools_condition, {"tools": 'tools', "__end__": END})
-graph_builder.add_edge("tools", "generate_course_outline")
-
-# Compile the graph with memory
-memory = MemorySaver()
-graph = graph_builder.compile(checkpointer=memory)
+# Create the agent using the new create_agent API with memory
+agent = create_agent(
+    model=model,
+    tools=tools,
+    state_schema=CustomAgentState,
+    context_schema=Context,
+    checkpointer=memory
+)
 
 async def run_graph(
     message: str, 
@@ -83,7 +77,7 @@ async def run_graph(
     file_contents: List[Dict[str, str]] | None = None
 ):
     """
-    Run the LangGraph with structured input and stream the results.
+    Run the LangChain agent with structured input and stream the results.
     
     Args:
         message: The main user message/prompt (optional additional context)
@@ -93,36 +87,67 @@ async def run_graph(
         file_contents: Optional list of file contents with filename and content
     
     Returns:
-        Generator that yields tuples of (content_chunk, thread_id)
+        Generator that yields content chunks
     """
     try:
         # Use existing thread ID or create a new one
         if not thread_id:
             thread_id = str(uuid.uuid4())
         
-        config = {"configurable": {"thread_id": thread_id}}
+        # Build the system prompt with all the context
+        system_prompt = build_system_prompt(
+            topic if topic else "general education",
+            number_of_classes if number_of_classes > 0 else 1,
+            file_contents
+        )
+        
+        # Create a new agent instance with the dynamic system prompt and memory
+        current_agent = create_agent(
+            model=model,
+            tools=tools,
+            state_schema=CustomAgentState,
+            context_schema=Context,
+            system_prompt=system_prompt,
+            checkpointer=memory
+        )
         
         # Prepare messages - only add user message if provided
         messages = []
         if message and message.strip():
-            messages.append(HumanMessage(content=message))
+            messages.append({"role": "user", "content": message})
         
-        # Create the initial state
-        state = State(
-            messages=messages,
-            topic=topic if topic else "general education",
-            number_of_classes=number_of_classes if number_of_classes > 0 else 1,
-            file_contents=file_contents if file_contents else None
-        )
+        # Prepare the initial state
+        initial_state = {
+            "messages": messages,
+            "topic": topic if topic else "general education",
+            "number_of_classes": number_of_classes if number_of_classes > 0 else 1,
+            "file_contents": file_contents
+        }
+        
+        # Create context
+        context = Context(thread_id=thread_id)
+        
+        # Create config with thread_id for checkpointer
+        config = {
+            "configurable": {
+                "thread_id": thread_id
+            }
+        }
         
         # First, yield the thread_id as metadata (with a special marker)
         yield f"__THREAD_ID__:{thread_id}\n"
         
-        # Stream events from the graph
-        async for event in graph.astream_events(state, config=config, version="v2"):  # type: ignore
+        # Stream events from the agent
+        async for event in current_agent.astream_events(
+            initial_state, 
+            context=context,
+            config=config,  # type: ignore
+            version="v2"
+        ):
             kind = event.get("event")
             
             # Stream LLM tokens as they are generated
+            # Note: node name changed from "agent" to "model" in v1.0
             if kind == "on_chat_model_stream":
                 data = event.get("data", {})
                 chunk = data.get("chunk")
