@@ -221,19 +221,18 @@ export default function InputSection({
         </div>
       </div>
 
-      <div className="flex justify-end mt-4">
-        <button
-          onClick={onSubmit}
-          disabled={isDisabled}
-          className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-            streamingState === "complete"
-              ? "bg-green-600 text-white hover:bg-green-700"
-              : "bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
-          }`}
-        >
-          {getButtonText()}
-        </button>
-      </div>
+      {/* Hide button after first submission */}
+      {!isSessionActive && (
+        <div className="flex justify-end mt-4">
+          <button
+            onClick={onSubmit}
+            disabled={isDisabled}
+            className="px-6 py-3 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {getButtonText()}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

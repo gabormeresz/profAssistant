@@ -15,7 +15,7 @@ interface UseSSEReturn {
   loading: boolean;
   streamingState: StreamingState;
   threadId: string | null;
-  sendMessage: (data: LessonPlanRequest) => void;
+  sendMessage: (data: LessonPlanRequest) => Promise<string>; // Returns the complete message
   clearMessage: () => void;
   resetThread: () => void;
 }
@@ -39,7 +39,7 @@ export const useSSE = (url: string): UseSSEReturn => {
   }, []);
 
   const sendMessage = useCallback(
-    async (data: LessonPlanRequest) => {
+    async (data: LessonPlanRequest): Promise<string> => {
       // Clear previous message and start loading
       setCurrentMessage("");
       setLoading(true);
@@ -53,6 +53,8 @@ export const useSSE = (url: string): UseSSEReturn => {
       // Create new abort controller
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
+
+      let completeMessage = "";
 
       try {
         // Prepare form data
@@ -99,7 +101,7 @@ export const useSSE = (url: string): UseSSEReturn => {
           if (done) {
             setStreamingState("complete");
             setLoading(false);
-            break;
+            return completeMessage;
           }
 
           // Decode the chunk
@@ -131,6 +133,7 @@ export const useSSE = (url: string): UseSSEReturn => {
                     if (streamingState !== "streaming") {
                       setStreamingState("streaming");
                     }
+                    completeMessage += content;
                     setCurrentMessage((prev) => prev + content);
                     setLoading(false);
                   }
@@ -160,6 +163,7 @@ export const useSSE = (url: string): UseSSEReturn => {
         }
         setLoading(false);
         setStreamingState("idle");
+        return ""; // Return empty string on error
       } finally {
         abortControllerRef.current = null;
       }
