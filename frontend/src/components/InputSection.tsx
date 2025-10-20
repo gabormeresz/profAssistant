@@ -1,4 +1,3 @@
-import type { StreamingState } from "../hooks/useSSE";
 import { useState } from "react";
 import { Upload, File, X } from "lucide-react";
 
@@ -10,7 +9,6 @@ interface InputSectionProps {
   numberOfClasses: number;
   setNumberOfClasses: (value: number) => void;
   onSubmit: () => void;
-  streamingState: StreamingState;
   threadId: string | null;
   uploadedFiles: File[];
   setUploadedFiles: (files: File[]) => void;
@@ -24,33 +22,17 @@ export default function InputSection({
   numberOfClasses,
   setNumberOfClasses,
   onSubmit,
-  streamingState,
   threadId,
   uploadedFiles,
   setUploadedFiles
 }: InputSectionProps) {
   const [uploadError, setUploadError] = useState<string>("");
 
-  // Button should be disabled if we're connecting, streaming, or input is empty
-  const isDisabled = streamingState !== "idle" && streamingState !== "complete";
-
   // Disable topic and numberOfClasses after first submit (when thread exists)
   const isSessionActive = threadId !== null;
 
-  // Dynamic button text based on streaming state
-  const getButtonText = () => {
-    switch (streamingState) {
-      case "connecting":
-        return "Connecting...";
-      case "streaming":
-        return "Generating...";
-      case "complete":
-        return "Add New Comment";
-      case "idle":
-      default:
-        return "Generate Course Outline";
-    }
-  };
+  // Disable button if required fields are empty
+  const isButtonDisabled = !topic.trim() || numberOfClasses < 1;
 
   // Handle file upload
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -226,10 +208,10 @@ export default function InputSection({
         <div className="flex justify-end mt-4">
           <button
             onClick={onSubmit}
-            disabled={isDisabled}
-            className="px-6 py-3 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            disabled={isButtonDisabled}
+            className="px-6 py-3 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
           >
-            {getButtonText()}
+            Generate Course Outline
           </button>
         </div>
       )}

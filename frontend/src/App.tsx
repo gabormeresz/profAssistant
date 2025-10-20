@@ -146,7 +146,6 @@ function App() {
           numberOfClasses={numberOfClasses}
           setNumberOfClasses={setNumberOfClasses}
           onSubmit={handleInitialSubmit}
-          streamingState={hasStartedConversation ? "complete" : streamingState}
           threadId={threadId}
           uploadedFiles={uploadedFiles}
           setUploadedFiles={setUploadedFiles}
