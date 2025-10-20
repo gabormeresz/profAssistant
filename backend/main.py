@@ -20,11 +20,20 @@ app.add_middleware(
 async def event_generator(message: str, topic: str, number_of_classes: int, thread_id: Optional[str], file_contents: List[dict]):
     """
     Generator function that yields Server-Sent Events (SSE) formatted data.
+    Uses proper SSE event types to separate metadata from content.
     """
+    first_chunk = True
     try:
         async for chunk in run_graph(message, topic, number_of_classes, thread_id, file_contents):
-            # Format as SSE: each message should be prefixed with "data: " and end with "\n\n"
-            yield f"data: {json.dumps({'content': chunk})}\n\n"
+            # First chunk contains the thread_id metadata
+            if first_chunk and chunk.startswith("__THREAD_ID__:"):
+                thread_id_value = chunk.replace("__THREAD_ID__:", "").strip()
+                # Send thread_id as a separate SSE event type
+                yield f"event: thread_id\ndata: {json.dumps({'thread_id': thread_id_value})}\n\n"
+                first_chunk = False
+            else:
+                # Regular content chunks
+                yield f"data: {json.dumps({'content': chunk})}\n\n"
     except Exception as e:
         yield f"data: {json.dumps({'error': str(e)})}\n\n"
 

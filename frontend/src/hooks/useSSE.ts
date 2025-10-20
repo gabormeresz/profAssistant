@@ -94,6 +94,7 @@ export const useSSE = (url: string): UseSSEReturn => {
         const decoder = new TextDecoder();
 
         let buffer = "";
+        let currentEvent = ""; // Track current SSE event type
 
         while (true) {
           const { done, value } = await reader.read();
@@ -112,40 +113,42 @@ export const useSSE = (url: string): UseSSEReturn => {
           buffer = lines.pop() || ""; // Keep incomplete line in buffer
 
           for (const line of lines) {
-            if (line.startsWith("data: ")) {
+            // Check for SSE event type
+            if (line.startsWith("event: ")) {
+              currentEvent = line.slice(7).trim(); // Extract event type
+            } else if (line.startsWith("data: ")) {
               const jsonData = line.slice(6); // Remove "data: " prefix
 
               try {
                 const parsed = JSON.parse(jsonData);
 
-                if (parsed.content) {
-                  const content = parsed.content;
-
-                  // Check if this is a thread_id message
-                  if (content.startsWith("__THREAD_ID__:")) {
-                    const extractedThreadId = content
-                      .replace("__THREAD_ID__:", "")
-                      .trim();
-                    setThreadId(extractedThreadId);
-                    console.log("Thread ID set:", extractedThreadId);
-                  } else {
-                    // Regular content message - start streaming
-                    if (streamingState !== "streaming") {
-                      setStreamingState("streaming");
-                    }
-                    completeMessage += content;
-                    setCurrentMessage((prev) => prev + content);
-                    setLoading(false);
+                // Handle thread_id event separately
+                if (currentEvent === "thread_id" && parsed.thread_id) {
+                  setThreadId(parsed.thread_id);
+                  console.log("Thread ID set:", parsed.thread_id);
+                  currentEvent = ""; // Reset event type
+                } else if (parsed.content) {
+                  // Regular content message - start streaming
+                  if (streamingState !== "streaming") {
+                    setStreamingState("streaming");
                   }
+                  completeMessage += parsed.content;
+                  setCurrentMessage((prev) => prev + parsed.content);
+                  setLoading(false);
+                  currentEvent = ""; // Reset event type
                 } else if (parsed.error) {
                   console.error("Stream error:", parsed.error);
                   setCurrentMessage(`Error: ${parsed.error}`);
                   setStreamingState("idle");
                   setLoading(false);
+                  currentEvent = ""; // Reset event type
                 }
               } catch (e) {
                 console.error("Failed to parse SSE data:", e);
               }
+            } else if (line === "") {
+              // Empty line resets the event type (SSE specification)
+              currentEvent = "";
             }
           }
         }
