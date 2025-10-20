@@ -60,15 +60,6 @@ def build_system_prompt(topic: str, number_of_classes: int, file_contents: Optio
     
     return "\n".join(prompt_parts)
 
-# Create the agent using the new create_agent API with memory
-agent = create_agent(
-    model=model,
-    tools=tools,
-    state_schema=CustomAgentState,
-    context_schema=Context,
-    checkpointer=memory
-)
-
 async def run_graph(
     message: str, 
     topic: str = "", 
