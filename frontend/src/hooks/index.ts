@@ -1,2 +1,2 @@
-export { useWebSocket } from "./useWebSocket";
+export { useSSE } from "./useSSE";
 export { useExport } from "./useExport";

@@ -1,4 +1,4 @@
-import type { StreamingState } from "../hooks/useWebSocket";
+import type { StreamingState } from "../hooks/useSSE";
 
 interface IndicatorProps {
   streamingState: StreamingState;

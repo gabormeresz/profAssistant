@@ -1,4 +1,4 @@
-import type { StreamingState } from "../hooks/useWebSocket";
+import type { StreamingState } from "../hooks/useSSE";
 import { useState } from "react";
 
 interface InputSectionProps {

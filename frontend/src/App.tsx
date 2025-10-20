@@ -6,7 +6,7 @@ import {
   OutputSection,
   ThreadStatus
 } from "./components";
-import { useWebSocket } from "./hooks";
+import { useSSE } from "./hooks";
 
 function App() {
   const [userComment, setUserComment] = useState("");
@@ -15,7 +15,7 @@ function App() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   const { currentMessage, threadId, sendMessage, resetThread, streamingState } =
-    useWebSocket("ws://localhost:8000/ws");
+    useSSE("http://localhost:8000/stream");
 
   const handleSubmit = () => {
     sendMessage({

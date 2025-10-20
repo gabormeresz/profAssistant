@@ -1,4 +1,4 @@
-import type { StreamingState } from "../hooks/useWebSocket";
+import type { StreamingState } from "../hooks/useSSE";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Indicator from "./Indicator";
