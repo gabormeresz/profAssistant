@@ -1,11 +1,21 @@
-export { default as Header } from "./Header";
-export { default as Indicator } from "./Indicator";
-export { default as InputSection } from "./InputSection";
-export { default as OutputSection } from "./OutputSection";
-export { default as Layout } from "./Layout";
-export { default as ThreadStatus } from "./ThreadStatus";
-export { default as ChatMessage } from "./ChatMessage";
-export { default as UserMessage } from "./UserMessage";
-export { default as AssistantMessage } from "./AssistantMessage";
-export { default as FollowUpInput } from "./FollowUpInput";
-export { default as ConversationView } from "./ConversationView";
+// Layout components
+export { Header, Layout } from "./layout";
+
+// Chat components
+export {
+  ConversationView,
+  ChatMessage,
+  UserMessage,
+  AssistantMessage
+} from "./chat";
+
+// Input components
+export {
+  InputSection,
+  FollowUpInput,
+  FileUpload,
+  PromptEnhancer
+} from "./input";
+
+// UI components
+export { Indicator, ThreadStatus } from "./ui";

@@ -1,14 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { API_ENDPOINTS } from "../utils/constants";
+import type { LessonPlanRequest, StreamingState } from "../types";
 
-export interface LessonPlanRequest {
-  message: string;
-  topic: string;
-  number_of_classes: number;
-  thread_id?: string;
-  files?: File[];
-}
-
-export type StreamingState = "idle" | "connecting" | "streaming" | "complete";
+export type { LessonPlanRequest, StreamingState };
 
 interface UseSSEReturn {
   currentMessage: string;
@@ -20,7 +14,8 @@ interface UseSSEReturn {
   resetThread: () => void;
 }
 
-export const useSSE = (url: string): UseSSEReturn => {
+export const useSSE = (url?: string): UseSSEReturn => {
+  const streamUrl = url || API_ENDPOINTS.STREAM;
   const [currentMessage, setCurrentMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [streamingState, setStreamingState] = useState<StreamingState>("idle");
@@ -75,7 +70,7 @@ export const useSSE = (url: string): UseSSEReturn => {
         }
 
         // Make SSE request
-        const response = await fetch(url, {
+        const response = await fetch(streamUrl, {
           method: "POST",
           body: formData,
           signal: abortController.signal
@@ -171,7 +166,7 @@ export const useSSE = (url: string): UseSSEReturn => {
         abortControllerRef.current = null;
       }
     },
-    [url, threadId, streamingState]
+    [streamUrl, threadId, streamingState]
   );
 
   // Cleanup on unmount

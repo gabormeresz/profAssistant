@@ -1,11 +1,10 @@
 import { useEffect, useRef } from "react";
 import ChatMessage from "./ChatMessage";
-import Indicator from "./Indicator";
+import Indicator from "../ui/Indicator";
 import { Bot } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import type { ConversationMessage } from "../types/conversation";
-import type { StreamingState } from "../hooks/useSSE";
+import type { ConversationMessage, StreamingState } from "../../types";
 
 interface ConversationViewProps {
   messages: ConversationMessage[];

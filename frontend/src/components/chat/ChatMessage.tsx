@@ -1,6 +1,6 @@
 import UserMessage from "./UserMessage";
 import AssistantMessage from "./AssistantMessage";
-import type { ConversationMessage } from "../types/conversation";
+import type { ConversationMessage } from "../../types";
 
 interface ChatMessageProps {
   message: ConversationMessage;

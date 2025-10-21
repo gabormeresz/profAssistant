@@ -1,0 +1,46 @@
+// API Configuration
+export const API_BASE_URL = "http://localhost:8000";
+export const API_ENDPOINTS = {
+  STREAM: `${API_BASE_URL}/stream`,
+  ENHANCE_PROMPT: `${API_BASE_URL}/enhance-prompt`
+} as const;
+
+// File Upload Configuration
+export const FILE_UPLOAD = {
+  MAX_SIZE: 10 * 1024 * 1024, // 10MB in bytes
+  MAX_SIZE_MB: 10,
+  ALLOWED_TYPES: [
+    "text/plain",
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/markdown"
+  ] as const,
+  ALLOWED_EXTENSIONS: [".txt", ".pdf", ".docx", ".md"] as const,
+  ERROR_MESSAGES: {
+    TOO_LARGE: (filename: string, maxSize: number) =>
+      `File ${filename} is too large. Max size is ${maxSize}MB.`,
+    UNSUPPORTED_TYPE: (filename: string) =>
+      `File ${filename} type not supported. Allowed: PDF, DOCX, TXT, MD`
+  }
+} as const;
+
+// Prompt Enhancement
+export const PROMPT_ENHANCEMENT = {
+  MIN_LENGTH: 5,
+  ERROR_MESSAGES: {
+    EMPTY_FIELDS: "Please enter both a topic and a comment to enhance.",
+    GENERIC_ERROR: "Failed to enhance prompt"
+  }
+} as const;
+
+// Course Outline Configuration
+export const COURSE_OUTLINE = {
+  MIN_CLASSES: 1,
+  MAX_CLASSES: 20,
+  DEFAULT_CLASSES: 1
+} as const;
+
+// UI Messages
+export const UI_MESSAGES = {
+  EMPTY_TOPIC: "Please enter a topic"
+} as const;

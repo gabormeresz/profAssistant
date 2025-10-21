@@ -1,8 +1,8 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Bot, FileDown } from "lucide-react";
-import { useExport } from "../hooks";
-import type { ConversationMessage } from "../types/conversation";
+import { useExport } from "../../hooks";
+import type { ConversationMessage } from "../../types";
 
 interface AssistantMessageProps {
   message: ConversationMessage;

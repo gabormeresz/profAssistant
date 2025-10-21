@@ -1,5 +1,5 @@
 import { File, User } from "lucide-react";
-import type { ConversationMessage } from "../types/conversation";
+import type { ConversationMessage } from "../../types";
 
 interface UserMessageProps {
   message: ConversationMessage;

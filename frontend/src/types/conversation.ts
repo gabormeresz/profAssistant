@@ -7,8 +7,3 @@ export interface ConversationMessage {
   topic?: string;
   numberOfClasses?: number;
 }
-
-export interface ConversationHistory {
-  messages: ConversationMessage[];
-  threadId: string | null;
-}

@@ -7,22 +7,28 @@ import {
   ConversationView,
   FollowUpInput
 } from "./components";
-import { useSSE } from "./hooks";
-import type { ConversationMessage } from "./types/conversation";
+import { useSSE, useConversation } from "./hooks";
+import { UI_MESSAGES, COURSE_OUTLINE } from "./utils/constants";
 
 function App() {
-  // Initial form state
+  // Form state
   const [userComment, setUserComment] = useState("");
   const [topic, setTopic] = useState("");
-  const [numberOfClasses, setNumberOfClasses] = useState(1);
+  const [numberOfClasses, setNumberOfClasses] = useState<number>(
+    COURSE_OUTLINE.DEFAULT_CLASSES
+  );
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
-  // Conversation history
-  const [conversationHistory, setConversationHistory] = useState<
-    ConversationMessage[]
-  >([]);
-  const [hasStartedConversation, setHasStartedConversation] = useState(false);
+  // Conversation management
+  const {
+    messages,
+    hasStarted,
+    addUserMessage,
+    addAssistantMessage,
+    reset: resetConversation
+  } = useConversation();
 
+  // SSE streaming
   const {
     currentMessage,
     threadId,
@@ -30,98 +36,64 @@ function App() {
     resetThread,
     streamingState,
     clearMessage
-  } = useSSE("http://localhost:8000/stream");
+  } = useSSE();
 
   // Handle initial form submission
   const handleInitialSubmit = async () => {
     if (!topic.trim()) {
-      alert("Please enter a topic");
+      alert(UI_MESSAGES.EMPTY_TOPIC);
       return;
     }
 
-    // Add user message to history
-    const userMessage: ConversationMessage = {
-      id: `user-${Date.now()}`,
-      role: "user",
-      content: userComment,
-      timestamp: new Date(),
-      files: uploadedFiles.map((f) => ({ name: f.name, size: f.size })),
-      topic: topic,
-      numberOfClasses: numberOfClasses
-    };
-
-    setConversationHistory([userMessage]);
-    setHasStartedConversation(true);
+    // Add user message to conversation
+    addUserMessage(userComment, uploadedFiles, { topic, numberOfClasses });
 
     // Send to backend
     const response = await sendMessage({
       message: userComment,
-      topic: topic,
+      topic,
       number_of_classes: numberOfClasses,
       files: uploadedFiles
     });
 
-    // Add assistant response to history and clear streaming message
+    // Add assistant response
     if (response) {
-      const assistantMessage: ConversationMessage = {
-        id: `assistant-${Date.now()}`,
-        role: "assistant",
-        content: response,
-        timestamp: new Date()
-      };
-      setConversationHistory((prev) => [...prev, assistantMessage]);
-      clearMessage(); // Clear the streaming message to avoid duplication
+      addAssistantMessage(response);
+      clearMessage();
     }
   };
 
   // Handle follow-up messages
   const handleFollowUpSubmit = async (message: string, files: File[]) => {
-    if (!message.trim() && files.length === 0) {
-      return;
-    }
+    if (!message.trim() && files.length === 0) return;
 
-    // Add user message to history
-    const userMessage: ConversationMessage = {
-      id: `user-${Date.now()}`,
-      role: "user",
-      content: message,
-      timestamp: new Date(),
-      files: files.map((f) => ({ name: f.name, size: f.size }))
-    };
+    // Add user message
+    addUserMessage(message, files);
 
-    setConversationHistory((prev) => [...prev, userMessage]);
-
-    // Send to backend (keep topic and numberOfClasses from initial submission)
+    // Send to backend
     const response = await sendMessage({
-      message: message,
-      topic: topic,
+      message,
+      topic,
       number_of_classes: numberOfClasses,
       thread_id: threadId || undefined,
-      files: files
+      files
     });
 
-    // Add assistant response to history and clear streaming message
+    // Add assistant response
     if (response) {
-      const assistantMessage: ConversationMessage = {
-        id: `assistant-${Date.now()}`,
-        role: "assistant",
-        content: response,
-        timestamp: new Date()
-      };
-      setConversationHistory((prev) => [...prev, assistantMessage]);
-      clearMessage(); // Clear the streaming message to avoid duplication
+      addAssistantMessage(response);
+      clearMessage();
     }
   };
 
   // Handle new conversation
   const handleNewConversation = () => {
     resetThread();
+    resetConversation();
     setUserComment("");
     setTopic("");
-    setNumberOfClasses(1);
+    setNumberOfClasses(COURSE_OUTLINE.DEFAULT_CLASSES);
     setUploadedFiles([]);
-    setConversationHistory([]);
-    setHasStartedConversation(false);
   };
 
   return (
@@ -133,11 +105,7 @@ function App() {
       />
 
       {/* Initial form - grey out after first submission */}
-      <div
-        className={
-          hasStartedConversation ? "opacity-50 pointer-events-none" : ""
-        }
-      >
+      <div className={hasStarted ? "opacity-50 pointer-events-none" : ""}>
         <InputSection
           userComment={userComment}
           setUserComment={setUserComment}
@@ -153,10 +121,10 @@ function App() {
       </div>
 
       {/* Conversation history */}
-      {conversationHistory.length > 0 && (
+      {messages.length > 0 && (
         <div className="mb-6">
           <ConversationView
-            messages={conversationHistory}
+            messages={messages}
             streamingState={streamingState}
             currentStreamingContent={
               streamingState === "complete" ? "" : currentMessage
@@ -165,8 +133,8 @@ function App() {
         </div>
       )}
 
-      {/* Follow-up input - show after conversation has started and not currently streaming */}
-      {hasStartedConversation &&
+      {/* Follow-up input */}
+      {hasStarted &&
         (streamingState === "complete" || streamingState === "idle") && (
           <FollowUpInput
             onSubmit={handleFollowUpSubmit}
@@ -176,4 +144,5 @@ function App() {
     </Layout>
   );
 }
+
 export default App;
