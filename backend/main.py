@@ -1,8 +1,9 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from agent.graph import run_graph
 from agent.file_processor import FileProcessor
+from agent.prompt_enhancer import prompt_enhancer
 import json
 from typing import List, Optional
 
@@ -79,4 +80,29 @@ async def stream_lesson_plan(
         }
     )
 
+
+@app.post("/enhance-prompt")
+async def enhance_prompt(
+    message: str = Form(...),
+    topic: str = Form(...),
+    num_classes: int = Form(...),
+):
+    """
+    Enhance the user's prompt to provide better instructions for course outline generation.
+    """
+    try:
+        if not message.strip() or not topic.strip() or not num_classes:
+            return JSONResponse(
+                content={"error": "Message, topic, and number of classes are required"},
+                status_code=400
+            )
+
+        enhanced = await prompt_enhancer(message, topic, num_classes)
+        return JSONResponse(content={"enhanced_prompt": enhanced})
+    
+    except Exception as e:
+        return JSONResponse(
+            content={"error": str(e)},
+            status_code=500
+        )
 

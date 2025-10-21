@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload, File, X } from "lucide-react";
+import { Upload, File, X, Sparkles } from "lucide-react";
 
 interface InputSectionProps {
   userComment: string;
@@ -27,6 +27,8 @@ export default function InputSection({
   setUploadedFiles
 }: InputSectionProps) {
   const [uploadError, setUploadError] = useState<string>("");
+  const [isEnhancing, setIsEnhancing] = useState<boolean>(false);
+  const [enhanceError, setEnhanceError] = useState<string>("");
 
   // Disable topic and numberOfClasses after first submit (when thread exists)
   const isSessionActive = threadId !== null;
@@ -80,6 +82,41 @@ export default function InputSection({
   const removeFile = (index: number) => {
     const newFiles = uploadedFiles.filter((_, i) => i !== index);
     setUploadedFiles(newFiles);
+  };
+
+  // Handle prompt enhancement
+  const handleEnhancePrompt = async () => {
+    setIsEnhancing(true);
+    setEnhanceError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("message", userComment);
+      formData.append("topic", topic);
+      formData.append("num_classes", numberOfClasses.toString());
+
+      const response = await fetch("http://localhost:8000/enhance-prompt", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setEnhanceError(data.error || "Failed to enhance prompt");
+        return;
+      }
+
+      if (data.enhanced_prompt) {
+        setUserComment(data.enhanced_prompt);
+      }
+    } catch (error) {
+      setEnhanceError(
+        error instanceof Error ? error.message : "Failed to enhance prompt"
+      );
+    } finally {
+      setIsEnhancing(false);
+    }
   };
 
   return (
@@ -139,6 +176,24 @@ export default function InputSection({
             className="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-colors"
             placeholder="Add any additional context or requirements..."
           />
+
+          {/* Enhance Prompt Button */}
+          <div className="mt-2 flex items-start gap-2">
+            <button
+              type="button"
+              onClick={handleEnhancePrompt}
+              disabled={
+                isEnhancing || userComment.trim().length < 5 || !topic.trim()
+              }
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Sparkles className="h-4 w-4" />
+              {isEnhancing ? "Enhancing..." : "Enhance Prompt"}
+            </button>
+            {enhanceError && (
+              <p className="text-sm text-red-600 mt-1">{enhanceError}</p>
+            )}
+          </div>
         </div>
 
         {/* File Upload Field */}
