@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
-import { Layout, Header } from "../components";
+import { Layout } from "../components";
 
 function Home() {
   return (
     <Layout>
-      <Header />
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-6">
