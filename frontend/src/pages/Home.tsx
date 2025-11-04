@@ -20,6 +20,15 @@ function Home() {
               Course Outline Generator
             </Link>
           </div>
+          <div className="h-4" />
+          <div className="flex flex-col gap-4 max-w-md mx-auto">
+            <Link
+              to="/lesson-planner"
+              className="block px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              Lesson Planner
+            </Link>
+          </div>
         </div>
       </div>
     </Layout>
