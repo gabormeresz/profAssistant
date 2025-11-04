@@ -1,7 +1,8 @@
 // API Configuration
 export const API_BASE_URL = "http://localhost:8000";
 export const API_ENDPOINTS = {
-  STREAM: `${API_BASE_URL}/stream`,
+  STREAM_OUTLINE: `${API_BASE_URL}/stream-outline`,
+  STRUCTURED_OUTLINE: `${API_BASE_URL}/structured-outline`,
   ENHANCE_PROMPT: `${API_BASE_URL}/enhance-prompt`
 } as const;
 

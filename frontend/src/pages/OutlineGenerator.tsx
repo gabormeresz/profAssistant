@@ -98,7 +98,7 @@ function OutlineGenerator() {
 
   return (
     <Layout>
-      <Header title="Course Outline Generator" />
+      <Header title="Course Outline Generator (Markdown Streaming)" />
       <ThreadStatus
         threadId={threadId}
         onNewConversation={handleNewConversation}

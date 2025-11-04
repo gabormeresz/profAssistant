@@ -1,42 +1,48 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { API_ENDPOINTS } from "../utils/constants";
-import type { LessonPlanRequest, StreamingState } from "../types";
+import type {
+  LessonPlanRequest,
+  StreamingState,
+  CourseOutline
+} from "../types";
 
-export type { LessonPlanRequest, StreamingState };
-
-interface UseSSEReturn {
-  currentMessage: string;
+interface UseStructuredSSEReturn {
+  courseOutline: CourseOutline | null;
+  progressMessage: string;
   loading: boolean;
   streamingState: StreamingState;
   threadId: string | null;
-  sendMessage: (data: LessonPlanRequest) => Promise<string>; // Returns the complete message
-  clearMessage: () => void;
+  sendMessage: (data: LessonPlanRequest) => Promise<CourseOutline | null>;
+  clearData: () => void;
   resetThread: () => void;
 }
 
-export const useSSE = (url?: string): UseSSEReturn => {
-  const streamUrl = url || API_ENDPOINTS.STREAM_OUTLINE;
-  const [currentMessage, setCurrentMessage] = useState("");
+export const useStructuredSSE = (): UseStructuredSSEReturn => {
+  const [courseOutline, setCourseOutline] = useState<CourseOutline | null>(
+    null
+  );
+  const [progressMessage, setProgressMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [streamingState, setStreamingState] = useState<StreamingState>("idle");
   const [threadId, setThreadId] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const clearMessage = useCallback(() => {
-    setCurrentMessage("");
+  const clearData = useCallback(() => {
+    setCourseOutline(null);
+    setProgressMessage("");
     setStreamingState("idle");
   }, []);
 
   const resetThread = useCallback(() => {
     setThreadId(null);
-    setCurrentMessage("");
-    setStreamingState("idle");
-  }, []);
+    clearData();
+  }, [clearData]);
 
   const sendMessage = useCallback(
-    async (data: LessonPlanRequest): Promise<string> => {
-      // Clear previous message and start loading
-      setCurrentMessage("");
+    async (data: LessonPlanRequest): Promise<CourseOutline | null> => {
+      // Clear previous data and start loading
+      setCourseOutline(null);
+      setProgressMessage("Initializing...");
       setLoading(true);
       setStreamingState("connecting");
 
@@ -49,7 +55,7 @@ export const useSSE = (url?: string): UseSSEReturn => {
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
 
-      let completeMessage = "";
+      let finalOutline: CourseOutline | null = null;
 
       try {
         // Prepare form data
@@ -69,8 +75,8 @@ export const useSSE = (url?: string): UseSSEReturn => {
           });
         }
 
-        // Make SSE request
-        const response = await fetch(streamUrl, {
+        // Make SSE request to the structured endpoint
+        const response = await fetch(API_ENDPOINTS.STRUCTURED_OUTLINE, {
           method: "POST",
           body: formData,
           signal: abortController.signal
@@ -89,7 +95,9 @@ export const useSSE = (url?: string): UseSSEReturn => {
         const decoder = new TextDecoder();
 
         let buffer = "";
-        let currentEvent = ""; // Track current SSE event type
+        let currentEvent = "";
+
+        setStreamingState("streaming");
 
         while (true) {
           const { done, value } = await reader.read();
@@ -97,7 +105,7 @@ export const useSSE = (url?: string): UseSSEReturn => {
           if (done) {
             setStreamingState("complete");
             setLoading(false);
-            return completeMessage;
+            return finalOutline;
           }
 
           // Decode the chunk
@@ -110,39 +118,38 @@ export const useSSE = (url?: string): UseSSEReturn => {
           for (const line of lines) {
             // Check for SSE event type
             if (line.startsWith("event: ")) {
-              currentEvent = line.slice(7).trim(); // Extract event type
+              currentEvent = line.slice(7).trim();
             } else if (line.startsWith("data: ")) {
-              const jsonData = line.slice(6); // Remove "data: " prefix
+              const jsonData = line.slice(6);
 
               try {
                 const parsed = JSON.parse(jsonData);
 
-                // Handle thread_id event separately
+                // Handle different event types
                 if (currentEvent === "thread_id" && parsed.thread_id) {
                   setThreadId(parsed.thread_id);
                   console.log("Thread ID set:", parsed.thread_id);
-                  currentEvent = ""; // Reset event type
-                } else if (parsed.content) {
-                  // Regular content message - start streaming
-                  if (streamingState !== "streaming") {
-                    setStreamingState("streaming");
-                  }
-                  completeMessage += parsed.content;
-                  setCurrentMessage((prev) => prev + parsed.content);
-                  setLoading(false);
-                  currentEvent = ""; // Reset event type
-                } else if (parsed.error) {
-                  console.error("Stream error:", parsed.error);
-                  setCurrentMessage(`Error: ${parsed.error}`);
+                } else if (currentEvent === "progress" && parsed.message) {
+                  setProgressMessage(parsed.message);
+                  setLoading(false); // Not loading, but actively processing
+                } else if (currentEvent === "complete" && parsed) {
+                  // Structured data received
+                  const outline = parsed as CourseOutline;
+                  setCourseOutline(outline);
+                  finalOutline = outline;
+                  setProgressMessage("Course outline complete!");
+                } else if (currentEvent === "error" && parsed.message) {
+                  console.error("Stream error:", parsed.message);
+                  setProgressMessage(`Error: ${parsed.message}`);
                   setStreamingState("idle");
                   setLoading(false);
-                  currentEvent = ""; // Reset event type
                 }
               } catch (e) {
                 console.error("Failed to parse SSE data:", e);
               }
+
+              currentEvent = ""; // Reset after processing
             } else if (line === "") {
-              // Empty line resets the event type (SSE specification)
               currentEvent = "";
             }
           }
@@ -153,20 +160,20 @@ export const useSSE = (url?: string): UseSSEReturn => {
             console.log("Request aborted");
           } else {
             console.error("Error processing request:", error);
-            setCurrentMessage(`Error: ${error.message}`);
+            setProgressMessage(`Error: ${error.message}`);
           }
         } else {
           console.error("Unknown error:", error);
-          setCurrentMessage("Error: An unknown error occurred");
+          setProgressMessage("Error: An unknown error occurred");
         }
         setLoading(false);
         setStreamingState("idle");
-        return ""; // Return empty string on error
+        return null;
       } finally {
         abortControllerRef.current = null;
       }
     },
-    [streamUrl, threadId, streamingState]
+    [threadId]
   );
 
   // Cleanup on unmount
@@ -179,12 +186,13 @@ export const useSSE = (url?: string): UseSSEReturn => {
   }, []);
 
   return {
-    currentMessage,
+    courseOutline,
+    progressMessage,
     loading,
     streamingState,
     threadId,
     sendMessage,
-    clearMessage,
+    clearData,
     resetThread
   };
 };

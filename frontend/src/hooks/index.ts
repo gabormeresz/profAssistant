@@ -1,4 +1,5 @@
 export { useSSE } from "./useSSE";
+export { useStructuredSSE } from "./useStructuredSSE";
 export { useExport } from "./useExport";
 export { useConversation } from "./useConversation";
 

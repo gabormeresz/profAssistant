@@ -16,3 +16,10 @@ export type {
 
 // Hook types
 export type { StreamingState } from "./hooks";
+
+// Course outline types
+export type {
+  CourseOutline,
+  CourseClass,
+  StructuredStreamEvent
+} from "./courseOutline";
