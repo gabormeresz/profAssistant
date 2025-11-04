@@ -2,7 +2,7 @@ import { Layout, Header } from "../components";
 
 function LessonPlanner() {
   return (
-    <Layout>
+    <Layout showSidebar>
       <Header title="Lesson Planner" />
     </Layout>
   );

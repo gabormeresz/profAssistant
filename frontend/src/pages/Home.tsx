@@ -6,9 +6,7 @@ function Home() {
     <Layout>
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-6">
-            Welcome to the Educational Assistant
-          </h1>
+          <h1 className="text-4xl font-bold mb-6">Smart Professor</h1>
           <p className="text-lg text-gray-600 mb-8">
             Choose a tool to get started
           </p>
@@ -23,7 +21,7 @@ function Home() {
                   to="/outline-generator"
                   className="block px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-md"
                 >
-                  📝 Markdown Streaming
+                  📝 Course Outline - Streaming
                   <span className="block text-sm text-blue-100 mt-1">
                     See content as it's generated, conversational
                   </span>
@@ -32,7 +30,7 @@ function Home() {
                   to="/structured-outline"
                   className="block px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-md"
                 >
-                  ⚡ Structured Output
+                  ⚡ Course Outline -Structured Output
                   <span className="block text-sm text-green-100 mt-1">
                     Beautiful cards, validated data, export-ready
                   </span>

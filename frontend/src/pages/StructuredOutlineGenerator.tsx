@@ -120,7 +120,7 @@ function StructuredOutlineGenerator() {
     streamingState === "connecting";
 
   return (
-    <Layout>
+    <Layout showSidebar>
       <Header title="Course Outline Generator (Structured Output)" />
       <ThreadStatus
         threadId={threadId}
