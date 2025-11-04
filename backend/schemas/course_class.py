@@ -1,12 +1,22 @@
 """
-Course outline schema definitions using Pydantic models.
-This module defines the data structures for course outlines including
-classes, learning objectives, key topics, and activities.
+Pydantic schema for a single class/session within a course.
+
+This module defines the CourseClass model used to validate and serialize
+metadata for one class in a course sequence. It enforces constraints such as:
+- class_number: sequential index starting from 1 (int, ge=1)
+- class_title: descriptive title for the session (str, 3-200 chars)
+- learning_objectives: 2-5 specific, measurable objectives (List[str])
+- key_topics: 3-7 main topics or concepts covered (List[str])
+- activities_projects: 1-5 hands-on activities, exercises, or projects (List[str])
+
+The schema includes json_schema_extra example data to aid documentation and
+OpenAPI/JSON Schema generation.
+
 """
+
 
 from typing import List
 from pydantic import BaseModel, Field
-
 
 class CourseClass(BaseModel):
     """
@@ -59,51 +69,6 @@ class CourseClass(BaseModel):
                 "activities_projects": [
                     "Write your first program",
                     "Variable declaration exercises"
-                ]
-            }
-        }
-    }
-
-
-class CourseOutline(BaseModel):
-    """
-    Represents a complete course outline with title and list of classes.
-    """
-    course_title: str = Field(
-        ..., 
-        description="The complete title of the course",
-        min_length=5,
-        max_length=200
-    )
-    classes: List[CourseClass] = Field(
-        ..., 
-        description="Ordered list of classes/sessions in the course (typically 5-15 classes)",
-        min_length=1,
-        max_length=20
-    )
-
-    model_config = {
-        "json_schema_extra": {
-            "example": {
-                "course_title": "Introduction to Python Programming",
-                "classes": [
-                    {
-                        "class_number": 1,
-                        "class_title": "Getting Started with Python",
-                        "learning_objectives": [
-                            "Set up Python development environment",
-                            "Understand Python syntax basics"
-                        ],
-                        "key_topics": [
-                            "Python installation",
-                            "IDE setup",
-                            "Basic syntax"
-                        ],
-                        "activities_projects": [
-                            "Install Python and IDE",
-                            "Write hello world program"
-                        ]
-                    }
                 ]
             }
         }

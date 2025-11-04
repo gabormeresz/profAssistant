@@ -3,7 +3,7 @@ Course outline generator using structured output (new approach).
 Returns validated Pydantic CourseOutline model with progress updates.
 """
 from typing import Dict, List
-from schemas.course_outline_schema import CourseOutline
+from backend.schemas.course_outline import CourseOutline
 from agent.common import (
     model, 
     build_system_prompt, 
