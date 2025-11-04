@@ -39,15 +39,26 @@ class LessonPlan(BaseModel):
     class_title: str = Field(..., description="Title of the lesson")
     
     learning_objective: str = Field(..., description="Main learning goal of this lesson")
-    key_points: List[str] = Field(..., description="Essential concepts or topics to be covered")
+    
+    key_points: List[str] = Field(
+        ..., 
+        description="Essential concepts or topics covered (2–10 items)",
+        min_length=2,
+        max_length=10
+    )
 
     lesson_breakdown: List[LessonSection] = Field(
-        ..., description="Step-by-step flow of the lesson (e.g., Opening, Teaching, Practice, Summary)"
+        ...,
+        description="Step-by-step flow of the lesson (e.g., Opening, Teaching, Practice, Summary)",
+        min_length=2,
+        max_length=10
     )
 
     activities: List[ActivityPlan] = Field(
         default_factory=list,
-        description="Hands-on tasks, exercises, or projects students will do"
+        description="Hands-on tasks, exercises, or projects students will do",
+        min_length=1,
+        max_length=5
     )
 
     homework: str = Field(
