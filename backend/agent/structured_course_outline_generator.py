@@ -2,9 +2,9 @@
 Course outline generator using structured output.
 Returns validated Pydantic CourseOutline model with progress updates.
 """
-from typing import Dict, List
-from schemas.course_outline import CourseOutline
 from typing import Dict, List, Optional
+from schemas.course_outline import CourseOutline
+from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
 from langchain.tools import tool
 from langchain_community.utilities import GoogleSerperAPIWrapper
@@ -76,8 +76,9 @@ async def run_structured_course_outline_generator(
     file_contents: List[Dict[str, str]] | None = None
 ):
     """
-    Run the LangChain model with structured output using CourseOutline schema.
-    Shows progress updates and returns the complete structured output at the end.
+    Run the LangChain agent with structured output using CourseOutline schema.
+    Uses tools, memory, and shows progress updates including tool usage.
+    Returns the complete structured output at the end.
     
     Args:
         message: The main user message/prompt (optional additional context)
@@ -87,7 +88,7 @@ async def run_structured_course_outline_generator(
         file_contents: Optional list of file contents with filename and content
     
     Returns:
-        Generator that yields progress updates and structured data
+        Generator that yields progress updates, tool usage, and structured data
     """
     try:
         # Use existing thread ID or create a new one
@@ -106,42 +107,102 @@ async def run_structured_course_outline_generator(
         # Add structured output instruction
         system_prompt += "\nGenerate a structured course outline following the provided schema with detailed information for each class."
         
-        # Build the user prompt
-        user_prompt_parts = []
+        # Create agent with structured output using response_format parameter
+        current_agent = create_agent(
+            model=model,
+            tools=tools,
+            state_schema=CourseOutlineAgentState,
+            context_schema=Context,
+            system_prompt=system_prompt,
+            checkpointer=memory,
+            response_format=CourseOutline  # This enables structured output!
+        )
+        
+        # Prepare messages - only add user message if provided
+        messages = []
         if message and message.strip():
-            user_prompt_parts.append(message)
-        user_prompt_parts.append(f"Create a comprehensive course outline for: {topic}")
-        user_prompt_parts.append(f"Number of classes: {number_of_classes}")
+            messages.append({"role": "user", "content": message})
         
-        if file_contents and len(file_contents) > 0:
-            user_prompt_parts.append("\nReference materials provided:")
-            for file_info in file_contents:
-                user_prompt_parts.append(f"- {file_info.get('filename', 'Unknown file')}")
+        # Prepare the initial state
+        initial_state = {
+            "messages": messages,
+            "topic": topic if topic else "general education",
+            "number_of_classes": number_of_classes if number_of_classes > 0 else 1,
+            "file_contents": file_contents
+        }
         
-        full_prompt = "\n".join(user_prompt_parts)
+        # Create context
+        context = Context(thread_id=thread_id)
+        
+        # Create config with thread_id for checkpointer
+        config = {
+            "configurable": {
+                "thread_id": thread_id
+            }
+        }
         
         # Yield progress update
         yield {"type": "progress", "message": "Generating course outline..."}
         
-        # Use the model with structured output
-        structured_model = model.with_structured_output(CourseOutline)
+        # Track tool usage and collect the agent's structured response
+        tool_calls_made = False
+        final_result = None
         
-        messages = [
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": full_prompt}
-        ]
+        # Stream events from the agent to show progress and tool usage
+        async for event in current_agent.astream_events(
+            initial_state, 
+            context=context,
+            config=config,  # type: ignore
+            version="v2"
+        ):
+            kind = event.get("event")
+            
+            # Detect tool calls
+            if kind == "on_tool_start":
+                tool_calls_made = True
+                tool_name = event.get("name", "unknown tool")
+                yield {"type": "progress", "message": f"Using tool: {tool_name}"}
+            
+            # Detect tool results
+            if kind == "on_tool_end":
+                tool_name = event.get("name", "unknown tool")
+                yield {"type": "progress", "message": f"Completed: {tool_name}"}
+            
+            # Capture the final structured response from the agent
+            if kind == "on_chain_end" and event.get("name") == "LangGraph":
+                output = event.get("data", {}).get("output", {})
+                # When using response_format, the structured response is in the output
+                if "structured_response" in output:
+                    structured_response = output["structured_response"]
+                    if isinstance(structured_response, CourseOutline):
+                        final_result = structured_response.model_dump()
+                    elif isinstance(structured_response, dict):
+                        final_result = structured_response
+                # Fallback: check messages for structured content
+                elif "messages" in output and len(output["messages"]) > 0:
+                    last_message = output["messages"][-1]
+                    if hasattr(last_message, "content"):
+                        content = last_message.content
+                        if isinstance(content, CourseOutline):
+                            final_result = content.model_dump()
+                        elif isinstance(content, dict):
+                            try:
+                                course_outline = CourseOutline(**content)
+                                final_result = course_outline.model_dump()
+                            except Exception:
+                                pass
         
-        # Get the final complete structured output
-        result = await structured_model.ainvoke(messages)
-        
-        # Convert to dict if it's a Pydantic model
-        result_dict = result.model_dump() if isinstance(result, CourseOutline) else result
-        
-        # Yield the complete structured output
-        yield {
-            "type": "complete",
-            "data": result_dict
-        }
+        # If we got a valid result, yield it
+        if final_result:
+            yield {
+                "type": "complete",
+                "data": final_result
+            }
+        else:
+            yield {
+                "type": "error",
+                "message": "Could not extract structured output from agent response"
+            }
         
     except Exception as e:
         yield {"type": "error", "message": f"Error while generating structured content: {str(e)}"}
