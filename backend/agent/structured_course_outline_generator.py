@@ -30,7 +30,6 @@ class CourseOutlineAgentState(AgentState):
 class Context:
     thread_id: str
 
-
 system_prompt = """
     You are a helpful educational assistant that generate professional course outlines. 
     Always stick to the topic and number of classes the user provided unless the user explicitly asks otherwise. 
@@ -40,7 +39,6 @@ system_prompt = """
     You can use the available tools to gather more information any time.
     Generate a structured course outline following the provided schema with detailed information for each class.
 """
-
 
 def build_user_message(is_first_call: bool, topic: str, number_of_classes: int, message: str, file_contents: List[Dict[str, str]] | None) -> Dict[str, str]:
     """Build the user message dictionary."""
