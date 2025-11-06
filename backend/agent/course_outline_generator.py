@@ -3,31 +3,17 @@ Course outline generator using markdown streaming.
 Streams content token-by-token in markdown format.
 """
 from typing import Dict, List
-from langchain.agents import create_agent
 from typing import Dict, List, Optional
-from langchain.chat_models import init_chat_model
-from langchain.tools import tool
-from langchain_community.utilities import GoogleSerperAPIWrapper
 from langgraph.checkpoint.memory import MemorySaver
 from langchain.agents import AgentState
-from dotenv import load_dotenv
+from langchain.agents import create_agent
+from .tools import web_search
+from .model import model
 from dataclasses import dataclass
 import uuid
 
-load_dotenv()
-
-# Setup tools using the new @tool decorator
-serper = GoogleSerperAPIWrapper()
-
-@tool
-def web_search(query: str) -> str:
-    """Useful for when you need more information from an online search."""
-    return serper.run(query)
-
+# Setup tools list
 tools = [web_search]
-
-# Setup LLM using init_chat_model
-model = init_chat_model("openai:gpt-4o-mini")
 
 # Setup memory/checkpointer for conversation persistence
 memory = MemorySaver()
