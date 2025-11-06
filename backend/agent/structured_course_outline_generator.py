@@ -5,7 +5,6 @@ Returns validated Pydantic CourseOutline model with progress updates.
 from typing import Dict, List, Optional
 from schemas.course_outline import CourseOutline
 from langchain.agents import create_agent
-from langchain_community.utilities import GoogleSerperAPIWrapper
 from langgraph.checkpoint.memory import MemorySaver
 from langchain.agents import AgentState
 from .tools import web_search
