@@ -5,6 +5,7 @@ File processing utilities for extracting text from uploaded files.
 import io
 from typing import List, Dict
 from pathlib import Path
+from fastapi import UploadFile
 
 try:
     from pypdf import PdfReader
@@ -96,31 +97,23 @@ class FileProcessor:
             return cls.extract_text_from_txt(file_bytes)
         else:
             raise ValueError(f"Unsupported file type: {file_ext}")
-    
-    @classmethod
-    def process_multiple_files(cls, files: List[tuple[str, bytes]]) -> List[Dict[str, str]]:
-        """
-        Process multiple files and return their contents.
         
-        Args:
-            files: List of tuples containing (filename, file_bytes)
-            
-        Returns:
-            List of dictionaries with 'filename' and 'content' keys
-        """
-        results = []
-        for filename, file_bytes in files:
-            try:
-                content = cls.process_file(filename, file_bytes)
-                results.append({
-                    'filename': filename,
-                    'content': content
-                })
-            except Exception as e:
-                # Include error in results but don't fail the whole batch
-                results.append({
-                    'filename': filename,
-                    'content': f"[Error processing file: {str(e)}]"
-                })
+
+async def file_processor(files: List[UploadFile]) -> List[Dict[str, str]]:
+    file_processor = FileProcessor()
+    file_contents = []
+    for uploaded_file in files:
+        try:
+            file_bytes = await uploaded_file.read()
+            content = file_processor.process_file(uploaded_file.filename or "unknown", file_bytes)
+            file_contents.append({
+                "filename": uploaded_file.filename,
+                "content": content
+            })
+        except Exception as e:
+            file_contents.append({
+                "filename": uploaded_file.filename,
+                "content": f"[Error processing file: {str(e)}]"
+            })
+    return file_contents
         
-        return results

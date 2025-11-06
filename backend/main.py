@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from agent.course_outline_generator import run_markdown_course_outline_generator
 from agent.structured_course_outline_generator import run_structured_course_outline_generator
-from agent.file_processor import FileProcessor
+from utils.file_processor import file_processor
 from agent.prompt_enhancer import prompt_enhancer
 import json
 from typing import List, Optional
@@ -55,20 +55,7 @@ async def stream_lesson_plan(
     
     # Process uploaded files if any
     if files:
-        processor = FileProcessor()
-        for uploaded_file in files:
-            try:
-                file_bytes = await uploaded_file.read()
-                content = processor.process_file(uploaded_file.filename or "unknown", file_bytes)
-                file_contents.append({
-                    "filename": uploaded_file.filename,
-                    "content": content
-                })
-            except Exception as e:
-                file_contents.append({
-                    "filename": uploaded_file.filename,
-                    "content": f"[Error processing file: {str(e)}]"
-                })
+        file_contents += await file_processor(files)
     
     # Return SSE stream
     return StreamingResponse(
@@ -159,20 +146,7 @@ async def generate_structured_outline(
     
     # Process uploaded files if any
     if files:
-        processor = FileProcessor()
-        for uploaded_file in files:
-            try:
-                file_bytes = await uploaded_file.read()
-                content = processor.process_file(uploaded_file.filename or "unknown", file_bytes)
-                file_contents.append({
-                    "filename": uploaded_file.filename,
-                    "content": content
-                })
-            except Exception as e:
-                file_contents.append({
-                    "filename": uploaded_file.filename,
-                    "content": f"[Error processing file: {str(e)}]"
-                })
+        file_contents += await file_processor(files)
     
     # Return SSE stream
     return StreamingResponse(
