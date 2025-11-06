@@ -30,9 +30,7 @@ class CourseOutlineAgentState(AgentState):
 class Context:
     thread_id: str
 
-def build_system_prompt() -> str:
-    """Build a simple system prompt for the agent."""
-    system_prompt = """
+system_prompt = """
     You are a helpful educational assistant that creates course outlines in markdown format. 
     Always stick to the topic and number of classes the user provided unless the user explicitly asks otherwise. 
     If the user provides reference materials (file uploads), use them as a reference only and do not copy them verbatim.
@@ -41,8 +39,7 @@ def build_system_prompt() -> str:
     Use headings for class titles and bullet points for key topics.
     You can use the available tools to gather more information any time.
     Only respond in markdown format and only the Course Outline as specified, no other text.
-    """
-    return system_prompt
+"""
 
 def build_user_message(is_first_call: bool, topic: str, number_of_classes: int, message: str, file_contents: List[Dict[str, str]] | None) -> Dict[str, str]:
     """Build the user message dictionary."""
@@ -93,9 +90,6 @@ async def run_markdown_course_outline_generator(
         is_first_call = thread_id is None or not thread_id
         # Use existing thread ID or create a new one
         thread_id = generate_thread_id(thread_id)
-        
-        # Build the simple system prompt
-        system_prompt = build_system_prompt()
         
         # Create a new agent instance with the dynamic system prompt and memory
         current_agent = create_agent(

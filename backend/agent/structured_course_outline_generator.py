@@ -31,9 +31,8 @@ class CourseOutlineAgentState(AgentState):
 class Context:
     thread_id: str
 
-def build_system_prompt() -> str:
-    """Build a simple system prompt for the agent."""
-    system_prompt = """
+
+system_prompt = """
     You are a helpful educational assistant that generate professional course outlines. 
     Always stick to the topic and number of classes the user provided unless the user explicitly asks otherwise. 
     If the user provides reference materials (file uploads), use them as a reference only and do not copy them verbatim.
@@ -41,8 +40,8 @@ def build_system_prompt() -> str:
     however try to extract and use the content of the reference materials if relevant.
     You can use the available tools to gather more information any time.
     Generate a structured course outline following the provided schema with detailed information for each class.
-    """
-    return system_prompt
+"""
+
 
 def build_user_message(is_first_call: bool, topic: str, number_of_classes: int, message: str, file_contents: List[Dict[str, str]] | None) -> Dict[str, str]:
     """Build the user message dictionary."""
@@ -97,9 +96,6 @@ async def run_structured_course_outline_generator(
         
         # Yield thread ID first
         yield {"type": "thread_id", "thread_id": thread_id}
-        
-        # Build the system prompt with all the context
-        system_prompt = build_system_prompt()
         
         # Create agent with structured output using response_format parameter
         current_agent = create_agent(
