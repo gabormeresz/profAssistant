@@ -15,6 +15,7 @@ interface UseStructuredSSEReturn {
   sendMessage: (data: LessonPlanRequest) => Promise<CourseOutline | null>;
   clearData: () => void;
   resetThread: () => void;
+  setThreadId: (id: string | null) => void;
 }
 
 export const useStructuredSSE = (): UseStructuredSSEReturn => {
@@ -193,6 +194,7 @@ export const useStructuredSSE = (): UseStructuredSSEReturn => {
     threadId,
     sendMessage,
     clearData,
-    resetThread
+    resetThread,
+    setThreadId
   };
 };

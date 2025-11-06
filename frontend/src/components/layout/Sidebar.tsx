@@ -1,7 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
+import { useSavedConversations } from "../../hooks";
+import SavedConversationItem from "./SavedConversationItem";
 
 export default function Sidebar() {
   const location = useLocation();
+  const { conversations, isLoading, error, deleteConversation } =
+    useSavedConversations();
 
   const navItems = [
     {
@@ -22,7 +26,7 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-78 bg-white border-r border-gray-200 min-h-screen p-4">
+    <aside className="w-78 bg-white border-r border-gray-200 min-h-screen p-4 flex flex-col">
       <nav className="space-y-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -45,8 +49,50 @@ export default function Sidebar() {
 
       <hr className="my-6 border-gray-200" />
 
-      <div className="space-y-4">
-        {/* Additional sidebar content will go here */}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-gray-700 px-3">
+            Recent Conversations
+          </h3>
+          {conversations.length > 0 && (
+            <span className="text-xs text-gray-500 px-3">
+              {conversations.length}
+            </span>
+          )}
+        </div>
+
+        <div className="flex-1 overflow-y-auto space-y-1">
+          {isLoading && (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            </div>
+          )}
+
+          {error && (
+            <div className="px-3 py-2 text-sm text-red-600 bg-red-50 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          {!isLoading && !error && conversations.length === 0 && (
+            <div className="px-3 py-8 text-center">
+              <p className="text-sm text-gray-500">No conversations yet</p>
+              <p className="text-xs text-gray-400 mt-1">
+                Start a new conversation to see it here
+              </p>
+            </div>
+          )}
+
+          {!isLoading &&
+            !error &&
+            conversations.map((conversation) => (
+              <SavedConversationItem
+                key={conversation.thread_id}
+                conversation={conversation}
+                onDelete={deleteConversation}
+              />
+            ))}
+        </div>
       </div>
     </aside>
   );

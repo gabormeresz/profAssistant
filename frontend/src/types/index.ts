@@ -4,8 +4,14 @@
  */
 
 // Domain types
-// export type { ConversationMessage, ConversationHistory } from "./conversation";
-export type { ConversationMessage } from "./conversation";
+export type {
+  ConversationMessage,
+  SavedConversation,
+  SavedCourseOutline,
+  SavedLessonPlan,
+  ConversationType,
+  ConversationListResponse
+} from "./conversation";
 
 // API types
 export type {
