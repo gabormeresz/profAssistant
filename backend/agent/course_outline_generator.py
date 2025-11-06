@@ -44,10 +44,6 @@ def build_system_prompt() -> str:
     """
     return system_prompt
 
-def build_initial_user_message(topic: str, number_of_classes: int) -> str:
-    """Build the initial user message with topic and number of classes."""
-    return f"Please create a course outline on '{topic}' with {number_of_classes} classes. Format the response in markdown with class titles as headings and bullet points for key topics under each class."
-
 def build_user_message(is_first_call: bool, topic: str, number_of_classes: int, message: str, file_contents: List[Dict[str, str]] | None) -> Dict[str, str]:
     """Build the user message dictionary."""
     # Prepare messages
@@ -55,11 +51,7 @@ def build_user_message(is_first_call: bool, topic: str, number_of_classes: int, 
     
     # On first call (no existing thread_id), add the topic and number of classes
     if is_first_call:
-        initial_message = build_initial_user_message(
-            topic if topic else "general education",
-            number_of_classes if number_of_classes > 0 else 1
-        )
-        messages += f"{initial_message}\n"
+        messages += f"Create a course outline on '{topic}' with {number_of_classes} classes.\n"
     
     # Add user message if provided
     if message and message.strip():
@@ -74,7 +66,6 @@ def build_user_message(is_first_call: bool, topic: str, number_of_classes: int, 
 def generate_thread_id(thread_id: str | None) -> str:
     """Generate or return existing thread ID."""
     return thread_id if thread_id else str(uuid.uuid4())
-
 
 async def run_markdown_course_outline_generator(
     message: str, 
