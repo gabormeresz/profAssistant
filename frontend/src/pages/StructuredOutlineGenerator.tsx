@@ -13,7 +13,10 @@ import {
 import { useStructuredSSE } from "../hooks";
 import { COURSE_OUTLINE, UI_MESSAGES } from "../utils/constants";
 import type { CourseOutline, ConversationMessage } from "../types";
-import { fetchConversation, fetchConversationHistory } from "../services/conversationService";
+import {
+  fetchConversation,
+  fetchConversationHistory
+} from "../services/conversationService";
 
 function StructuredOutlineGenerator() {
   const { threadId: urlThreadId } = useParams<{ threadId?: string }>();
@@ -99,7 +102,7 @@ function StructuredOutlineGenerator() {
       // Mark this conversation as being loaded FIRST
       // This prevents the check above from running the load twice
       loadedThreadIdRef.current = urlThreadId;
-      
+
       // Mark that we're loading from URL to prevent URL update loop
       isLoadingFromUrlRef.current = true;
 
@@ -111,10 +114,10 @@ function StructuredOutlineGenerator() {
       try {
         // Fetch conversation metadata
         const conversation = await fetchConversation(urlThreadId);
-        
+
         // Set the thread ID to continue the conversation
         setThreadId(urlThreadId);
-        
+
         // Reset flag after React finishes the render cycle
         // This ensures the URL update effect sees the flag as true
         setTimeout(() => {
@@ -122,7 +125,7 @@ function StructuredOutlineGenerator() {
         }, 0);
 
         // Populate form with saved data
-        if ('topic' in conversation) {
+        if ("topic" in conversation) {
           setTopic(conversation.topic);
           setNumberOfClasses(conversation.number_of_classes);
         }
@@ -165,8 +168,11 @@ function StructuredOutlineGenerator() {
               role: "user",
               content: userComment,
               timestamp: new Date(), // We don't have the original timestamp
-              topic: 'topic' in conversation ? conversation.topic : '',
-              numberOfClasses: 'number_of_classes' in conversation ? conversation.number_of_classes : 0
+              topic: "topic" in conversation ? conversation.topic : "",
+              numberOfClasses:
+                "number_of_classes" in conversation
+                  ? conversation.number_of_classes
+                  : 0
             });
           } else if (msg.role === "assistant") {
             // Assistant message - parse as CourseOutline
@@ -192,7 +198,7 @@ function StructuredOutlineGenerator() {
       } catch (error) {
         console.error("Failed to load conversation from URL:", error);
         // If conversation not found, redirect to new conversation
-        navigate('/structured-outline', { replace: true });
+        navigate("/structured-outline", { replace: true });
         // Reset flag on error as well
         setTimeout(() => {
           isLoadingFromUrlRef.current = false;
@@ -272,9 +278,9 @@ function StructuredOutlineGenerator() {
     setNumberOfClasses(COURSE_OUTLINE.DEFAULT_CLASSES);
     setUploadedFiles([]);
     loadedThreadIdRef.current = null; // Reset loaded thread tracking
-    
+
     // Navigate to base URL for new conversation
-    navigate('/structured-outline', { replace: true });
+    navigate("/structured-outline", { replace: true });
   };
 
   const isGenerating =
