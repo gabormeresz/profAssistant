@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Layout,
   Header,
@@ -13,15 +13,11 @@ import {
 import { useStructuredSSE } from "../hooks";
 import { COURSE_OUTLINE, UI_MESSAGES } from "../utils/constants";
 import type { CourseOutline, ConversationMessage } from "../types";
-import type { SavedCourseOutline } from "../types/conversation";
-import { fetchConversationHistory } from "../services/conversationService";
+import { fetchConversation, fetchConversationHistory } from "../services/conversationService";
 
 function StructuredOutlineGenerator() {
-  const location = useLocation();
-  const locationState = location.state as {
-    threadId?: string;
-    conversation?: SavedCourseOutline;
-  } | null;
+  const { threadId: urlThreadId } = useParams<{ threadId?: string }>();
+  const navigate = useNavigate();
 
   // Form state
   const [userComment, setUserComment] = useState("");
@@ -38,6 +34,8 @@ function StructuredOutlineGenerator() {
 
   // Track which conversation was last loaded to prevent stale data
   const loadedThreadIdRef = useRef<string | null>(null);
+  // Track if we're loading from URL to prevent URL update loops
+  const isLoadingFromUrlRef = useRef(false);
 
   // Structured SSE hook
   const {
@@ -72,104 +70,138 @@ function StructuredOutlineGenerator() {
     }
   }, [courseOutline, streamingState, clearData]);
 
-  // Load conversation from navigation state
+  // Update URL when thread_id changes from SSE (only for NEW conversations)
   useEffect(() => {
-    if (locationState?.threadId && locationState?.conversation) {
-      const { threadId: savedThreadId, conversation } = locationState;
+    // Only update URL if:
+    // 1. We have a threadId from SSE
+    // 2. There's NO threadId in the URL yet (new conversation)
+    // 3. We're not currently loading from URL
+    if (threadId && !urlThreadId && !isLoadingFromUrlRef.current) {
+      // Update URL without causing a navigation/reload
+      navigate(`/structured-outline/${threadId}`, { replace: true });
+    }
+  }, [threadId, urlThreadId, navigate]);
 
-      // Skip if we already loaded this conversation
-      if (loadedThreadIdRef.current === savedThreadId) {
+  // Load conversation from URL parameter
+  useEffect(() => {
+    const loadFromUrl = async () => {
+      if (!urlThreadId) {
+        // No thread ID in URL, this is a new conversation
+        loadedThreadIdRef.current = null;
         return;
       }
 
-      // Mark this conversation as loaded
-      loadedThreadIdRef.current = savedThreadId;
+      // Skip if we already loaded this conversation
+      if (loadedThreadIdRef.current === urlThreadId) {
+        return;
+      }
+
+      // Mark this conversation as being loaded FIRST
+      // This prevents the check above from running the load twice
+      loadedThreadIdRef.current = urlThreadId;
+      
+      // Mark that we're loading from URL to prevent URL update loop
+      isLoadingFromUrlRef.current = true;
 
       // Clear previous conversation data first
       setUserMessages([]);
       setOutlineHistory([]);
       setUserComment("");
 
-      // Set the thread ID to continue the conversation
-      setThreadId(savedThreadId);
+      try {
+        // Fetch conversation metadata
+        const conversation = await fetchConversation(urlThreadId);
+        
+        // Set the thread ID to continue the conversation
+        setThreadId(urlThreadId);
+        
+        // Reset flag after React finishes the render cycle
+        // This ensures the URL update effect sees the flag as true
+        setTimeout(() => {
+          isLoadingFromUrlRef.current = false;
+        }, 0);
 
-      // Populate form with saved data
-      setTopic(conversation.topic);
-      setNumberOfClasses(conversation.number_of_classes);
-      setHasStarted(true);
-
-      // Load conversation history (messages and outlines)
-      const loadHistory = async () => {
-        try {
-          const history = await fetchConversationHistory(savedThreadId);
-
-          // Parse messages to separate user messages and assistant outlines
-          const userMsgs: ConversationMessage[] = [];
-          const outlines: CourseOutline[] = [];
-          let firstUserComment = "";
-
-          history.messages.forEach((msg, index) => {
-            if (msg.role === "user") {
-              // User message - need to parse out the user's original comment
-              // Backend constructs messages as: "Create a course outline on '{topic}' with {number_of_classes} classes.\n{user_comment}\n\n"
-              let userComment = msg.content;
-
-              // Try to extract just the user comment by removing the generated prefix
-              const prefixPattern =
-                /^Create a course outline on .+ with \d+ classes\.\n/;
-              const match = userComment.match(prefixPattern);
-              if (match) {
-                // Remove the prefix to get just the user's comment
-                userComment = userComment.substring(match[0].length).trim();
-              }
-
-              // Remove file contents section if present
-              const fileContentsPattern = /\n\nUploaded files:[\s\S]*$/;
-              userComment = userComment.replace(fileContentsPattern, "").trim();
-
-              // Save the first user comment to populate the input field
-              if (index === 0 || userMsgs.length === 0) {
-                firstUserComment = userComment;
-              }
-
-              userMsgs.push({
-                id: `user-${index}`,
-                role: "user",
-                content: userComment,
-                timestamp: new Date(), // We don't have the original timestamp
-                topic: conversation.topic,
-                numberOfClasses: conversation.number_of_classes
-              });
-            } else if (msg.role === "assistant") {
-              // Assistant message - parse as CourseOutline
-              try {
-                const outline = JSON.parse(msg.content);
-                outlines.push(outline);
-              } catch (e) {
-                console.error(
-                  "Failed to parse assistant message as course outline:",
-                  e
-                );
-              }
-            }
-          });
-
-          setUserMessages(userMsgs);
-          setOutlineHistory(outlines);
-
-          // Set the initial user comment in the input field
-          if (firstUserComment) {
-            setUserComment(firstUserComment);
-          }
-        } catch (error) {
-          console.error("Failed to load conversation history:", error);
-          // Continue anyway with just the metadata
+        // Populate form with saved data
+        if ('topic' in conversation) {
+          setTopic(conversation.topic);
+          setNumberOfClasses(conversation.number_of_classes);
         }
-      };
+        setHasStarted(true);
 
-      loadHistory();
-    }
-  }, [locationState, setThreadId]);
+        // Load conversation history (messages and outlines)
+        const history = await fetchConversationHistory(urlThreadId);
+
+        // Parse messages to separate user messages and assistant outlines
+        const userMsgs: ConversationMessage[] = [];
+        const outlines: CourseOutline[] = [];
+        let firstUserComment = "";
+
+        history.messages.forEach((msg, index) => {
+          if (msg.role === "user") {
+            // User message - need to parse out the user's original comment
+            // Backend constructs messages as: "Create a course outline on '{topic}' with {number_of_classes} classes.\n{user_comment}\n\n"
+            let userComment = msg.content;
+
+            // Try to extract just the user comment by removing the generated prefix
+            const prefixPattern =
+              /^Create a course outline on .+ with \d+ classes\.\n/;
+            const match = userComment.match(prefixPattern);
+            if (match) {
+              // Remove the prefix to get just the user's comment
+              userComment = userComment.substring(match[0].length).trim();
+            }
+
+            // Remove file contents section if present
+            const fileContentsPattern = /\n\nUploaded files:[\s\S]*$/;
+            userComment = userComment.replace(fileContentsPattern, "").trim();
+
+            // Save the first user comment to populate the input field
+            if (index === 0 || userMsgs.length === 0) {
+              firstUserComment = userComment;
+            }
+
+            userMsgs.push({
+              id: `user-${index}`,
+              role: "user",
+              content: userComment,
+              timestamp: new Date(), // We don't have the original timestamp
+              topic: 'topic' in conversation ? conversation.topic : '',
+              numberOfClasses: 'number_of_classes' in conversation ? conversation.number_of_classes : 0
+            });
+          } else if (msg.role === "assistant") {
+            // Assistant message - parse as CourseOutline
+            try {
+              const outline = JSON.parse(msg.content);
+              outlines.push(outline);
+            } catch (e) {
+              console.error(
+                "Failed to parse assistant message as course outline:",
+                e
+              );
+            }
+          }
+        });
+
+        setUserMessages(userMsgs);
+        setOutlineHistory(outlines);
+
+        // Set the initial user comment in the input field
+        if (firstUserComment) {
+          setUserComment(firstUserComment);
+        }
+      } catch (error) {
+        console.error("Failed to load conversation from URL:", error);
+        // If conversation not found, redirect to new conversation
+        navigate('/structured-outline', { replace: true });
+        // Reset flag on error as well
+        setTimeout(() => {
+          isLoadingFromUrlRef.current = false;
+        }, 0);
+      }
+    };
+
+    loadFromUrl();
+  }, [urlThreadId, setThreadId, navigate]);
 
   // Handle initial form submission
   const handleInitialSubmit = async () => {
@@ -240,6 +272,9 @@ function StructuredOutlineGenerator() {
     setNumberOfClasses(COURSE_OUTLINE.DEFAULT_CLASSES);
     setUploadedFiles([]);
     loadedThreadIdRef.current = null; // Reset loaded thread tracking
+    
+    // Navigate to base URL for new conversation
+    navigate('/structured-outline', { replace: true });
   };
 
   const isGenerating =

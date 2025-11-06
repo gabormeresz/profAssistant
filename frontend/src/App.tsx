@@ -16,6 +16,10 @@ function App() {
           path="/structured-outline"
           element={<StructuredOutlineGenerator />}
         />
+        <Route
+          path="/structured-outline/:threadId"
+          element={<StructuredOutlineGenerator />}
+        />
 
         <Route path="/lesson-planner" element={<LessonPlanner />} />
       </Routes>

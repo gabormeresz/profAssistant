@@ -13,22 +13,16 @@ export default function SavedConversationItem({
   const navigate = useNavigate();
 
   const handleClick = () => {
-    // Navigate to the appropriate page based on conversation type
+    // Navigate to the appropriate page based on conversation type using URL params
     const routes: Record<string, string> = {
-      structured_outline: "/structured-outline",
-      markdown_outline: "/outline-generator",
-      lesson_plan: "/lesson-planner"
+      structured_outline: `/structured-outline/${conversation.thread_id}`,
+      markdown_outline: `/outline-generator/${conversation.thread_id}`,
+      lesson_plan: `/lesson-planner/${conversation.thread_id}`
     };
 
     const route = routes[conversation.conversation_type];
     if (route) {
-      // Pass the thread_id and conversation data via state
-      navigate(route, {
-        state: {
-          threadId: conversation.thread_id,
-          conversation
-        }
-      });
+      navigate(route);
     }
   };
 
