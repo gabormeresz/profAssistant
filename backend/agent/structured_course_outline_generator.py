@@ -12,6 +12,7 @@ from .tools import web_search
 from .model import model
 from dataclasses import dataclass
 import uuid
+from utils.context_builders import build_file_contents_message
 
 # Setup tools list
 tools = [web_search]
@@ -30,30 +31,49 @@ class CourseOutlineAgentState(AgentState):
 class Context:
     thread_id: str
 
-def build_system_prompt(topic: str, number_of_classes: int, file_contents: Optional[List[Dict[str, str]]]) -> str:
-    """Build a comprehensive system prompt for the agent."""
-    prompt_parts = [
-        "You are a helpful educational assistant.",
-        f"Please create a course outline on '{topic}' with {number_of_classes} classes.",
-        "You can use the available tools to gather more information any time."
-    ]
+def build_system_prompt() -> str:
+    """Build a simple system prompt for the agent."""
+    system_prompt = """
+    You are a helpful educational assistant that generate professional course outlines. 
+    Always stick to the topic and number of classes the user provided unless the user explicitly asks otherwise. 
+    If the user provides reference materials (file uploads), use them as a reference only and do not copy them verbatim.
+    Stick to the topic and number of classes even if the reference materials suggest otherwise,
+    however try to extract and use the content of the reference materials if relevant.
+    You can use the available tools to gather more information any time.
+    Generate a structured course outline following the provided schema with detailed information for each class.
+    """
+    return system_prompt
+
+def build_initial_user_message(topic: str, number_of_classes: int) -> str:
+    """Build the initial user message with topic and number of classes."""
+    return f"Please create a course outline on '{topic}' with {number_of_classes} classes."
+
+def build_user_message(is_first_call: bool, topic: str, number_of_classes: int, message: str, file_contents: List[Dict[str, str]] | None) -> Dict[str, str]:
+    """Build the user message dictionary."""
+    # Prepare messages
+    messages = ""
     
-    # Add file contents to the prompt if available
+    # On first call (no existing thread_id), add the topic and number of classes
+    if is_first_call:
+        initial_message = build_initial_user_message(
+            topic if topic else "general education",
+            number_of_classes if number_of_classes > 0 else 1
+        )
+        messages += f"{initial_message}\n"
+    
+    # Add user message if provided
+    if message and message.strip():
+        messages += f"{message}\n\n"
+
+    # Add file contents if provided
     if file_contents and len(file_contents) > 0:
-        prompt_parts.append("\n\n--- Reference Materials ---")
-        for file_info in file_contents:
-            filename = file_info.get("filename", "Unknown file")
-            content = file_info.get("content", "")
-            prompt_parts.append(f"\n\nFile: {filename}\n{content}")
-        prompt_parts.append("\n\nUse the above reference materials to inform the course outline.")
-    
-    return "\n".join(prompt_parts)
+        messages += f"{build_file_contents_message(file_contents)}\n"
+
+    return {"role": "user", "content": messages}
 
 def generate_thread_id(thread_id: str | None) -> str:
     """Generate or return existing thread ID."""
     return thread_id if thread_id else str(uuid.uuid4())
-
-
 
 async def run_structured_course_outline_generator(
     message: str, 
@@ -78,6 +98,8 @@ async def run_structured_course_outline_generator(
         Generator that yields progress updates, tool usage, and structured data
     """
     try:
+        # Determine if this is the first call
+        is_first_call = thread_id is None or not thread_id
         # Use existing thread ID or create a new one
         thread_id = generate_thread_id(thread_id)
         
@@ -85,14 +107,7 @@ async def run_structured_course_outline_generator(
         yield {"type": "thread_id", "thread_id": thread_id}
         
         # Build the system prompt with all the context
-        system_prompt = build_system_prompt(
-            topic if topic else "general education",
-            number_of_classes if number_of_classes > 0 else 1,
-            file_contents
-        )
-        
-        # Add structured output instruction
-        system_prompt += "\nGenerate a structured course outline following the provided schema with detailed information for each class."
+        system_prompt = build_system_prompt()
         
         # Create agent with structured output using response_format parameter
         current_agent = create_agent(
@@ -105,14 +120,17 @@ async def run_structured_course_outline_generator(
             response_format=CourseOutline  # This enables structured output!
         )
         
-        # Prepare messages - only add user message if provided
-        messages = []
-        if message and message.strip():
-            messages.append({"role": "user", "content": message})
+         # Build user message
+        user_message = build_user_message(
+            is_first_call,
+            topic,
+            number_of_classes,
+            message,
+            file_contents)
         
         # Prepare the initial state
         initial_state = {
-            "messages": messages,
+            "messages": user_message,
             "topic": topic if topic else "general education",
             "number_of_classes": number_of_classes if number_of_classes > 0 else 1,
             "file_contents": file_contents
