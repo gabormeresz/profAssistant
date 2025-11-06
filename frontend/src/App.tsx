@@ -14,11 +14,11 @@ function App() {
         <Route path="/outline-generator" element={<OutlineGenerator />} />
         <Route
           path="/structured-outline"
-          element={<StructuredOutlineGenerator />}
+          element={<StructuredOutlineGenerator key="new" />}
         />
         <Route
           path="/structured-outline/:threadId"
-          element={<StructuredOutlineGenerator />}
+          element={<StructuredOutlineGenerator key="existing" />}
         />
 
         <Route path="/lesson-planner" element={<LessonPlanner />} />
