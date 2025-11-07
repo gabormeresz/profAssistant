@@ -159,6 +159,8 @@ export const useStructuredSSE = (): UseStructuredSSEReturn => {
         if (error instanceof Error) {
           if (error.name === "AbortError") {
             console.log("Request aborted");
+            // Don't set error state for aborted requests
+            return null;
           } else {
             console.error("Error processing request:", error);
             setProgressMessage(`Error: ${error.message}`);
@@ -171,7 +173,9 @@ export const useStructuredSSE = (): UseStructuredSSEReturn => {
         setStreamingState("idle");
         return null;
       } finally {
-        abortControllerRef.current = null;
+        if (abortControllerRef.current) {
+          abortControllerRef.current = null;
+        }
       }
     },
     [threadId]

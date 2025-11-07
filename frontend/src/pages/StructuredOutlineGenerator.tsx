@@ -23,6 +23,13 @@ import {
 // ============================================================================
 
 /**
+ * Generates a unique ID for messages
+ */
+function generateMessageId(): string {
+  return `user-${crypto.randomUUID()}`;
+}
+
+/**
  * Extracts the user's original comment from a backend-constructed message.
  * Removes auto-generated prefix and file contents sections.
  */
@@ -52,7 +59,7 @@ function createUserMessage(
   metadata?: { topic?: string; numberOfClasses?: number }
 ): ConversationMessage {
   return {
-    id: `user-${Date.now()}`,
+    id: generateMessageId(),
     role: "user",
     content,
     timestamp: new Date(),
@@ -118,12 +125,19 @@ function StructuredOutlineGenerator() {
         (outline) => JSON.stringify(outline) === JSON.stringify(courseOutline)
       );
 
-      if (isDuplicate) return prev;
+      if (isDuplicate) {
+        // Clear data if it's a duplicate to prevent re-rendering
+        clearData();
+        return prev;
+      }
 
-      // Schedule cleanup after outline is added
-      setTimeout(() => clearData(), 100);
       return [...prev, courseOutline];
     });
+
+    // Clear data after adding to history (runs after state update)
+    const timeoutId = setTimeout(() => clearData(), 100);
+
+    return () => clearTimeout(timeoutId);
   }, [courseOutline, streamingState, clearData]);
 
   // Update URL when new thread is created

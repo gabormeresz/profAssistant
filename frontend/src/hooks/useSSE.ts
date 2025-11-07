@@ -151,6 +151,8 @@ export const useSSE = (url?: string): UseSSEReturn => {
         if (error instanceof Error) {
           if (error.name === "AbortError") {
             console.log("Request aborted");
+            // Don't set error state for aborted requests
+            return "";
           } else {
             console.error("Error processing request:", error);
             setCurrentMessage(`Error: ${error.message}`);
@@ -163,7 +165,9 @@ export const useSSE = (url?: string): UseSSEReturn => {
         setStreamingState("idle");
         return ""; // Return empty string on error
       } finally {
-        abortControllerRef.current = null;
+        if (abortControllerRef.current) {
+          abortControllerRef.current = null;
+        }
       }
     },
     [streamUrl, threadId, streamingState]
