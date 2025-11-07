@@ -1,7 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
-from agent.course_outline_generator import run_markdown_course_outline_generator
 from agent.structured_course_outline_generator import run_structured_course_outline_generator
 from utils.file_processor import file_processor
 from agent.prompt_enhancer import prompt_enhancer
@@ -25,56 +24,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-async def event_generator(message: str, topic: str, number_of_classes: int, thread_id: Optional[str], file_contents: List[dict]):
-    """
-    Generator function that yields Server-Sent Events (SSE) formatted data.
-    Uses proper SSE event types to separate metadata from content.
-    """
-    first_chunk = True
-    try:
-        async for chunk in run_markdown_course_outline_generator(message, topic, number_of_classes, thread_id, file_contents):
-            # First chunk contains the thread_id metadata
-            if first_chunk and chunk.startswith("__THREAD_ID__:"):
-                thread_id_value = chunk.replace("__THREAD_ID__:", "").strip()
-                # Send thread_id as a separate SSE event type
-                yield f"event: thread_id\ndata: {json.dumps({'thread_id': thread_id_value})}\n\n"
-                first_chunk = False
-            else:
-                # Regular content chunks
-                yield f"data: {json.dumps({'content': chunk})}\n\n"
-    except Exception as e:
-        yield f"data: {json.dumps({'error': str(e)})}\n\n"
-
-@app.post("/stream-outline")
-async def stream_lesson_plan(
-    message: str = Form(""),
-    topic: str = Form(...),
-    number_of_classes: int = Form(...),
-    thread_id: Optional[str] = Form(None),
-    files: Optional[List[UploadFile]] = File(None)
-):
-    """
-    Handle lesson plan generation with optional file uploads.
-    Returns a streaming SSE response.
-    """
-    file_contents = []
-    
-    # Process uploaded files if any
-    if files:
-        file_contents += await file_processor(files)
-    
-    # Return SSE stream
-    return StreamingResponse(
-        event_generator(message, topic, number_of_classes, thread_id, file_contents),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no"  # Disable buffering for nginx
-        }
-    )
-
 
 @app.post("/enhance-prompt")
 async def enhance_prompt(
@@ -137,7 +86,7 @@ async def structured_event_generator(
         yield f"event: error\ndata: {json.dumps({'message': str(e)})}\n\n"
 
 
-@app.post("/structured-outline")
+@app.post("/outline-generator")
 async def generate_structured_outline(
     message: str = Form(""),
     topic: str = Form(...),
@@ -222,7 +171,7 @@ async def update_conversation(thread_id: str, update: CourseOutlineUpdate):
         raise HTTPException(status_code=404, detail="Conversation not found")
     
     # Determine type and call appropriate update method
-    if existing.conversation_type in [ConversationType.STRUCTURED_OUTLINE, ConversationType.MARKDOWN_OUTLINE]:
+    if existing.conversation_type == ConversationType.COURSE_OUTLINE:
         updated = conversation_manager.update_course_outline(
             thread_id=thread_id,
             data=update

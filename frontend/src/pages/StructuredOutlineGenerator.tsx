@@ -146,7 +146,7 @@ function StructuredOutlineGenerator() {
       threadId && !urlThreadId && !isLoadingFromUrlRef.current;
 
     if (shouldUpdateUrl) {
-      navigate(`/structured-outline/${threadId}`, { replace: true });
+      navigate(`/outline-generator/${threadId}`, { replace: true });
     }
   }, [threadId, urlThreadId, navigate]);
 
@@ -223,7 +223,7 @@ function StructuredOutlineGenerator() {
         if (firstUserComment) setUserComment(firstUserComment);
       } catch (error) {
         console.error("Failed to load conversation:", error);
-        navigate("/structured-outline", { replace: true });
+        navigate("/outline-generator", { replace: true });
       } finally {
         // Reset loading flag after render cycle
         setTimeout(() => {
@@ -296,7 +296,7 @@ function StructuredOutlineGenerator() {
     loadedThreadIdRef.current = null;
 
     // Navigate to base route
-    navigate("/structured-outline", { replace: true });
+    navigate("/outline-generator", { replace: true });
   }, [resetThread, navigate]);
 
   // ============================================================================
@@ -313,7 +313,7 @@ function StructuredOutlineGenerator() {
 
   return (
     <Layout showSidebar onNewConversation={handleNewConversation}>
-      <Header title="Course Outline Generator (Structured Output)" />
+      <Header title="Course Outline Generator" />
       <ThreadStatus
         threadId={threadId}
         onNewConversation={handleNewConversation}

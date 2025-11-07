@@ -15,13 +15,8 @@ export default function Sidebar({ onNewConversation }: SidebarProps) {
   const navItems = [
     {
       path: "/outline-generator",
-      label: "Course Outline Generator - Streaming",
+      label: "Course Outline Generator",
       icon: "📝"
-    },
-    {
-      path: "/structured-outline",
-      label: "Course Outline Generator - Structured Output",
-      icon: "⚡"
     },
     {
       path: "/lesson-planner",

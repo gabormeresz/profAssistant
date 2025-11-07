@@ -9,10 +9,7 @@ export interface ConversationMessage {
 }
 
 // Saved conversation types matching backend schema
-export type ConversationType =
-  | "structured_outline"
-  | "markdown_outline"
-  | "lesson_plan";
+export type ConversationType = "course_outline" | "lesson_plan";
 
 export interface SavedConversationBase {
   thread_id: string;
@@ -24,7 +21,7 @@ export interface SavedConversationBase {
 }
 
 export interface SavedCourseOutline extends SavedConversationBase {
-  conversation_type: "structured_outline" | "markdown_outline";
+  conversation_type: "course_outline";
   topic: string;
   number_of_classes: number;
   difficulty_level?: string;

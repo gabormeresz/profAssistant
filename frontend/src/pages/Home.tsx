@@ -12,33 +12,17 @@ function Home() {
           </p>
 
           <div className="flex flex-col gap-4 max-w-md mx-auto">
-            <div className="mb-6">
-              <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-                Course Outline Generators
-              </h2>
-              <div className="flex flex-col gap-3">
-                <Link
-                  to="/outline-generator"
-                  className="block px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-md"
-                >
-                  📝 Course Outline - Streaming
-                  <span className="block text-sm text-blue-100 mt-1">
-                    See content as it's generated, conversational
-                  </span>
-                </Link>
-                <Link
-                  to="/structured-outline"
-                  className="block px-6 py-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-md"
-                >
-                  ⚡ Course Outline -Structured Output
-                  <span className="block text-sm text-green-100 mt-1">
-                    Beautiful cards, validated data, export-ready
-                  </span>
-                </Link>
-              </div>
-            </div>
+            <Link
+              to="/outline-generator"
+              className="block px-6 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium shadow-md"
+            >
+              📝 Course Outline Generator
+              <span className="block text-sm text-blue-100 mt-1">
+                Generate structured course outlines with AI assistance
+              </span>
+            </Link>
 
-            <div className="border-t border-gray-300 pt-6">
+            <div className="border-t border-gray-300 pt-6 mt-2">
               <Link
                 to="/lesson-planner"
                 className="block px-6 py-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium shadow-md"

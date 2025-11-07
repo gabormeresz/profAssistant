@@ -77,7 +77,7 @@ export const useStructuredSSE = (): UseStructuredSSEReturn => {
         }
 
         // Make SSE request to the structured endpoint
-        const response = await fetch(API_ENDPOINTS.STRUCTURED_OUTLINE, {
+        const response = await fetch(API_ENDPOINTS.OUTLINE_GENERATOR, {
           method: "POST",
           body: formData,
           signal: abortController.signal

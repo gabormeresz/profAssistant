@@ -183,7 +183,7 @@ class ConversationManager:
             conversation_type = ConversationType(conv_type)
             
             # Get type-specific data
-            if conversation_type in [ConversationType.STRUCTURED_OUTLINE, ConversationType.MARKDOWN_OUTLINE]:
+            if conversation_type == ConversationType.COURSE_OUTLINE:
                 cursor.execute("""
                     SELECT topic, number_of_classes, difficulty_level, target_audience
                     FROM course_outlines
@@ -272,7 +272,7 @@ class ConversationManager:
                 ct = ConversationType(conv_type)
                 
                 # Fetch type-specific data
-                if ct in [ConversationType.STRUCTURED_OUTLINE, ConversationType.MARKDOWN_OUTLINE]:
+                if ct == ConversationType.COURSE_OUTLINE:
                     cursor.execute("""
                         SELECT topic, number_of_classes, difficulty_level, target_audience
                         FROM course_outlines

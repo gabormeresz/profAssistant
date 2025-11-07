@@ -99,7 +99,7 @@ async def run_structured_course_outline_generator(
             title = f"{topic[:50]}..." if len(topic) > 50 else topic
             conversation_manager.create_course_outline(
                 thread_id=thread_id,
-                conversation_type=ConversationType.STRUCTURED_OUTLINE,
+                conversation_type=ConversationType.COURSE_OUTLINE,
                 data=CourseOutlineCreate(
                     title=title,
                     topic=topic,

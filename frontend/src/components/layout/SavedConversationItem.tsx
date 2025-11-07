@@ -15,8 +15,7 @@ export default function SavedConversationItem({
   const handleClick = () => {
     // Navigate to the appropriate page based on conversation type using URL params
     const routes: Record<string, string> = {
-      structured_outline: `/structured-outline/${conversation.thread_id}`,
-      markdown_outline: `/outline-generator/${conversation.thread_id}`,
+      course_outline: `/outline-generator/${conversation.thread_id}`,
       lesson_plan: `/lesson-planner/${conversation.thread_id}`
     };
 
@@ -52,9 +51,7 @@ export default function SavedConversationItem({
 
   const getIcon = () => {
     switch (conversation.conversation_type) {
-      case "structured_outline":
-        return "⚡";
-      case "markdown_outline":
+      case "course_outline":
         return "📝";
       case "lesson_plan":
         return "📚";
@@ -64,10 +61,7 @@ export default function SavedConversationItem({
   };
 
   const getSubtitle = () => {
-    if (
-      conversation.conversation_type === "structured_outline" ||
-      conversation.conversation_type === "markdown_outline"
-    ) {
+    if (conversation.conversation_type === "course_outline") {
       const outline = conversation as Extract<
         SavedConversation,
         { topic: string }

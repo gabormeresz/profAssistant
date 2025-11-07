@@ -10,8 +10,7 @@ from enum import Enum
 
 class ConversationType(str, Enum):
     """Types of conversations that can be saved."""
-    STRUCTURED_OUTLINE = "structured_outline"
-    MARKDOWN_OUTLINE = "markdown_outline"
+    COURSE_OUTLINE = "course_outline"
     LESSON_PLAN = "lesson_plan"
 
 
@@ -26,7 +25,7 @@ class ConversationBase(BaseModel):
 
 
 class CourseOutlineMetadata(ConversationBase):
-    """Metadata specific to course outline conversations (both structured and markdown)."""
+    """Metadata specific to course outline conversations."""
     topic: str = Field(..., description="The course topic")
     number_of_classes: int = Field(..., description="Number of classes in the course")
     difficulty_level: Optional[str] = Field(None, description="Difficulty level (beginner, intermediate, advanced)")
