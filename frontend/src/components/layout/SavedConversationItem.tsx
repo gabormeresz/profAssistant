@@ -4,11 +4,13 @@ import type { SavedConversation } from "../../types/conversation";
 interface SavedConversationItemProps {
   conversation: SavedConversation;
   onDelete?: (threadId: string) => void;
+  isActive?: boolean;
 }
 
 export default function SavedConversationItem({
   conversation,
-  onDelete
+  onDelete,
+  isActive = false
 }: SavedConversationItemProps) {
   const navigate = useNavigate();
 
@@ -80,13 +82,21 @@ export default function SavedConversationItem({
   return (
     <div
       onClick={handleClick}
-      className="group relative px-3 py-2 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+      className={`group relative px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+        isActive
+          ? "bg-blue-50 border-l-2 border-blue-600 pl-2.5"
+          : "hover:bg-gray-100"
+      }`}
     >
       <div className="flex items-start gap-2">
         <span className="text-lg flex-shrink-0 mt-0.5">{getIcon()}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
-            <h4 className="text-sm font-medium text-gray-900 truncate">
+            <h4
+              className={`text-sm font-medium truncate ${
+                isActive ? "text-blue-700" : "text-gray-900"
+              }`}
+            >
               {conversation.title}
             </h4>
             <button

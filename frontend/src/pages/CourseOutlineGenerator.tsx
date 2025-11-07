@@ -10,6 +10,7 @@ import {
   FollowUpInput,
   UserMessage
 } from "../components";
+import type { SidebarRef } from "../components";
 import { useCourseOutlineSSE } from "../hooks";
 import { COURSE_OUTLINE, UI_MESSAGES } from "../utils/constants";
 import type { CourseOutline, ConversationMessage } from "../types";
@@ -76,6 +77,7 @@ function createUserMessage(
 function CourseOutlineGenerator() {
   const { threadId: urlThreadId } = useParams<{ threadId?: string }>();
   const navigate = useNavigate();
+  const sidebarRef = useRef<SidebarRef>(null);
 
   // ============================================================================
   // State Management
@@ -147,6 +149,8 @@ function CourseOutlineGenerator() {
 
     if (shouldUpdateUrl) {
       navigate(`/outline-generator/${threadId}`, { replace: true });
+      // Trigger sidebar refetch when a new conversation is created
+      sidebarRef.current?.refetchConversations();
     }
   }, [threadId, urlThreadId, navigate]);
 
@@ -312,7 +316,11 @@ function CourseOutlineGenerator() {
     hasStarted && (streamingState === "complete" || streamingState === "idle");
 
   return (
-    <Layout showSidebar onNewConversation={handleNewConversation}>
+    <Layout
+      ref={sidebarRef}
+      showSidebar
+      onNewConversation={handleNewConversation}
+    >
       <Header title="Course Outline Generator" />
       <ThreadStatus
         threadId={threadId}
