@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
-from agent.structured_course_outline_generator import run_structured_course_outline_generator
+from agent.course_outline_generator import run_course_outline_generator
 from utils.file_processor import file_processor
 from agent.prompt_enhancer import prompt_enhancer
 from services.conversation_manager import conversation_manager
@@ -51,7 +51,7 @@ async def enhance_prompt(
         )
 
 
-async def structured_event_generator(
+async def course_outline_event_generator(
     message: str, 
     topic: str, 
     number_of_classes: int, 
@@ -63,7 +63,7 @@ async def structured_event_generator(
     Yields progress updates and the final structured course outline.
     """
     try:
-        async for event in run_structured_course_outline_generator(message, topic, number_of_classes, thread_id, file_contents):
+        async for event in run_course_outline_generator(message, topic, number_of_classes, thread_id, file_contents):
             if isinstance(event, dict):
                 event_type = event.get("type", "data")
                 
@@ -87,7 +87,7 @@ async def structured_event_generator(
 
 
 @app.post("/outline-generator")
-async def generate_structured_outline(
+async def generate_course_outline(
     message: str = Form(""),
     topic: str = Form(...),
     number_of_classes: int = Form(...),
@@ -95,7 +95,7 @@ async def generate_structured_outline(
     files: Optional[List[UploadFile]] = File(None)
 ):
     """
-    Handle lesson plan generation with structured output and optional file uploads.
+    Handle course outline generation with structured output and optional file uploads.
     Returns a streaming SSE response with progress updates and structured data.
     """
     file_contents = []
@@ -106,7 +106,7 @@ async def generate_structured_outline(
     
     # Return SSE stream
     return StreamingResponse(
-        structured_event_generator(message, topic, number_of_classes, thread_id, file_contents),
+        course_outline_event_generator(message, topic, number_of_classes, thread_id, file_contents),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

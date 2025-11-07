@@ -10,7 +10,7 @@ import {
   FollowUpInput,
   UserMessage
 } from "../components";
-import { useStructuredSSE } from "../hooks";
+import { useCourseOutlineSSE } from "../hooks";
 import { COURSE_OUTLINE, UI_MESSAGES } from "../utils/constants";
 import type { CourseOutline, ConversationMessage } from "../types";
 import {
@@ -73,7 +73,7 @@ function createUserMessage(
 // Component
 // ============================================================================
 
-function StructuredOutlineGenerator() {
+function CourseOutlineGenerator() {
   const { threadId: urlThreadId } = useParams<{ threadId?: string }>();
   const navigate = useNavigate();
 
@@ -109,7 +109,7 @@ function StructuredOutlineGenerator() {
     resetThread,
     setThreadId,
     clearData
-  } = useStructuredSSE();
+  } = useCourseOutlineSSE();
 
   // ============================================================================
   // Effects
@@ -376,4 +376,4 @@ function StructuredOutlineGenerator() {
   );
 }
 
-export default StructuredOutlineGenerator;
+export default CourseOutlineGenerator;

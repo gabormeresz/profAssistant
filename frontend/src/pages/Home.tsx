@@ -18,7 +18,7 @@ function Home() {
             >
               📝 Course Outline Generator
               <span className="block text-sm text-blue-100 mt-1">
-                Generate structured course outlines with AI assistance
+                Generate comprehensive course outlines with AI assistance
               </span>
             </Link>
 

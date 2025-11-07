@@ -1,3 +1,3 @@
 export { useExport } from "./useExport";
-export { useStructuredSSE } from "./useStructuredSSE";
+export { useCourseOutlineSSE } from "./useCourseOutlineSSE";
 export { useSavedConversations } from "./useSavedConversations";

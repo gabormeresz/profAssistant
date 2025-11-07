@@ -62,7 +62,7 @@ def generate_thread_id(thread_id: str | None) -> str:
     """Generate or return existing thread ID."""
     return thread_id if thread_id else str(uuid.uuid4())
 
-async def run_structured_course_outline_generator(
+async def run_course_outline_generator(
     message: str, 
     topic: str = "general education", 
     number_of_classes: int = 1, 
@@ -70,14 +70,14 @@ async def run_structured_course_outline_generator(
     file_contents: List[Dict[str, str]] | None = None
 ):
     """
-    Run the LangChain agent with structured output using CourseOutline schema.
+    Run the course outline generator with structured output using CourseOutline schema.
     Uses tools, memory, and shows progress updates including tool usage.
     Returns the complete structured output at the end.
     
     Args:
         message: The main user message/prompt (optional additional context)
-        topic: The topic/subject for the lesson plan
-        number_of_classes: Number of classes in the lesson plan
+        topic: The topic/subject for the course outline
+        number_of_classes: Number of classes in the course outline
         thread_id: Optional thread ID for conversation continuity. If None, creates a new one.
         file_contents: Optional list of file contents with filename and content
     

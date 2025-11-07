@@ -41,7 +41,7 @@ class ConversationManager:
             )
         """)
         
-        # Course outline specific table (for both structured and markdown outlines)
+        # Course outline specific table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS course_outlines (
                 thread_id TEXT PRIMARY KEY,

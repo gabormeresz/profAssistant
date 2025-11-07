@@ -6,7 +6,7 @@ import type {
   CourseOutline
 } from "../types";
 
-interface UseStructuredSSEReturn {
+interface UseCourseOutlineSSEReturn {
   courseOutline: CourseOutline | null;
   progressMessage: string;
   loading: boolean;
@@ -18,7 +18,7 @@ interface UseStructuredSSEReturn {
   setThreadId: (id: string | null) => void;
 }
 
-export const useStructuredSSE = (): UseStructuredSSEReturn => {
+export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
   const [courseOutline, setCourseOutline] = useState<CourseOutline | null>(
     null
   );
