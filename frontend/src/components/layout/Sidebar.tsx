@@ -1,9 +1,14 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSavedConversations } from "../../hooks";
 import SavedConversationItem from "./SavedConversationItem";
 
-export default function Sidebar() {
+interface SidebarProps {
+  onNewConversation?: () => void;
+}
+
+export default function Sidebar({ onNewConversation }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { conversations, isLoading, error, deleteConversation } =
     useSavedConversations();
 
@@ -25,15 +30,36 @@ export default function Sidebar() {
     }
   ];
 
+  // Extract base path once for reuse
+  const currentBasePath = "/" + location.pathname.split("/")[1];
+
+  const handleNavClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    path: string
+  ) => {
+    const isOnSamePage = currentBasePath === path;
+
+    if (isOnSamePage) {
+      e.preventDefault();
+      // If we have a handleNewConversation function, call it
+      if (onNewConversation) {
+        onNewConversation();
+      }
+      // Navigate to the base path (without threadId)
+      navigate(path, { replace: true });
+    }
+  };
+
   return (
     <aside className="w-78 bg-white border-r border-gray-200 min-h-screen p-4 flex flex-col">
       <nav className="space-y-2">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = currentBasePath === item.path;
           return (
             <Link
               key={item.path}
               to={item.path}
+              onClick={(e) => handleNavClick(e, item.path)}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                 isActive
                   ? "bg-blue-50 text-blue-700 font-medium"

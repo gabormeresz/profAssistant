@@ -4,13 +4,18 @@ import Sidebar from "./Sidebar";
 interface LayoutProps {
   children: ReactNode;
   showSidebar?: boolean;
+  onNewConversation?: () => void;
 }
 
-export default function Layout({ children, showSidebar = false }: LayoutProps) {
+export default function Layout({
+  children,
+  showSidebar = false,
+  onNewConversation
+}: LayoutProps) {
   if (showSidebar) {
     return (
       <div className="min-h-screen bg-gray-50 flex">
-        <Sidebar />
+        <Sidebar onNewConversation={onNewConversation} />
         <main className="flex-1 p-6">
           <div className="max-w-5xl mx-auto">{children}</div>
         </main>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Layout,
@@ -18,9 +18,61 @@ import {
   fetchConversationHistory
 } from "../services/conversationService";
 
+// ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * Extracts the user's original comment from a backend-constructed message.
+ * Removes auto-generated prefix and file contents sections.
+ */
+function extractUserComment(content: string): string {
+  let cleanedContent = content;
+
+  // Remove auto-generated prefix: "Create a course outline on 'Topic' with N classes.\n"
+  const prefixPattern = /^Create a course outline on .+ with \d+ classes\.\n/;
+  const match = cleanedContent.match(prefixPattern);
+  if (match) {
+    cleanedContent = cleanedContent.substring(match[0].length);
+  }
+
+  // Remove file contents section if present
+  const fileContentsPattern = /\n\nUploaded files:[\s\S]*$/;
+  cleanedContent = cleanedContent.replace(fileContentsPattern, "");
+
+  return cleanedContent.trim();
+}
+
+/**
+ * Creates a ConversationMessage object from user data
+ */
+function createUserMessage(
+  content: string,
+  files?: File[],
+  metadata?: { topic?: string; numberOfClasses?: number }
+): ConversationMessage {
+  return {
+    id: `user-${Date.now()}`,
+    role: "user",
+    content,
+    timestamp: new Date(),
+    files: files?.map((f) => ({ name: f.name, size: f.size })),
+    topic: metadata?.topic || "",
+    numberOfClasses: metadata?.numberOfClasses || 0
+  };
+}
+
+// ============================================================================
+// Component
+// ============================================================================
+
 function StructuredOutlineGenerator() {
   const { threadId: urlThreadId } = useParams<{ threadId?: string }>();
   const navigate = useNavigate();
+
+  // ============================================================================
+  // State Management
+  // ============================================================================
 
   // Form state
   const [userComment, setUserComment] = useState("");
@@ -30,17 +82,16 @@ function StructuredOutlineGenerator() {
   );
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
-  // Store all course outlines from conversation
+  // Conversation history
   const [outlineHistory, setOutlineHistory] = useState<CourseOutline[]>([]);
   const [userMessages, setUserMessages] = useState<ConversationMessage[]>([]);
   const [hasStarted, setHasStarted] = useState(false);
 
-  // Track which conversation was last loaded to prevent stale data
+  // Refs to prevent duplicate loading and URL update loops
   const loadedThreadIdRef = useRef<string | null>(null);
-  // Track if we're loading from URL to prevent URL update loops
   const isLoadingFromUrlRef = useRef(false);
 
-  // Structured SSE hook
+  // SSE streaming hook
   const {
     courseOutline,
     progressMessage,
@@ -53,164 +104,128 @@ function StructuredOutlineGenerator() {
     clearData
   } = useStructuredSSE();
 
-  // When a new outline is generated and streaming is complete, add it to history and clear
+  // ============================================================================
+  // Effects
+  // ============================================================================
+
+  // Auto-add completed outlines to history
   useEffect(() => {
-    if (courseOutline && streamingState === "complete") {
-      setOutlineHistory((prev) => {
-        // Check if this outline is already in the history to avoid duplicates
-        const isAlreadyInHistory = prev.some(
-          (outline) => JSON.stringify(outline) === JSON.stringify(courseOutline)
-        );
+    if (!courseOutline || streamingState !== "complete") return;
 
-        if (isAlreadyInHistory) {
-          return prev;
-        }
+    setOutlineHistory((prev) => {
+      // Prevent duplicates by checking if outline already exists
+      const isDuplicate = prev.some(
+        (outline) => JSON.stringify(outline) === JSON.stringify(courseOutline)
+      );
 
-        // Add the new outline and clear the SSE state
-        setTimeout(() => clearData(), 100);
-        return [...prev, courseOutline];
-      });
-    }
+      if (isDuplicate) return prev;
+
+      // Schedule cleanup after outline is added
+      setTimeout(() => clearData(), 100);
+      return [...prev, courseOutline];
+    });
   }, [courseOutline, streamingState, clearData]);
 
-  // Update URL when thread_id changes from SSE (only for NEW conversations)
+  // Update URL when new thread is created
   useEffect(() => {
-    // Only update URL if:
-    // 1. We have a threadId from SSE
-    // 2. There's NO threadId in the URL yet (new conversation)
-    // 3. We're not currently loading from URL
-    if (threadId && !urlThreadId && !isLoadingFromUrlRef.current) {
-      // Update URL without causing a navigation/reload
+    const shouldUpdateUrl =
+      threadId && !urlThreadId && !isLoadingFromUrlRef.current;
+
+    if (shouldUpdateUrl) {
       navigate(`/structured-outline/${threadId}`, { replace: true });
     }
   }, [threadId, urlThreadId, navigate]);
 
-  // Load conversation from URL parameter
+  // Load conversation from URL
   useEffect(() => {
-    const loadFromUrl = async () => {
-      if (!urlThreadId) {
-        // No thread ID in URL, this is a new conversation
-        loadedThreadIdRef.current = null;
+    const loadConversation = async () => {
+      // Exit early if no thread ID or already loaded
+      if (!urlThreadId || loadedThreadIdRef.current === urlThreadId) {
+        if (!urlThreadId) loadedThreadIdRef.current = null;
         return;
       }
 
-      // Skip if we already loaded this conversation
-      if (loadedThreadIdRef.current === urlThreadId) {
-        return;
-      }
-
-      // Mark this conversation as being loaded FIRST
-      // This prevents the check above from running the load twice
+      // Mark as loaded and prevent URL updates during load
       loadedThreadIdRef.current = urlThreadId;
-
-      // Mark that we're loading from URL to prevent URL update loop
       isLoadingFromUrlRef.current = true;
 
-      // Clear previous conversation data first
+      // Clear previous data
       setUserMessages([]);
       setOutlineHistory([]);
       setUserComment("");
 
       try {
-        // Fetch conversation metadata
-        const conversation = await fetchConversation(urlThreadId);
+        // Fetch metadata and history
+        const [conversation, history] = await Promise.all([
+          fetchConversation(urlThreadId),
+          fetchConversationHistory(urlThreadId)
+        ]);
 
-        // Set the thread ID to continue the conversation
+        // Set thread ID for continuation
         setThreadId(urlThreadId);
 
-        // Reset flag after React finishes the render cycle
-        // This ensures the URL update effect sees the flag as true
-        setTimeout(() => {
-          isLoadingFromUrlRef.current = false;
-        }, 0);
-
-        // Populate form with saved data
+        // Restore form state
         if ("topic" in conversation) {
           setTopic(conversation.topic);
           setNumberOfClasses(conversation.number_of_classes);
         }
         setHasStarted(true);
 
-        // Load conversation history (messages and outlines)
-        const history = await fetchConversationHistory(urlThreadId);
-
-        // Parse messages to separate user messages and assistant outlines
+        // Parse message history
         const userMsgs: ConversationMessage[] = [];
         const outlines: CourseOutline[] = [];
         let firstUserComment = "";
 
-        history.messages.forEach((msg, index) => {
+        history.messages.forEach((msg) => {
           if (msg.role === "user") {
-            // User message - need to parse out the user's original comment
-            // Backend constructs messages as: "Create a course outline on '{topic}' with {number_of_classes} classes.\n{user_comment}\n\n"
-            let userComment = msg.content;
+            const cleanedComment = extractUserComment(msg.content);
 
-            // Try to extract just the user comment by removing the generated prefix
-            const prefixPattern =
-              /^Create a course outline on .+ with \d+ classes\.\n/;
-            const match = userComment.match(prefixPattern);
-            if (match) {
-              // Remove the prefix to get just the user's comment
-              userComment = userComment.substring(match[0].length).trim();
+            // Store first comment for input field
+            if (userMsgs.length === 0) {
+              firstUserComment = cleanedComment;
             }
 
-            // Remove file contents section if present
-            const fileContentsPattern = /\n\nUploaded files:[\s\S]*$/;
-            userComment = userComment.replace(fileContentsPattern, "").trim();
-
-            // Save the first user comment to populate the input field
-            if (index === 0 || userMsgs.length === 0) {
-              firstUserComment = userComment;
-            }
-
-            userMsgs.push({
-              id: `user-${index}`,
-              role: "user",
-              content: userComment,
-              timestamp: new Date(), // We don't have the original timestamp
-              topic: "topic" in conversation ? conversation.topic : "",
-              numberOfClasses:
-                "number_of_classes" in conversation
-                  ? conversation.number_of_classes
-                  : 0
-            });
+            userMsgs.push(
+              createUserMessage(cleanedComment, undefined, {
+                topic: "topic" in conversation ? conversation.topic : "",
+                numberOfClasses:
+                  "number_of_classes" in conversation
+                    ? conversation.number_of_classes
+                    : 0
+              })
+            );
           } else if (msg.role === "assistant") {
-            // Assistant message - parse as CourseOutline
             try {
-              const outline = JSON.parse(msg.content);
-              outlines.push(outline);
+              outlines.push(JSON.parse(msg.content));
             } catch (e) {
-              console.error(
-                "Failed to parse assistant message as course outline:",
-                e
-              );
+              console.error("Failed to parse course outline:", e);
             }
           }
         });
 
+        // Update state
         setUserMessages(userMsgs);
         setOutlineHistory(outlines);
-
-        // Set the initial user comment in the input field
-        if (firstUserComment) {
-          setUserComment(firstUserComment);
-        }
+        if (firstUserComment) setUserComment(firstUserComment);
       } catch (error) {
-        console.error("Failed to load conversation from URL:", error);
-        // If conversation not found, redirect to new conversation
+        console.error("Failed to load conversation:", error);
         navigate("/structured-outline", { replace: true });
-        // Reset flag on error as well
+      } finally {
+        // Reset loading flag after render cycle
         setTimeout(() => {
           isLoadingFromUrlRef.current = false;
         }, 0);
       }
     };
 
-    loadFromUrl();
+    loadConversation();
   }, [urlThreadId, setThreadId, navigate]);
 
-  // Handle initial form submission
-  const handleInitialSubmit = async () => {
+  // ============================================================================
+  // Event Handlers
+  // ============================================================================
+
+  const handleInitialSubmit = useCallback(async () => {
     if (!topic.trim()) {
       alert(UI_MESSAGES.EMPTY_TOPIC);
       return;
@@ -218,57 +233,44 @@ function StructuredOutlineGenerator() {
 
     setHasStarted(true);
 
-    // Add user message
-    const userMessage: ConversationMessage = {
-      id: `user-${Date.now()}`,
-      role: "user",
-      content: userComment,
-      timestamp: new Date(),
-      files: uploadedFiles?.map((f) => ({ name: f.name, size: f.size })),
+    // Add user message to history
+    const userMessage = createUserMessage(userComment, uploadedFiles, {
       topic,
       numberOfClasses
-    };
+    });
     setUserMessages((prev) => [...prev, userMessage]);
 
-    // Send to backend
+    // Send to backend (outline will be added via useEffect)
     await sendMessage({
       message: userComment,
       topic,
       number_of_classes: numberOfClasses,
       files: uploadedFiles
     });
+  }, [topic, userComment, uploadedFiles, numberOfClasses, sendMessage]);
 
-    // Note: The outline will be automatically added to outlineHistory via useEffect
-  };
+  const handleFollowUpSubmit = useCallback(
+    async (message: string, files: File[]) => {
+      if (!message.trim() && files.length === 0) return;
 
-  // Handle follow-up messages
-  const handleFollowUpSubmit = async (message: string, files: File[]) => {
-    if (!message.trim() && files.length === 0) return;
+      // Add user message to history
+      const userMessage = createUserMessage(message, files);
+      setUserMessages((prev) => [...prev, userMessage]);
 
-    // Add user message
-    const userMessage: ConversationMessage = {
-      id: `user-${Date.now()}`,
-      role: "user",
-      content: message,
-      timestamp: new Date(),
-      files: files?.map((f) => ({ name: f.name, size: f.size }))
-    };
-    setUserMessages((prev) => [...prev, userMessage]);
+      // Send to backend (outline will be added via useEffect)
+      await sendMessage({
+        message,
+        topic,
+        number_of_classes: numberOfClasses,
+        thread_id: threadId || undefined,
+        files
+      });
+    },
+    [topic, numberOfClasses, threadId, sendMessage]
+  );
 
-    // Send to backend with the same thread
-    await sendMessage({
-      message,
-      topic,
-      number_of_classes: numberOfClasses,
-      thread_id: threadId || undefined,
-      files
-    });
-
-    // Note: The outline will be automatically added to outlineHistory via useEffect
-  };
-
-  // Handle new conversation
-  const handleNewConversation = () => {
+  const handleNewConversation = useCallback(() => {
+    // Reset all state
     resetThread();
     setOutlineHistory([]);
     setUserMessages([]);
@@ -277,19 +279,26 @@ function StructuredOutlineGenerator() {
     setTopic("");
     setNumberOfClasses(COURSE_OUTLINE.DEFAULT_CLASSES);
     setUploadedFiles([]);
-    loadedThreadIdRef.current = null; // Reset loaded thread tracking
+    loadedThreadIdRef.current = null;
 
-    // Navigate to base URL for new conversation
+    // Navigate to base route
     navigate("/structured-outline", { replace: true });
-  };
+  }, [resetThread, navigate]);
+
+  // ============================================================================
+  // Render
+  // ============================================================================
 
   const isGenerating =
     loading ||
     streamingState === "streaming" ||
     streamingState === "connecting";
 
+  const showFollowUpInput =
+    hasStarted && (streamingState === "complete" || streamingState === "idle");
+
   return (
-    <Layout showSidebar>
+    <Layout showSidebar onNewConversation={handleNewConversation}>
       <Header title="Course Outline Generator (Structured Output)" />
       <ThreadStatus
         threadId={threadId}
@@ -343,13 +352,12 @@ function StructuredOutlineGenerator() {
       />
 
       {/* Follow-up input */}
-      {hasStarted &&
-        (streamingState === "complete" || streamingState === "idle") && (
-          <FollowUpInput
-            onSubmit={handleFollowUpSubmit}
-            streamingState={streamingState}
-          />
-        )}
+      {showFollowUpInput && (
+        <FollowUpInput
+          onSubmit={handleFollowUpSubmit}
+          streamingState={streamingState}
+        />
+      )}
     </Layout>
   );
 }
