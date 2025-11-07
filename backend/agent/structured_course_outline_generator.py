@@ -12,7 +12,6 @@ from .tools import web_search
 from .model import model
 from dataclasses import dataclass
 import uuid
-import aiosqlite
 from utils.context_builders import build_file_contents_message
 from services.conversation_manager import conversation_manager
 
@@ -50,11 +49,11 @@ def build_user_message(is_first_call: bool, topic: str, number_of_classes: int, 
         messages += f"Create a course outline on '{topic}' with {number_of_classes} classes.\n"
     
     # Add user message if provided
-    if message and message.strip():
+    if message.strip():
         messages += f"{message}\n\n"
 
     # Add file contents if provided
-    if file_contents and len(file_contents) > 0:
+    if file_contents:
         messages += f"{build_file_contents_message(file_contents)}\n"
 
     return {"role": "user", "content": messages}
@@ -87,7 +86,7 @@ async def run_structured_course_outline_generator(
     """
     try:
         # Determine if this is the first call
-        is_first_call = thread_id is None or not thread_id
+        is_first_call = thread_id is None
         # Use existing thread ID or create a new one
         thread_id = generate_thread_id(thread_id)
         
@@ -135,8 +134,8 @@ async def run_structured_course_outline_generator(
             # Prepare the initial state
             initial_state = {
                 "messages": user_message,
-                "topic": topic if topic else "general education",
-                "number_of_classes": number_of_classes if number_of_classes > 0 else 1,
+                "topic": topic,
+                "number_of_classes": number_of_classes,
                 "file_contents": file_contents
             }
             
@@ -153,8 +152,7 @@ async def run_structured_course_outline_generator(
             # Yield progress update
             yield {"type": "progress", "message": "Generating course outline..."}
             
-            # Track tool usage and collect the agent's structured response
-            tool_calls_made = False
+            # Track the agent's structured response
             final_result = None
             
             # Stream events from the agent to show progress and tool usage
@@ -168,7 +166,6 @@ async def run_structured_course_outline_generator(
                 
                 # Detect tool calls
                 if kind == "on_tool_start":
-                    tool_calls_made = True
                     tool_name = event.get("name", "unknown tool")
                     yield {"type": "progress", "message": f"Using tool: {tool_name}"}
                 
@@ -188,7 +185,7 @@ async def run_structured_course_outline_generator(
                         elif isinstance(structured_response, dict):
                             final_result = structured_response
                     # Fallback: check messages for structured content
-                    elif "messages" in output and len(output["messages"]) > 0:
+                    elif "messages" in output and output["messages"]:
                         last_message = output["messages"][-1]
                         if hasattr(last_message, "content"):
                             content = last_message.content
