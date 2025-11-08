@@ -136,8 +136,6 @@ function LessonPlanner() {
       );
 
       if (isDuplicate) {
-        // Clear data if it's a duplicate to prevent re-rendering
-        clearData();
         return prev;
       }
 
