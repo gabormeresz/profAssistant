@@ -56,17 +56,14 @@ function extractUserComment(content: string): string {
  */
 function createUserMessage(
   content: string,
-  files?: File[],
-  metadata?: { topic?: string; numberOfClasses?: number }
+  files?: File[]
 ): ConversationMessage {
   return {
     id: generateMessageId(),
     role: "user",
     content,
     timestamp: new Date(),
-    files: files?.map((f) => ({ name: f.name, size: f.size })),
-    topic: metadata?.topic || "",
-    numberOfClasses: metadata?.numberOfClasses || 0
+    files: files?.map((f) => ({ name: f.name, size: f.size }))
   };
 }
 
@@ -203,15 +200,7 @@ function CourseOutlineGenerator() {
               firstUserComment = cleanedComment;
             }
 
-            userMsgs.push(
-              createUserMessage(cleanedComment, undefined, {
-                topic: "topic" in conversation ? conversation.topic : "",
-                numberOfClasses:
-                  "number_of_classes" in conversation
-                    ? conversation.number_of_classes
-                    : 0
-              })
-            );
+            userMsgs.push(createUserMessage(cleanedComment));
           } else if (msg.role === "assistant") {
             try {
               outlines.push(JSON.parse(msg.content));
@@ -252,10 +241,7 @@ function CourseOutlineGenerator() {
     setHasStarted(true);
 
     // Add user message to history
-    const userMessage = createUserMessage(userComment, uploadedFiles, {
-      topic,
-      numberOfClasses
-    });
+    const userMessage = createUserMessage(userComment, uploadedFiles);
     setUserMessages((prev) => [...prev, userMessage]);
 
     // Send to backend (outline will be added via useEffect)
@@ -347,8 +333,8 @@ function CourseOutlineGenerator() {
       <div className="space-y-6">
         {userMessages.map((userMsg, index) => (
           <div key={userMsg.id}>
-            {/* User message */}
-            <UserMessage message={userMsg} />
+            {/* User message - skip first message as it's visible in the initial form */}
+            {index > 0 && <UserMessage message={userMsg} />}
 
             {/* Corresponding assistant response (course outline) */}
             {outlineHistory[index] && (

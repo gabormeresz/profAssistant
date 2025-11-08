@@ -4,8 +4,6 @@ export interface ConversationMessage {
   content: string;
   timestamp: Date;
   files?: { name: string; size: number }[];
-  topic?: string;
-  numberOfClasses?: number;
 }
 
 // Saved conversation types matching backend schema

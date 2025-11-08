@@ -424,8 +424,8 @@ function LessonPlanner() {
       <div className="space-y-6">
         {userMessages.map((userMsg, index) => (
           <div key={userMsg.id}>
-            {/* User message */}
-            <UserMessage message={userMsg} />
+            {/* User message - skip first message as it's visible in the initial form */}
+            {index > 0 && <UserMessage message={userMsg} />}
 
             {/* Corresponding assistant response (lesson plan) */}
             {lessonHistory[index] && (

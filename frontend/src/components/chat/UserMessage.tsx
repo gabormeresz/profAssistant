@@ -16,28 +16,9 @@ export default function UserMessage({ message }: UserMessageProps) {
       {/* Message Content */}
       <div className="flex-1 text-right text-m">
         <div className="inline-block max-w-[85%] rounded-lg p-4 bg-blue-600 text-white">
-          {/* Initial parameters for first message */}
-          {message.topic && message.numberOfClasses && (
-            <>
-              <div className="mb-3 pb-3 border-b border-blue-400">
-                <p className="font-bold">Topic</p>
-                <p>{message.topic}</p>
-              </div>
-              <div className="mb-3 pb-3 border-b border-blue-400">
-                <p className="font-bold">Classes</p>
-                <p>{message.numberOfClasses}</p>
-              </div>
-            </>
-          )}
-
           {/* Message content */}
           {message.content && (
             <div>
-              {/* Appears only in the first message */}
-              {message.topic && message.numberOfClasses && (
-                <p className="font-bold">Comment</p>
-              )}
-
               <p className="whitespace-pre-wrap">{message.content}</p>
             </div>
           )}
