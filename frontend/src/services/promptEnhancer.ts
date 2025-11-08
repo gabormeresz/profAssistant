@@ -11,8 +11,15 @@ export async function enhancePrompt(
 ): Promise<EnhancePromptResponse> {
   const formData = new FormData();
   formData.append("message", data.message);
-  formData.append("topic", data.topic);
-  formData.append("num_classes", data.numberOfClasses.toString());
+  formData.append("context_type", data.contextType);
+
+  // Add additional context if provided
+  if (data.additionalContext) {
+    formData.append(
+      "additional_context",
+      JSON.stringify(data.additionalContext)
+    );
+  }
 
   const response = await fetch(API_ENDPOINTS.ENHANCE_PROMPT, {
     method: "POST",

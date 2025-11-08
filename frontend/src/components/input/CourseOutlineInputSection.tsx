@@ -96,8 +96,11 @@ export default function CourseOutlineInputSection({
           {/* Prompt Enhancer */}
           <PromptEnhancer
             message={userComment}
-            topic={topic}
-            numberOfClasses={numberOfClasses}
+            contextType="course_outline"
+            additionalContext={{
+              topic: topic,
+              num_classes: numberOfClasses
+            }}
             onMessageChange={setUserComment}
           />
         </div>

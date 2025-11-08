@@ -5,24 +5,22 @@ import { PROMPT_ENHANCEMENT } from "../../utils/constants";
 
 interface PromptEnhancerProps {
   message: string;
-  topic: string;
-  numberOfClasses: number;
+  contextType: "course_outline" | "lesson_plan";
+  additionalContext?: Record<string, unknown>;
   onMessageChange: (message: string) => void;
 }
 
 export default function PromptEnhancer({
   message,
-  topic,
-  numberOfClasses,
+  contextType,
+  additionalContext,
   onMessageChange
 }: PromptEnhancerProps) {
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [error, setError] = useState("");
 
   const isDisabled =
-    isEnhancing ||
-    message.trim().length < PROMPT_ENHANCEMENT.MIN_LENGTH ||
-    !topic.trim();
+    isEnhancing || message.trim().length < PROMPT_ENHANCEMENT.MIN_LENGTH;
 
   const handleEnhance = async () => {
     setIsEnhancing(true);
@@ -31,8 +29,8 @@ export default function PromptEnhancer({
     try {
       const result = await enhancePrompt({
         message,
-        topic,
-        numberOfClasses
+        contextType,
+        additionalContext
       });
 
       if (result.error) {

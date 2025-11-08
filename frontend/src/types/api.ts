@@ -24,8 +24,8 @@ export interface LessonPlanRequest {
 
 export interface EnhancePromptRequest {
   message: string;
-  topic: string;
-  numberOfClasses: number;
+  contextType: "course_outline" | "lesson_plan";
+  additionalContext?: Record<string, unknown>;
 }
 
 export interface EnhancePromptResponse {

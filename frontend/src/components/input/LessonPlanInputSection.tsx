@@ -319,8 +319,14 @@ export function LessonPlanInputSection({
         {/* Prompt Enhancer */}
         <PromptEnhancer
           message={userComment}
-          topic={courseTitle}
-          numberOfClasses={1}
+          contextType="lesson_plan"
+          additionalContext={{
+            topic: courseTitle,
+            class_title: classTitle,
+            learning_objectives: learningObjectives.filter((obj) => obj.trim()),
+            key_topics: keyTopics.filter((topic) => topic.trim()),
+            activities_projects: activitiesProjects.filter((act) => act.trim())
+          }}
           onMessageChange={setUserComment}
         />
       </div>

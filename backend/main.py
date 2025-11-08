@@ -29,20 +29,46 @@ app.add_middleware(
 @app.post("/enhance-prompt")
 async def enhance_prompt(
     message: str = Form(...),
-    topic: str = Form(...),
-    num_classes: int = Form(...),
+    context_type: str = Form("course_outline"),
+    additional_context: Optional[str] = Form(None),
 ):
     """
-    Enhance the user's prompt to provide better instructions for course outline generation.
+    Enhance the user's prompt to provide better instructions for educational content generation.
+    
+    Args:
+        message: The user's message/instructions to enhance
+        context_type: Type of content being generated ("course_outline" or "lesson_plan")
+        additional_context: JSON string with context-specific fields:
+            - For course_outline: topic, num_classes
+            - For lesson_plan: topic, class_title, learning_objectives, key_topics, activities_projects
     """
     try:
-        if not message.strip() or not topic.strip() or not num_classes:
+        if not message.strip():
             return JSONResponse(
-                content={"error": "Message, topic, and number of classes are required"},
+                content={"error": "Message is required"},
                 status_code=400
             )
+        
+        # Validate context_type
+        valid_contexts = ["course_outline", "lesson_plan"]
+        if context_type not in valid_contexts:
+            return JSONResponse(
+                content={"error": f"Invalid context_type. Must be one of: {', '.join(valid_contexts)}"},
+                status_code=400
+            )
+        
+        # Parse additional_context if provided
+        context_dict = None
+        if additional_context:
+            try:
+                context_dict = json.loads(additional_context)
+            except json.JSONDecodeError:
+                return JSONResponse(
+                    content={"error": "Invalid JSON in additional_context"},
+                    status_code=400
+                )
 
-        enhanced = await prompt_enhancer(message, topic, num_classes)
+        enhanced = await prompt_enhancer(message, context_type, context_dict)
         return JSONResponse(content={"enhanced_prompt": enhanced})
     
     except Exception as e:
