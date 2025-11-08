@@ -50,6 +50,7 @@ class ConversationManager:
                 number_of_classes INTEGER NOT NULL,
                 difficulty_level TEXT,
                 target_audience TEXT,
+                user_comment TEXT,
                 FOREIGN KEY (thread_id) REFERENCES conversations (thread_id) ON DELETE CASCADE
             )
         """)
@@ -64,6 +65,7 @@ class ConversationManager:
                 learning_objectives TEXT,
                 key_topics TEXT,
                 activities_projects TEXT,
+                user_comment TEXT,
                 FOREIGN KEY (thread_id) REFERENCES conversations (thread_id) ON DELETE CASCADE
             )
         """)
@@ -94,9 +96,9 @@ class ConversationManager:
             # Insert into course_outlines table
             cursor.execute("""
                 INSERT INTO course_outlines
-                (thread_id, topic, number_of_classes, difficulty_level, target_audience)
-                VALUES (?, ?, ?, ?, ?)
-            """, (thread_id, data.topic, data.number_of_classes, data.difficulty_level, data.target_audience))
+                (thread_id, topic, number_of_classes, difficulty_level, target_audience, user_comment)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (thread_id, data.topic, data.number_of_classes, data.difficulty_level, data.target_audience, data.user_comment))
             
             conn.commit()
             
@@ -108,6 +110,7 @@ class ConversationManager:
                 number_of_classes=data.number_of_classes,
                 difficulty_level=data.difficulty_level,
                 target_audience=data.target_audience,
+                user_comment=data.user_comment,
                 created_at=datetime.fromisoformat(now),
                 updated_at=datetime.fromisoformat(now),
                 message_count=0
@@ -143,10 +146,10 @@ class ConversationManager:
             # Insert into lesson_plans table
             cursor.execute("""
                 INSERT INTO lesson_plans
-                (thread_id, course_title, class_number, class_title, learning_objectives, key_topics, activities_projects)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                (thread_id, course_title, class_number, class_title, learning_objectives, key_topics, activities_projects, user_comment)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """, (thread_id, data.course_title, data.class_number, data.class_title, 
-                  learning_objectives_json, key_topics_json, activities_projects_json))
+                  learning_objectives_json, key_topics_json, activities_projects_json, data.user_comment))
             
             conn.commit()
             
@@ -160,6 +163,7 @@ class ConversationManager:
                 learning_objectives=data.learning_objectives,
                 key_topics=data.key_topics,
                 activities_projects=data.activities_projects,
+                user_comment=data.user_comment,
                 created_at=datetime.fromisoformat(now),
                 updated_at=datetime.fromisoformat(now),
                 message_count=0
@@ -194,7 +198,7 @@ class ConversationManager:
             # Get type-specific data
             if conversation_type == ConversationType.COURSE_OUTLINE:
                 cursor.execute("""
-                    SELECT topic, number_of_classes, difficulty_level, target_audience
+                    SELECT topic, number_of_classes, difficulty_level, target_audience, user_comment
                     FROM course_outlines
                     WHERE thread_id = ?
                 """, (thread_id,))
@@ -211,6 +215,7 @@ class ConversationManager:
                     number_of_classes=outline_row[1],
                     difficulty_level=outline_row[2],
                     target_audience=outline_row[3],
+                    user_comment=outline_row[4],
                     created_at=datetime.fromisoformat(created_at),
                     updated_at=datetime.fromisoformat(updated_at),
                     message_count=message_count
@@ -218,7 +223,7 @@ class ConversationManager:
             
             elif conversation_type == ConversationType.LESSON_PLAN:
                 cursor.execute("""
-                    SELECT course_title, class_number, class_title, learning_objectives, key_topics, activities_projects
+                    SELECT course_title, class_number, class_title, learning_objectives, key_topics, activities_projects, user_comment
                     FROM lesson_plans
                     WHERE thread_id = ?
                 """, (thread_id,))
@@ -242,6 +247,7 @@ class ConversationManager:
                     learning_objectives=learning_objectives,
                     key_topics=key_topics,
                     activities_projects=activities_projects,
+                    user_comment=lesson_row[6],
                     created_at=datetime.fromisoformat(created_at),
                     updated_at=datetime.fromisoformat(updated_at),
                     message_count=message_count
@@ -289,7 +295,7 @@ class ConversationManager:
                 # Fetch type-specific data
                 if ct == ConversationType.COURSE_OUTLINE:
                     cursor.execute("""
-                        SELECT topic, number_of_classes, difficulty_level, target_audience
+                        SELECT topic, number_of_classes, difficulty_level, target_audience, user_comment
                         FROM course_outlines
                         WHERE thread_id = ?
                     """, (thread_id,))
@@ -304,6 +310,7 @@ class ConversationManager:
                             number_of_classes=outline_row[1],
                             difficulty_level=outline_row[2],
                             target_audience=outline_row[3],
+                            user_comment=outline_row[4],
                             created_at=datetime.fromisoformat(created_at),
                             updated_at=datetime.fromisoformat(updated_at),
                             message_count=message_count
@@ -311,7 +318,7 @@ class ConversationManager:
                 
                 elif ct == ConversationType.LESSON_PLAN:
                     cursor.execute("""
-                        SELECT course_title, class_number, class_title, learning_objectives, key_topics, activities_projects
+                        SELECT course_title, class_number, class_title, learning_objectives, key_topics, activities_projects, user_comment
                         FROM lesson_plans
                         WHERE thread_id = ?
                     """, (thread_id,))
@@ -333,6 +340,7 @@ class ConversationManager:
                             learning_objectives=learning_objectives,
                             key_topics=key_topics,
                             activities_projects=activities_projects,
+                            user_comment=lesson_row[6],
                             created_at=datetime.fromisoformat(created_at),
                             updated_at=datetime.fromisoformat(updated_at),
                             message_count=message_count

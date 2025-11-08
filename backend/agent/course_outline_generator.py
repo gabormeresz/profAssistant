@@ -103,7 +103,8 @@ async def run_course_outline_generator(
                 data=CourseOutlineCreate(
                     title=title,
                     topic=topic,
-                    number_of_classes=number_of_classes
+                    number_of_classes=number_of_classes,
+                    user_comment=message if message.strip() else None
                 )
             )
         else:

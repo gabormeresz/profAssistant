@@ -30,6 +30,7 @@ class CourseOutlineMetadata(ConversationBase):
     number_of_classes: int = Field(..., description="Number of classes in the course")
     difficulty_level: Optional[str] = Field(None, description="Difficulty level (beginner, intermediate, advanced)")
     target_audience: Optional[str] = Field(None, description="Target audience for the course")
+    user_comment: Optional[str] = Field(None, description="The user's original comment/instruction")
 
 
 class LessonPlanMetadata(ConversationBase):
@@ -40,6 +41,7 @@ class LessonPlanMetadata(ConversationBase):
     learning_objectives: List[str] = Field(default_factory=list, description="List of learning objectives")
     key_topics: List[str] = Field(default_factory=list, description="List of key topics covered")
     activities_projects: List[str] = Field(default_factory=list, description="List of activities and projects")
+    user_comment: Optional[str] = Field(None, description="The user's original comment/instruction")
 
 
 # Union type for all conversation metadata types
@@ -52,6 +54,7 @@ class CourseOutlineCreate(BaseModel):
     number_of_classes: int
     difficulty_level: Optional[str] = None
     target_audience: Optional[str] = None
+    user_comment: Optional[str] = None
 
 
 class LessonPlanCreate(BaseModel):
@@ -63,6 +66,7 @@ class LessonPlanCreate(BaseModel):
     learning_objectives: List[str]
     key_topics: List[str]
     activities_projects: List[str]
+    user_comment: Optional[str] = None
 
 
 class CourseOutlineUpdate(BaseModel):

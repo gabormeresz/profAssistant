@@ -123,6 +123,7 @@ async def run_structured_lesson_plan_generator(
                     learning_objectives=learning_objectives,
                     key_topics=key_topics,
                     activities_projects=activities_projects,
+                    user_comment=message if message.strip() else None
                 )
             )
         else:

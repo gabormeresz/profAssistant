@@ -189,8 +189,16 @@ function LessonPlanner() {
         setThreadId(urlThreadId);
 
         // Restore form state
-        if ("lesson_title" in conversation) {
-          setClassTitle(conversation.lesson_title);
+        if ("class_title" in conversation) {
+          setClassTitle(conversation.class_title);
+          setCourseTitle(conversation.course_title);
+          setClassNumber(conversation.class_number);
+          setLearningObjectives(conversation.learning_objectives);
+          setKeyTopics(conversation.key_topics);
+          setActivitiesProjects(conversation.activities_projects);
+          if (conversation.user_comment) {
+            setUserComment(conversation.user_comment);
+          }
         }
         setHasStarted(true);
 
@@ -200,6 +208,7 @@ function LessonPlanner() {
 
         history.messages.forEach((msg) => {
           if (msg.role === "user") {
+            // Just use the content as is for history display (not for the input field)
             userMsgs.push(createUserMessage(msg.content));
           } else if (msg.role === "assistant") {
             try {

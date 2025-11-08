@@ -24,15 +24,18 @@ export interface SavedCourseOutline extends SavedConversationBase {
   number_of_classes: number;
   difficulty_level?: string;
   target_audience?: string;
+  user_comment?: string;
 }
 
 export interface SavedLessonPlan extends SavedConversationBase {
   conversation_type: "lesson_plan";
-  lesson_title: string;
-  subject: string;
-  grade_level?: string;
-  duration_minutes?: number;
-  learning_objectives?: string;
+  course_title: string;
+  class_number: number;
+  class_title: string;
+  learning_objectives: string[];
+  key_topics: string[];
+  activities_projects: string[];
+  user_comment?: string;
 }
 
 export type SavedConversation = SavedCourseOutline | SavedLessonPlan;

@@ -181,23 +181,19 @@ function CourseOutlineGenerator() {
         if ("topic" in conversation) {
           setTopic(conversation.topic);
           setNumberOfClasses(conversation.number_of_classes);
+          if (conversation.user_comment) {
+            setUserComment(conversation.user_comment);
+          }
         }
         setHasStarted(true);
 
         // Parse message history
         const userMsgs: ConversationMessage[] = [];
         const outlines: CourseOutline[] = [];
-        let firstUserComment = "";
 
         history.messages.forEach((msg) => {
           if (msg.role === "user") {
             const cleanedComment = extractUserComment(msg.content);
-
-            // Store first comment for input field
-            if (userMsgs.length === 0) {
-              firstUserComment = cleanedComment;
-            }
-
             userMsgs.push(createUserMessage(cleanedComment));
           } else if (msg.role === "assistant") {
             try {
@@ -211,7 +207,6 @@ function CourseOutlineGenerator() {
         // Update state
         setUserMessages(userMsgs);
         setOutlineHistory(outlines);
-        if (firstUserComment) setUserComment(firstUserComment);
       } catch (error) {
         console.error("Failed to load conversation:", error);
         navigate("/outline-generator", { replace: true });
