@@ -44,13 +44,11 @@ export interface ConversationListResponse {
   total: number;
 }
 
-export interface ConversationHistoryMessage {
-  role: string;
-  content: string;
-}
-
 export interface ConversationHistoryResponse {
   thread_id: string;
-  messages: ConversationHistoryMessage[];
+  messages: {
+    role: string;
+    content: string;
+  }[];
   metadata: SavedConversation;
 }
