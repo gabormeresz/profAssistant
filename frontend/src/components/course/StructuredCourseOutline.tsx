@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { CourseOutline } from "../../types";
+import { useExport } from "../../hooks";
+import { courseOutlineToMarkdown } from "../../utils";
 
 interface StructuredCourseOutlineProps {
   outline: CourseOutline;
@@ -9,6 +11,15 @@ export function StructuredCourseOutline({
   outline
 }: StructuredCourseOutlineProps) {
   const navigate = useNavigate();
+  const { exportToDocx } = useExport();
+
+  const handleExport = async () => {
+    const markdown = courseOutlineToMarkdown(outline);
+    const filename = `${outline.course_title
+      .replace(/\s+/g, "_")
+      .toLowerCase()}_outline.docx`;
+    await exportToDocx(markdown, { filename });
+  };
 
   const handleCreateLessonPlan = (courseClass: (typeof outline.classes)[0]) => {
     navigate("/lesson-planner", {
@@ -26,9 +37,34 @@ export function StructuredCourseOutline({
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       {/* Course Title */}
-      <h1 className="text-3xl font-bold text-gray-900 mb-8 border-b-2 border-blue-500 pb-3">
-        {outline.course_title}
-      </h1>
+      <div className="border-b-2 border-blue-500 pb-3 mb-8">
+        <div className="flex items-baseline gap-3">
+          <h1 className="text-3xl font-bold text-gray-900 flex-1">
+            {outline.course_title}
+          </h1>
+          <button
+            onClick={handleExport}
+            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+            title="Export course outline to DOCX"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
+            Export to DOCX
+          </button>
+        </div>
+      </div>
 
       {/* Classes */}
       <div className="space-y-8">
