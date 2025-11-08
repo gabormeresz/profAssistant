@@ -2,8 +2,7 @@ export { enhancePrompt } from "./promptEnhancer";
 export {
   fetchConversations,
   fetchConversation,
-  deleteConversation,
-  updateConversation
+  deleteConversation
 } from "./conversationService";
 
 // Re-export types for convenience

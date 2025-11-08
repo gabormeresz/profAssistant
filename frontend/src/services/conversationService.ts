@@ -90,31 +90,3 @@ export async function fetchConversationHistory(
 
   return response.json();
 }
-
-/**
- * Update conversation metadata
- */
-export async function updateConversation(
-  threadId: string,
-  updates: Partial<{
-    title: string;
-    topic: string;
-    number_of_classes: number;
-    difficulty_level: string;
-    target_audience: string;
-  }>
-): Promise<SavedConversation> {
-  const response = await fetch(`${API_BASE_URL}/conversations/${threadId}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(updates)
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to update conversation: ${response.statusText}`);
-  }
-
-  return response.json();
-}

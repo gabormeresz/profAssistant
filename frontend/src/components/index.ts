@@ -3,12 +3,7 @@ export { Header, Layout } from "./layout";
 export type { SidebarRef } from "./layout";
 
 // Chat components
-export {
-  ConversationView,
-  ChatMessage,
-  UserMessage,
-  AssistantMessage
-} from "./chat";
+export { UserMessage } from "./chat";
 
 // Input components
 export {
@@ -20,7 +15,7 @@ export {
 } from "./input";
 
 // UI components
-export { Indicator, ThreadStatus, ProgressIndicator } from "./ui";
+export { ThreadStatus, ProgressIndicator } from "./ui";
 
 // Course components
 export { StructuredCourseOutline } from "./course";
