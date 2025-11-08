@@ -10,7 +10,7 @@ export function StructuredCourseOutline({
 }: StructuredCourseOutlineProps) {
   const navigate = useNavigate();
 
-  const handleCreateLessonPlan = (courseClass: typeof outline.classes[0]) => {
+  const handleCreateLessonPlan = (courseClass: (typeof outline.classes)[0]) => {
     navigate("/lesson-planner", {
       state: {
         courseTitle: outline.course_title,

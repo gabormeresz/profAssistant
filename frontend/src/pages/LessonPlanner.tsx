@@ -319,13 +319,9 @@ function LessonPlanner() {
       if (!message.trim() && files.length === 0) return;
 
       // Filter out empty strings from arrays
-      const filteredObjectives = learningObjectives.filter((obj) =>
-        obj.trim()
-      );
+      const filteredObjectives = learningObjectives.filter((obj) => obj.trim());
       const filteredTopics = keyTopics.filter((topic) => topic.trim());
-      const filteredActivities = activitiesProjects.filter((act) =>
-        act.trim()
-      );
+      const filteredActivities = activitiesProjects.filter((act) => act.trim());
 
       // Add user message to history
       const userMessage = createUserMessage(message, files);

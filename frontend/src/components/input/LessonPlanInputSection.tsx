@@ -139,12 +139,15 @@ export function LessonPlanInputSection({
         <div className="flex justify-between items-center mb-2">
           <label className="block text-sm font-medium text-gray-700">
             Learning Objectives ({LESSON_PLAN.MIN_OBJECTIVES}-
-            {LESSON_PLAN.MAX_OBJECTIVES}) <span className="text-red-500">*</span>
+            {LESSON_PLAN.MAX_OBJECTIVES}){" "}
+            <span className="text-red-500">*</span>
           </label>
           {learningObjectives.length < LESSON_PLAN.MAX_OBJECTIVES && (
             <button
               type="button"
-              onClick={() => addArrayItem(learningObjectives, setLearningObjectives)}
+              onClick={() =>
+                addArrayItem(learningObjectives, setLearningObjectives)
+              }
               className="text-sm text-green-600 hover:text-green-700 font-medium"
             >
               + Add Objective
@@ -172,7 +175,11 @@ export function LessonPlanInputSection({
                 <button
                   type="button"
                   onClick={() =>
-                    removeArrayItem(index, learningObjectives, setLearningObjectives)
+                    removeArrayItem(
+                      index,
+                      learningObjectives,
+                      setLearningObjectives
+                    )
                   }
                   className="px-3 py-2 text-red-600 hover:text-red-700 font-medium"
                 >
@@ -208,7 +215,12 @@ export function LessonPlanInputSection({
                 type="text"
                 value={topic}
                 onChange={(e) =>
-                  handleArrayChange(index, e.target.value, keyTopics, setKeyTopics)
+                  handleArrayChange(
+                    index,
+                    e.target.value,
+                    keyTopics,
+                    setKeyTopics
+                  )
                 }
                 placeholder={`Key topic ${index + 1}`}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -216,7 +228,9 @@ export function LessonPlanInputSection({
               {keyTopics.length > LESSON_PLAN.MIN_TOPICS && (
                 <button
                   type="button"
-                  onClick={() => removeArrayItem(index, keyTopics, setKeyTopics)}
+                  onClick={() =>
+                    removeArrayItem(index, keyTopics, setKeyTopics)
+                  }
                   className="px-3 py-2 text-red-600 hover:text-red-700 font-medium"
                 >
                   ✕
@@ -232,12 +246,15 @@ export function LessonPlanInputSection({
         <div className="flex justify-between items-center mb-2">
           <label className="block text-sm font-medium text-gray-700">
             Activities & Projects ({LESSON_PLAN.MIN_ACTIVITIES}-
-            {LESSON_PLAN.MAX_ACTIVITIES}) <span className="text-red-500">*</span>
+            {LESSON_PLAN.MAX_ACTIVITIES}){" "}
+            <span className="text-red-500">*</span>
           </label>
           {activitiesProjects.length < LESSON_PLAN.MAX_ACTIVITIES && (
             <button
               type="button"
-              onClick={() => addArrayItem(activitiesProjects, setActivitiesProjects)}
+              onClick={() =>
+                addArrayItem(activitiesProjects, setActivitiesProjects)
+              }
               className="text-sm text-green-600 hover:text-green-700 font-medium"
             >
               + Add Activity
@@ -265,7 +282,11 @@ export function LessonPlanInputSection({
                 <button
                   type="button"
                   onClick={() =>
-                    removeArrayItem(index, activitiesProjects, setActivitiesProjects)
+                    removeArrayItem(
+                      index,
+                      activitiesProjects,
+                      setActivitiesProjects
+                    )
                   }
                   className="px-3 py-2 text-red-600 hover:text-red-700 font-medium"
                 >
@@ -297,10 +318,7 @@ export function LessonPlanInputSection({
 
       {/* File Upload */}
       <div className="mb-6">
-        <FileUpload
-          files={uploadedFiles}
-          onFilesChange={setUploadedFiles}
-        />
+        <FileUpload files={uploadedFiles} onFilesChange={setUploadedFiles} />
       </div>
 
       {/* Submit Button */}

@@ -1,10 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { API_ENDPOINTS } from "../utils/constants";
-import type {
-  LessonPlanRequest,
-  StreamingState,
-  LessonPlan
-} from "../types";
+import type { LessonPlanRequest, StreamingState, LessonPlan } from "../types";
 
 interface UseLessonPlanSSEReturn {
   lessonPlan: LessonPlan | null;
@@ -63,9 +59,15 @@ export const useLessonPlanSSE = (): UseLessonPlanSSEReturn => {
         formData.append("course_title", data.course_title);
         formData.append("class_number", data.class_number.toString());
         formData.append("class_title", data.class_title);
-        formData.append("learning_objectives", JSON.stringify(data.learning_objectives));
+        formData.append(
+          "learning_objectives",
+          JSON.stringify(data.learning_objectives)
+        );
         formData.append("key_topics", JSON.stringify(data.key_topics));
-        formData.append("activities_projects", JSON.stringify(data.activities_projects));
+        formData.append(
+          "activities_projects",
+          JSON.stringify(data.activities_projects)
+        );
 
         if (threadId) {
           formData.append("thread_id", threadId);
