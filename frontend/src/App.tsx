@@ -12,6 +12,10 @@ function App() {
           element={<CourseOutlineGenerator />}
         />
         <Route path="/lesson-planner" element={<LessonPlanner />} />
+        <Route
+          path="/lesson-planner/:threadId"
+          element={<LessonPlanner />}
+        />
       </Routes>
     </Router>
   );

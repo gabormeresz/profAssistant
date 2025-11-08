@@ -4,7 +4,7 @@ Uses a base table + type-specific tables approach for flexibility.
 """
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Optional, Union
+from typing import Optional, Union, List
 from enum import Enum
 
 
@@ -34,20 +34,16 @@ class CourseOutlineMetadata(ConversationBase):
 
 class LessonPlanMetadata(ConversationBase):
     """Metadata specific to lesson plan conversations."""
-    lesson_title: str = Field(..., description="Title of the lesson")
-    subject: str = Field(..., description="Subject area")
-    grade_level: Optional[str] = Field(None, description="Grade level or educational level")
-    duration_minutes: Optional[int] = Field(None, description="Planned lesson duration in minutes")
-    learning_objectives: Optional[str] = Field(None, description="Key learning objectives")
+    course_title: str = Field(..., description="Title of the course")
+    class_number: int = Field(..., description="The class number in the course sequence")
+    class_title: str = Field(..., description="Title of the class")
+    learning_objectives: List[str] = Field(default_factory=list, description="List of learning objectives")
+    key_topics: List[str] = Field(default_factory=list, description="List of key topics covered")
+    activities_projects: List[str] = Field(default_factory=list, description="List of activities and projects")
 
 
 # Union type for all conversation metadata types
 ConversationMetadata = Union[CourseOutlineMetadata, LessonPlanMetadata]
-
-
-# Union type for all conversation metadata types
-ConversationMetadata = Union[CourseOutlineMetadata, LessonPlanMetadata]
-
 
 class CourseOutlineCreate(BaseModel):
     """Request model for creating a course outline conversation."""
@@ -61,11 +57,12 @@ class CourseOutlineCreate(BaseModel):
 class LessonPlanCreate(BaseModel):
     """Request model for creating a lesson plan conversation."""
     title: str
-    lesson_title: str
-    subject: str
-    grade_level: Optional[str] = None
-    duration_minutes: Optional[int] = None
-    learning_objectives: Optional[str] = None
+    course_title: str
+    class_number: int
+    class_title: str
+    learning_objectives: List[str]
+    key_topics: List[str]
+    activities_projects: List[str]
 
 
 class CourseOutlineUpdate(BaseModel):
@@ -80,11 +77,12 @@ class CourseOutlineUpdate(BaseModel):
 class LessonPlanUpdate(BaseModel):
     """Request model for updating lesson plan metadata."""
     title: Optional[str] = None
-    lesson_title: Optional[str] = None
-    subject: Optional[str] = None
-    grade_level: Optional[str] = None
-    duration_minutes: Optional[int] = None
-    learning_objectives: Optional[str] = None
+    course_title: Optional[str] = None
+    class_number: Optional[int] = None
+    class_title: Optional[str] = None
+    learning_objectives: Optional[List[str]] = None
+    key_topics: Optional[List[str]] = None
+    activities_projects: Optional[List[str]] = None
 
 
 class ConversationList(BaseModel):

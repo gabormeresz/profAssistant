@@ -3,6 +3,7 @@ Service for managing conversation metadata and persistence.
 Uses a multi-table schema: base conversations table + type-specific tables.
 """
 import sqlite3
+import json
 from typing import List, Optional, Union
 from datetime import datetime
 from schemas.conversation import (
@@ -57,11 +58,12 @@ class ConversationManager:
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS lesson_plans (
                 thread_id TEXT PRIMARY KEY,
-                lesson_title TEXT NOT NULL,
-                subject TEXT NOT NULL,
-                grade_level TEXT,
-                duration_minutes INTEGER,
+                course_title TEXT NOT NULL,
+                class_number INTEGER NOT NULL,
+                class_title TEXT NOT NULL,
                 learning_objectives TEXT,
+                key_topics TEXT,
+                activities_projects TEXT,
                 FOREIGN KEY (thread_id) REFERENCES conversations (thread_id) ON DELETE CASCADE
             )
         """)
@@ -116,6 +118,7 @@ class ConversationManager:
     def create_lesson_plan(
         self,
         thread_id: str,
+        conversation_type: ConversationType,
         data: LessonPlanCreate
     ) -> LessonPlanMetadata:
         """Create a new lesson plan conversation."""
@@ -130,15 +133,20 @@ class ConversationManager:
                 INSERT INTO conversations 
                 (thread_id, conversation_type, title, created_at, updated_at, message_count)
                 VALUES (?, ?, ?, ?, ?, ?)
-            """, (thread_id, ConversationType.LESSON_PLAN.value, data.title, now, now, 0))
+            """, (thread_id, conversation_type.value, data.title, now, now, 0))
+            
+            # Serialize lists to JSON strings for storage
+            learning_objectives_json = json.dumps(data.learning_objectives)
+            key_topics_json = json.dumps(data.key_topics)
+            activities_projects_json = json.dumps(data.activities_projects)
             
             # Insert into lesson_plans table
             cursor.execute("""
                 INSERT INTO lesson_plans
-                (thread_id, lesson_title, subject, grade_level, duration_minutes, learning_objectives)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (thread_id, data.lesson_title, data.subject, data.grade_level, 
-                  data.duration_minutes, data.learning_objectives))
+                (thread_id, course_title, class_number, class_title, learning_objectives, key_topics, activities_projects)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (thread_id, data.course_title, data.class_number, data.class_title, 
+                  learning_objectives_json, key_topics_json, activities_projects_json))
             
             conn.commit()
             
@@ -146,11 +154,12 @@ class ConversationManager:
                 thread_id=thread_id,
                 conversation_type=ConversationType.LESSON_PLAN,
                 title=data.title,
-                lesson_title=data.lesson_title,
-                subject=data.subject,
-                grade_level=data.grade_level,
-                duration_minutes=data.duration_minutes,
+                course_title=data.course_title,
+                class_number=data.class_number,
+                class_title=data.class_title,
                 learning_objectives=data.learning_objectives,
+                key_topics=data.key_topics,
+                activities_projects=data.activities_projects,
                 created_at=datetime.fromisoformat(now),
                 updated_at=datetime.fromisoformat(now),
                 message_count=0
@@ -209,7 +218,7 @@ class ConversationManager:
             
             elif conversation_type == ConversationType.LESSON_PLAN:
                 cursor.execute("""
-                    SELECT lesson_title, subject, grade_level, duration_minutes, learning_objectives
+                    SELECT course_title, class_number, class_title, learning_objectives, key_topics, activities_projects
                     FROM lesson_plans
                     WHERE thread_id = ?
                 """, (thread_id,))
@@ -218,15 +227,21 @@ class ConversationManager:
                 if not lesson_row:
                     return None
                 
+                # Deserialize JSON strings back to lists
+                learning_objectives = json.loads(lesson_row[3]) if lesson_row[3] else []
+                key_topics = json.loads(lesson_row[4]) if lesson_row[4] else []
+                activities_projects = json.loads(lesson_row[5]) if lesson_row[5] else []
+                
                 return LessonPlanMetadata(
                     thread_id=thread_id,
                     conversation_type=conversation_type,
                     title=title,
-                    lesson_title=lesson_row[0],
-                    subject=lesson_row[1],
-                    grade_level=lesson_row[2],
-                    duration_minutes=lesson_row[3],
-                    learning_objectives=lesson_row[4],
+                    course_title=lesson_row[0],
+                    class_number=lesson_row[1],
+                    class_title=lesson_row[2],
+                    learning_objectives=learning_objectives,
+                    key_topics=key_topics,
+                    activities_projects=activities_projects,
                     created_at=datetime.fromisoformat(created_at),
                     updated_at=datetime.fromisoformat(updated_at),
                     message_count=message_count
@@ -296,22 +311,28 @@ class ConversationManager:
                 
                 elif ct == ConversationType.LESSON_PLAN:
                     cursor.execute("""
-                        SELECT lesson_title, subject, grade_level, duration_minutes, learning_objectives
+                        SELECT course_title, class_number, class_title, learning_objectives, key_topics, activities_projects
                         FROM lesson_plans
                         WHERE thread_id = ?
                     """, (thread_id,))
                     
                     lesson_row = cursor.fetchone()
                     if lesson_row:
+                        # Deserialize JSON strings back to lists
+                        learning_objectives = json.loads(lesson_row[3]) if lesson_row[3] else []
+                        key_topics = json.loads(lesson_row[4]) if lesson_row[4] else []
+                        activities_projects = json.loads(lesson_row[5]) if lesson_row[5] else []
+                        
                         conversations.append(LessonPlanMetadata(
                             thread_id=thread_id,
                             conversation_type=ct,
                             title=title,
-                            lesson_title=lesson_row[0],
-                            subject=lesson_row[1],
-                            grade_level=lesson_row[2],
-                            duration_minutes=lesson_row[3],
-                            learning_objectives=lesson_row[4],
+                            course_title=lesson_row[0],
+                            class_number=lesson_row[1],
+                            class_title=lesson_row[2],
+                            learning_objectives=learning_objectives,
+                            key_topics=key_topics,
+                            activities_projects=activities_projects,
                             created_at=datetime.fromisoformat(created_at),
                             updated_at=datetime.fromisoformat(updated_at),
                             message_count=message_count
@@ -423,27 +444,31 @@ class ConversationManager:
             # Update lesson_plans table
             lesson_updates = []
             lesson_params = []
-            
-            if data.lesson_title is not None:
-                lesson_updates.append("lesson_title = ?")
-                lesson_params.append(data.lesson_title)
-            
-            if data.subject is not None:
-                lesson_updates.append("subject = ?")
-                lesson_params.append(data.subject)
-            
-            if data.grade_level is not None:
-                lesson_updates.append("grade_level = ?")
-                lesson_params.append(data.grade_level)
-            
-            if data.duration_minutes is not None:
-                lesson_updates.append("duration_minutes = ?")
-                lesson_params.append(data.duration_minutes)
-            
+
+            if data.course_title is not None:
+                lesson_updates.append("course_title = ?")
+                lesson_params.append(data.course_title)
+
+            if data.class_number is not None:
+                lesson_updates.append("class_number = ?")
+                lesson_params.append(data.class_number)
+
+            if data.class_title is not None:
+                lesson_updates.append("class_title = ?")
+                lesson_params.append(data.class_title)
+
             if data.learning_objectives is not None:
                 lesson_updates.append("learning_objectives = ?")
-                lesson_params.append(data.learning_objectives)
-            
+                lesson_params.append(json.dumps(data.learning_objectives))
+
+            if data.key_topics is not None:
+                lesson_updates.append("key_topics = ?")
+                lesson_params.append(json.dumps(data.key_topics))
+
+            if data.activities_projects is not None:
+                lesson_updates.append("activities_projects = ?")
+                lesson_params.append(json.dumps(data.activities_projects))
+
             if lesson_updates:
                 lesson_params.append(thread_id)
                 cursor.execute(f"""

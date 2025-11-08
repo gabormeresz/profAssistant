@@ -15,7 +15,8 @@ export {
   InputSection,
   FollowUpInput,
   FileUpload,
-  PromptEnhancer
+  PromptEnhancer,
+  LessonPlanInputSection
 } from "./input";
 
 // UI components
@@ -23,3 +24,6 @@ export { Indicator, ThreadStatus, ProgressIndicator } from "./ui";
 
 // Course components
 export { StructuredCourseOutline } from "./course";
+
+// Lesson components
+export { StructuredLessonPlan } from "./lesson";

@@ -15,6 +15,7 @@ export type {
 
 // API types
 export type {
+  CourseOutlineRequest,
   LessonPlanRequest,
   EnhancePromptRequest,
   EnhancePromptResponse
@@ -29,3 +30,11 @@ export type {
   CourseClass,
   StructuredStreamEvent
 } from "./courseOutline";
+
+// Lesson plan types
+export type {
+  LessonPlan,
+  LessonSection,
+  ActivityPlan,
+  LessonPlanStreamEvent
+} from "./lessonPlan";

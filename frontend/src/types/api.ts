@@ -2,10 +2,22 @@
  * API Request/Response Types
  */
 
-export interface LessonPlanRequest {
+export interface CourseOutlineRequest {
   message: string;
   topic: string;
   number_of_classes: number;
+  thread_id?: string;
+  files?: File[];
+}
+
+export interface LessonPlanRequest {
+  message: string;
+  course_title: string;
+  class_number: number;
+  class_title: string;
+  learning_objectives: string[];
+  key_topics: string[];
+  activities_projects: string[];
   thread_id?: string;
   files?: File[];
 }

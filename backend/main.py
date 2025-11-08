@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from agent.course_outline_generator import run_course_outline_generator
+from agent.lesson_plan_generator import run_structured_lesson_plan_generator
 from utils.file_processor import file_processor
 from agent.prompt_enhancer import prompt_enhancer
 from services.conversation_manager import conversation_manager
@@ -107,6 +108,107 @@ async def generate_course_outline(
     # Return SSE stream
     return StreamingResponse(
         course_outline_event_generator(message, topic, number_of_classes, thread_id, file_contents),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no"  # Disable buffering for nginx
+        }
+    )
+
+
+async def lesson_plan_event_generator(
+    message: str,
+    course_title: str,
+    class_number: int,
+    class_title: str,
+    learning_objectives: List[str],
+    key_topics: List[str],
+    activities_projects: List[str],
+    thread_id: Optional[str],
+    file_contents: List[dict]
+):
+    """
+    Generator function that yields Server-Sent Events (SSE) for lesson plan generation.
+    Yields progress updates and the final structured lesson plan.
+    """
+    try:
+        async for event in run_structured_lesson_plan_generator(
+            message, 
+            course_title, 
+            class_number, 
+            class_title,
+            learning_objectives,
+            key_topics,
+            activities_projects,
+            thread_id, 
+            file_contents
+        ):
+            if isinstance(event, dict):
+                event_type = event.get("type", "data")
+                
+                if event_type == "thread_id":
+                    # Send thread_id as a separate SSE event type
+                    yield f"event: thread_id\ndata: {json.dumps({'thread_id': event['thread_id']})}\n\n"
+                elif event_type == "progress":
+                    # Send progress updates
+                    yield f"event: progress\ndata: {json.dumps({'message': event['message']})}\n\n"
+                elif event_type == "complete":
+                    # Send the complete structured data
+                    yield f"event: complete\ndata: {json.dumps(event['data'])}\n\n"
+                elif event_type == "error":
+                    # Send error
+                    yield f"event: error\ndata: {json.dumps({'message': event['message']})}\n\n"
+            else:
+                # Fallback for any other data
+                yield f"data: {json.dumps({'content': str(event)})}\n\n"
+    except Exception as e:
+        yield f"event: error\ndata: {json.dumps({'message': str(e)})}\n\n"
+
+
+@app.post("/lesson-planner")
+async def generate_lesson_plan(
+    message: str = Form(""),
+    course_title: str = Form(...),
+    class_number: int = Form(...),
+    class_title: str = Form(...),
+    learning_objectives: str = Form(...),  # JSON string
+    key_topics: str = Form(...),  # JSON string
+    activities_projects: str = Form(...),  # JSON string
+    thread_id: Optional[str] = Form(None),
+    files: Optional[List[UploadFile]] = File(None)
+):
+    """
+    Handle lesson plan generation with structured output and optional file uploads.
+    Returns a streaming SSE response with progress updates and structured data.
+    """
+    try:
+        # Parse JSON strings to lists
+        learning_objectives_list = json.loads(learning_objectives)
+        key_topics_list = json.loads(key_topics)
+        activities_projects_list = json.loads(activities_projects)
+    except json.JSONDecodeError as e:
+        raise HTTPException(status_code=400, detail=f"Invalid JSON in form fields: {str(e)}")
+    
+    file_contents = []
+    
+    # Process uploaded files if any
+    if files:
+        file_contents += await file_processor(files)
+    
+    # Return SSE stream
+    return StreamingResponse(
+        lesson_plan_event_generator(
+            message,
+            course_title,
+            class_number,
+            class_title,
+            learning_objectives_list,
+            key_topics_list,
+            activities_projects_list,
+            thread_id,
+            file_contents
+        ),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

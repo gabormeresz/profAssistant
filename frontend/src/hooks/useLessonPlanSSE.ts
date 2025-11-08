@@ -1,27 +1,25 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { API_ENDPOINTS } from "../utils/constants";
 import type {
-  CourseOutlineRequest,
+  LessonPlanRequest,
   StreamingState,
-  CourseOutline
+  LessonPlan
 } from "../types";
 
-interface UseCourseOutlineSSEReturn {
-  courseOutline: CourseOutline | null;
+interface UseLessonPlanSSEReturn {
+  lessonPlan: LessonPlan | null;
   progressMessage: string;
   loading: boolean;
   streamingState: StreamingState;
   threadId: string | null;
-  sendMessage: (data: CourseOutlineRequest) => Promise<CourseOutline | null>;
+  sendMessage: (data: LessonPlanRequest) => Promise<LessonPlan | null>;
   clearData: () => void;
   resetThread: () => void;
   setThreadId: (id: string | null) => void;
 }
 
-export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
-  const [courseOutline, setCourseOutline] = useState<CourseOutline | null>(
-    null
-  );
+export const useLessonPlanSSE = (): UseLessonPlanSSEReturn => {
+  const [lessonPlan, setLessonPlan] = useState<LessonPlan | null>(null);
   const [progressMessage, setProgressMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [streamingState, setStreamingState] = useState<StreamingState>("idle");
@@ -29,7 +27,7 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const clearData = useCallback(() => {
-    setCourseOutline(null);
+    setLessonPlan(null);
     setProgressMessage("");
     setStreamingState("idle");
   }, []);
@@ -40,9 +38,9 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
   }, [clearData]);
 
   const sendMessage = useCallback(
-    async (data: CourseOutlineRequest): Promise<CourseOutline | null> => {
+    async (data: LessonPlanRequest): Promise<LessonPlan | null> => {
       // Clear previous data and start loading
-      setCourseOutline(null);
+      setLessonPlan(null);
       setProgressMessage("Initializing...");
       setLoading(true);
       setStreamingState("connecting");
@@ -56,14 +54,18 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
       const abortController = new AbortController();
       abortControllerRef.current = abortController;
 
-      let finalOutline: CourseOutline | null = null;
+      let finalPlan: LessonPlan | null = null;
 
       try {
         // Prepare form data
         const formData = new FormData();
         formData.append("message", data.message);
-        formData.append("topic", data.topic);
-        formData.append("number_of_classes", data.number_of_classes.toString());
+        formData.append("course_title", data.course_title);
+        formData.append("class_number", data.class_number.toString());
+        formData.append("class_title", data.class_title);
+        formData.append("learning_objectives", JSON.stringify(data.learning_objectives));
+        formData.append("key_topics", JSON.stringify(data.key_topics));
+        formData.append("activities_projects", JSON.stringify(data.activities_projects));
 
         if (threadId) {
           formData.append("thread_id", threadId);
@@ -71,13 +73,13 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
 
         // Add files if present
         if (data.files && data.files.length > 0) {
-          data.files.forEach((file: File) => {
+          data.files.forEach((file) => {
             formData.append("files", file);
           });
         }
 
-        // Make SSE request to the structured endpoint
-        const response = await fetch(API_ENDPOINTS.OUTLINE_GENERATOR, {
+        // Make SSE request
+        const response = await fetch(API_ENDPOINTS.LESSON_PLANNER, {
           method: "POST",
           body: formData,
           signal: abortController.signal
@@ -106,7 +108,7 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
           if (done) {
             setStreamingState("complete");
             setLoading(false);
-            return finalOutline;
+            return finalPlan;
           }
 
           // Decode the chunk
@@ -135,10 +137,10 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
                   setLoading(false); // Not loading, but actively processing
                 } else if (currentEvent === "complete" && parsed) {
                   // Structured data received
-                  const outline = parsed as CourseOutline;
-                  setCourseOutline(outline);
-                  finalOutline = outline;
-                  setProgressMessage("Course outline complete!");
+                  const plan = parsed as LessonPlan;
+                  setLessonPlan(plan);
+                  finalPlan = plan;
+                  setProgressMessage("Lesson plan complete!");
                 } else if (currentEvent === "error" && parsed.message) {
                   console.error("Stream error:", parsed.message);
                   setProgressMessage(`Error: ${parsed.message}`);
@@ -191,7 +193,7 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
   }, []);
 
   return {
-    courseOutline,
+    lessonPlan,
     progressMessage,
     loading,
     streamingState,

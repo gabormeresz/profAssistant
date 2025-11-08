@@ -2,6 +2,7 @@
 export const API_BASE_URL = "http://localhost:8000";
 export const API_ENDPOINTS = {
   OUTLINE_GENERATOR: `${API_BASE_URL}/outline-generator`,
+  LESSON_PLANNER: `${API_BASE_URL}/lesson-planner`,
   ENHANCE_PROMPT: `${API_BASE_URL}/enhance-prompt`
 } as const;
 
@@ -40,7 +41,22 @@ export const COURSE_OUTLINE = {
   DEFAULT_CLASSES: 1
 } as const;
 
+// Lesson Plan Configuration
+export const LESSON_PLAN = {
+  MIN_CLASS_NUMBER: 1,
+  MAX_CLASS_NUMBER: 100,
+  MIN_OBJECTIVES: 2,
+  MAX_OBJECTIVES: 5,
+  MIN_TOPICS: 3,
+  MAX_TOPICS: 7,
+  MIN_ACTIVITIES: 1,
+  MAX_ACTIVITIES: 5
+} as const;
+
 // UI Messages
 export const UI_MESSAGES = {
-  EMPTY_TOPIC: "Please enter a topic"
+  EMPTY_TOPIC: "Please enter a topic",
+  EMPTY_COURSE_TITLE: "Please enter a course title",
+  EMPTY_CLASS_TITLE: "Please enter a class title",
+  INVALID_CLASS_NUMBER: "Please enter a valid class number"
 } as const;
