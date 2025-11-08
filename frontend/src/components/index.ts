@@ -7,7 +7,7 @@ export { UserMessage } from "./chat";
 
 // Input components
 export {
-  InputSection,
+  CourseOutlineInputSection,
   FollowUpInput,
   FileUpload,
   PromptEnhancer,

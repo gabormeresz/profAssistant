@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import FileUpload from "./FileUpload";
+import PromptEnhancer from "./PromptEnhancer";
 import { LESSON_PLAN } from "../../utils/constants";
 
 interface LessonPlanInputSectionProps {
@@ -314,6 +315,14 @@ export function LessonPlanInputSection({
           rows={4}
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
         />
+
+        {/* Prompt Enhancer */}
+        <PromptEnhancer
+          message={userComment}
+          topic={courseTitle}
+          numberOfClasses={1}
+          onMessageChange={setUserComment}
+        />
       </div>
 
       {/* File Upload */}
@@ -322,19 +331,16 @@ export function LessonPlanInputSection({
       </div>
 
       {/* Submit Button */}
-      <div className="flex justify-end">
-        <button
-          onClick={onSubmit}
-          disabled={!!threadId}
-          className={`px-6 py-3 rounded-md font-medium transition-colors ${
-            threadId
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "bg-green-600 text-white hover:bg-green-700"
-          }`}
-        >
-          {threadId ? "Already Generated" : "Generate Lesson Plan"}
-        </button>
-      </div>
+      {!threadId && (
+        <div className="flex justify-end">
+          <button
+            onClick={onSubmit}
+            className="px-6 py-3 rounded-md font-medium transition-colors bg-green-600 text-white hover:bg-green-700"
+          >
+            Generate Lesson Plan
+          </button>
+        </div>
+      )}
     </div>
   );
 }

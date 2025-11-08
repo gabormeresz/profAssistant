@@ -2,7 +2,7 @@ import FileUpload from "./FileUpload";
 import PromptEnhancer from "./PromptEnhancer";
 import { COURSE_OUTLINE } from "../../utils/constants";
 
-interface InputSectionProps {
+interface CourseOutlineInputSectionProps {
   userComment: string;
   setUserComment: (value: string) => void;
   topic: string;
@@ -15,7 +15,7 @@ interface InputSectionProps {
   setUploadedFiles: (files: File[]) => void;
 }
 
-export default function InputSection({
+export default function CourseOutlineInputSection({
   userComment,
   setUserComment,
   topic,
@@ -26,7 +26,7 @@ export default function InputSection({
   threadId,
   uploadedFiles,
   setUploadedFiles
-}: InputSectionProps) {
+}: CourseOutlineInputSectionProps) {
   const isSessionActive = threadId !== null;
   const isButtonDisabled =
     !topic.trim() || numberOfClasses < COURSE_OUTLINE.MIN_CLASSES;

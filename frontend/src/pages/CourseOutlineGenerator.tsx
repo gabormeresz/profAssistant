@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   Layout,
   Header,
-  InputSection,
+  CourseOutlineInputSection,
   ThreadStatus,
   StructuredCourseOutline,
   ProgressIndicator,
@@ -315,7 +315,7 @@ function CourseOutlineGenerator() {
 
       {/* Initial form - grey out after first submission */}
       <div className={hasStarted ? "opacity-50 pointer-events-none" : ""}>
-        <InputSection
+        <CourseOutlineInputSection
           userComment={userComment}
           setUserComment={setUserComment}
           topic={topic}
