@@ -4,17 +4,83 @@ Uses a multi-table schema: base conversations table + type-specific tables.
 """
 import sqlite3
 import json
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict, Any, Tuple
 from datetime import datetime
 from schemas.conversation import (
-    ConversationType, 
-    CourseOutlineMetadata, 
+    ConversationType,
+    CourseOutlineMetadata,
     LessonPlanMetadata,
     CourseOutlineCreate,
     LessonPlanCreate,
     CourseOutlineUpdate,
     LessonPlanUpdate
 )
+
+
+# Whitelists of allowed columns for each table
+ALLOWED_COLUMNS = {
+    "conversations": {
+        "title",
+        "message_count",
+        "updated_at"
+    },
+    "course_outlines": {
+        "topic",
+        "number_of_classes",
+        "difficulty_level",
+        "target_audience",
+        "user_comment"
+    },
+    "lesson_plans": {
+        "course_title",
+        "class_number",
+        "class_title",
+        "learning_objectives",
+        "key_topics",
+        "activities_projects",
+        "user_comment"
+    }
+}
+
+
+def build_safe_update_query(
+    table: str,
+    updates: Dict[str, Any],
+    where_clause: str = "thread_id = ?"
+) -> Tuple[str, List[Any]]:
+    """
+    Build a safe SQL UPDATE query with validated column names.
+
+    Args:
+        table: Table name (must be in ALLOWED_COLUMNS)
+        updates: Dictionary of column_name: value pairs to update
+        where_clause: WHERE clause with placeholders
+
+    Returns:
+        Tuple of (query_string, parameter_list)
+
+    Raises:
+        ValueError: If table is unknown or column names are not whitelisted
+    """
+    if table not in ALLOWED_COLUMNS:
+        raise ValueError(f"Unknown table: {table}")
+
+    if not updates:
+        raise ValueError("No updates provided")
+
+    # Validate all column names against whitelist
+    allowed_cols = ALLOWED_COLUMNS[table]
+    invalid_cols = set(updates.keys()) - allowed_cols
+    if invalid_cols:
+        raise ValueError(f"Invalid columns for {table}: {invalid_cols}")
+
+    # Build SET clause with validated columns
+    set_clauses = [f"{col} = ?" for col in updates.keys()]
+    params = list(updates.values())
+
+    query = f"UPDATE {table} SET {', '.join(set_clauses)} WHERE {where_clause}"
+
+    return query, params
 
 
 class ConversationManager:
@@ -359,58 +425,60 @@ class ConversationManager:
         """Update course outline metadata."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        
+
         try:
-            # Update base table
-            base_updates = []
-            base_params = []
-            
+            # Prepare base table updates
+            base_updates = {}
+
             if data.title is not None:
-                base_updates.append("title = ?")
-                base_params.append(data.title)
-            
+                base_updates["title"] = data.title
+
+            # Always update timestamp
+            base_updates["updated_at"] = datetime.now().isoformat()
+
+            # Handle message count - special case for increment
             if increment_message_count:
-                base_updates.append("message_count = message_count + 1")
-            
-            base_updates.append("updated_at = ?")
-            base_params.append(datetime.now().isoformat())
-            base_params.append(thread_id)
-            
+                # For increment, we need to use a special SQL expression
+                cursor.execute(
+                    "UPDATE conversations SET message_count = message_count + 1, updated_at = ? WHERE thread_id = ?",
+                    (base_updates["updated_at"], thread_id)
+                )
+                # Remove updated_at from dict since we already handled it
+                if "title" in base_updates:
+                    del base_updates["updated_at"]
+                else:
+                    base_updates.clear()
+
+            # Update remaining base fields if any
             if base_updates:
-                cursor.execute(f"""
-                    UPDATE conversations
-                    SET {', '.join(base_updates)}
-                    WHERE thread_id = ?
-                """, base_params)
-            
-            # Update course_outlines table
-            outline_updates = []
-            outline_params = []
-            
+                query, params = build_safe_update_query("conversations", base_updates)
+                params.append(thread_id)
+                cursor.execute(query, params)
+
+            # Prepare course_outlines table updates
+            outline_updates = {}
+
             if data.topic is not None:
-                outline_updates.append("topic = ?")
-                outline_params.append(data.topic)
-            
+                outline_updates["topic"] = data.topic
+
             if data.number_of_classes is not None:
-                outline_updates.append("number_of_classes = ?")
-                outline_params.append(data.number_of_classes)
-            
+                outline_updates["number_of_classes"] = data.number_of_classes
+
             if data.difficulty_level is not None:
-                outline_updates.append("difficulty_level = ?")
-                outline_params.append(data.difficulty_level)
-            
+                outline_updates["difficulty_level"] = data.difficulty_level
+
             if data.target_audience is not None:
-                outline_updates.append("target_audience = ?")
-                outline_params.append(data.target_audience)
-            
+                outline_updates["target_audience"] = data.target_audience
+
+            if data.user_comment is not None:
+                outline_updates["user_comment"] = data.user_comment
+
+            # Update course_outlines if we have changes
             if outline_updates:
-                outline_params.append(thread_id)
-                cursor.execute(f"""
-                    UPDATE course_outlines
-                    SET {', '.join(outline_updates)}
-                    WHERE thread_id = ?
-                """, outline_params)
-            
+                query, params = build_safe_update_query("course_outlines", outline_updates)
+                params.append(thread_id)
+                cursor.execute(query, params)
+
             conn.commit()
             return self.get_conversation(thread_id)
         finally:
@@ -425,66 +493,66 @@ class ConversationManager:
         """Update lesson plan metadata."""
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
-        
+
         try:
-            # Update base table
-            base_updates = []
-            base_params = []
-            
+            # Prepare base table updates
+            base_updates = {}
+
             if data.title is not None:
-                base_updates.append("title = ?")
-                base_params.append(data.title)
-            
+                base_updates["title"] = data.title
+
+            # Always update timestamp
+            base_updates["updated_at"] = datetime.now().isoformat()
+
+            # Handle message count - special case for increment
             if increment_message_count:
-                base_updates.append("message_count = message_count + 1")
-            
-            base_updates.append("updated_at = ?")
-            base_params.append(datetime.now().isoformat())
-            base_params.append(thread_id)
-            
+                # For increment, we need to use a special SQL expression
+                cursor.execute(
+                    "UPDATE conversations SET message_count = message_count + 1, updated_at = ? WHERE thread_id = ?",
+                    (base_updates["updated_at"], thread_id)
+                )
+                # Remove updated_at from dict since we already handled it
+                if "title" in base_updates:
+                    del base_updates["updated_at"]
+                else:
+                    base_updates.clear()
+
+            # Update remaining base fields if any
             if base_updates:
-                cursor.execute(f"""
-                    UPDATE conversations
-                    SET {', '.join(base_updates)}
-                    WHERE thread_id = ?
-                """, base_params)
-            
-            # Update lesson_plans table
-            lesson_updates = []
-            lesson_params = []
+                query, params = build_safe_update_query("conversations", base_updates)
+                params.append(thread_id)
+                cursor.execute(query, params)
+
+            # Prepare lesson_plans table updates
+            lesson_updates = {}
 
             if data.course_title is not None:
-                lesson_updates.append("course_title = ?")
-                lesson_params.append(data.course_title)
+                lesson_updates["course_title"] = data.course_title
 
             if data.class_number is not None:
-                lesson_updates.append("class_number = ?")
-                lesson_params.append(data.class_number)
+                lesson_updates["class_number"] = data.class_number
 
             if data.class_title is not None:
-                lesson_updates.append("class_title = ?")
-                lesson_params.append(data.class_title)
+                lesson_updates["class_title"] = data.class_title
 
             if data.learning_objectives is not None:
-                lesson_updates.append("learning_objectives = ?")
-                lesson_params.append(json.dumps(data.learning_objectives))
+                lesson_updates["learning_objectives"] = json.dumps(data.learning_objectives)
 
             if data.key_topics is not None:
-                lesson_updates.append("key_topics = ?")
-                lesson_params.append(json.dumps(data.key_topics))
+                lesson_updates["key_topics"] = json.dumps(data.key_topics)
 
             if data.activities_projects is not None:
-                lesson_updates.append("activities_projects = ?")
-                lesson_params.append(json.dumps(data.activities_projects))
+                lesson_updates["activities_projects"] = json.dumps(data.activities_projects)
 
+            if data.user_comment is not None:
+                lesson_updates["user_comment"] = data.user_comment
+
+            # Update lesson_plans if we have changes
             if lesson_updates:
-                lesson_params.append(thread_id)
-                cursor.execute(f"""
-                    UPDATE lesson_plans
-                    SET {', '.join(lesson_updates)}
-                    WHERE thread_id = ?
-                """, lesson_params)
-            
+                query, params = build_safe_update_query("lesson_plans", lesson_updates)
+                params.append(thread_id)
+                cursor.execute(query, params)
+
             conn.commit()
             return self.get_conversation(thread_id)
         finally:
