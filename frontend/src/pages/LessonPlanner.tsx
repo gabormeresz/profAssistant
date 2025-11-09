@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Layout,
@@ -10,15 +10,10 @@ import {
   FollowUpInput,
   UserMessage
 } from "../components";
-import type { SidebarRef } from "../components";
-import { useLessonPlanSSE } from "../hooks";
+import { useLessonPlanSSE, useConversationManager } from "../hooks";
 import { LESSON_PLAN, UI_MESSAGES } from "../utils/constants";
-import { logger } from "../utils/logger";
 import type { LessonPlan, ConversationMessage } from "../types";
-import {
-  fetchConversation,
-  fetchConversationHistory
-} from "../services/conversationService";
+import type { SavedLessonPlan } from "../types/conversation";
 
 // ============================================================================
 // Helper Functions
@@ -55,7 +50,6 @@ function LessonPlanner() {
   const { threadId: urlThreadId } = useParams<{ threadId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const sidebarRef = useRef<SidebarRef>(null);
 
   // ============================================================================
   // State Management
@@ -74,15 +68,6 @@ function LessonPlanner() {
   const [userComment, setUserComment] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
-  // Conversation history
-  const [lessonHistory, setLessonHistory] = useState<LessonPlan[]>([]);
-  const [userMessages, setUserMessages] = useState<ConversationMessage[]>([]);
-  const [hasStarted, setHasStarted] = useState(false);
-
-  // Refs to prevent duplicate loading and URL update loops
-  const loadedThreadIdRef = useRef<string | null>(null);
-  const isLoadingFromUrlRef = useRef(false);
-
   // SSE streaming hook
   const {
     lessonPlan,
@@ -95,6 +80,39 @@ function LessonPlanner() {
     setThreadId,
     clearData
   } = useLessonPlanSSE();
+
+  // Conversation management hook (handles URL sync, loading, history)
+  const {
+    hasStarted,
+    setHasStarted,
+    userMessages,
+    setUserMessages,
+    resultHistory: lessonHistory,
+    setResultHistory: setLessonHistory,
+    sidebarRef
+  } = useConversationManager<LessonPlan, SavedLessonPlan>({
+    routePath: "/lesson-planner",
+    urlThreadId,
+    threadId,
+    setThreadId,
+    result: lessonPlan,
+    streamingState,
+    clearData,
+    isCorrectType: (conversation: unknown): conversation is SavedLessonPlan =>
+      typeof conversation === "object" && conversation !== null && "class_title" in conversation,
+    restoreFormState: (conversation: SavedLessonPlan) => {
+      setClassTitle(conversation.class_title);
+      setCourseTitle(conversation.course_title);
+      setClassNumber(conversation.class_number);
+      setLearningObjectives(conversation.learning_objectives);
+      setKeyTopics(conversation.key_topics);
+      setActivitiesProjects(conversation.activities_projects);
+      if (conversation.user_comment) {
+        setUserComment(conversation.user_comment);
+      }
+    },
+    parseResult: (content: string) => JSON.parse(content) as LessonPlan
+  });
 
   // ============================================================================
   // Effects
@@ -125,117 +143,6 @@ function LessonPlanner() {
       window.history.replaceState({}, document.title);
     }
   }, [location.state]);
-
-  // Auto-add completed lesson plans to history
-  useEffect(() => {
-    if (!lessonPlan || streamingState !== "complete") return;
-
-    setLessonHistory((prev) => {
-      // Prevent duplicates by checking if lesson plan already exists
-      const isDuplicate = prev.some(
-        (plan) => JSON.stringify(plan) === JSON.stringify(lessonPlan)
-      );
-
-      if (isDuplicate) {
-        return prev;
-      }
-
-      return [...prev, lessonPlan];
-    });
-
-    // Clear data after adding to history (runs after state update)
-    const timeoutId = setTimeout(() => clearData(), 100);
-
-    return () => clearTimeout(timeoutId);
-  }, [lessonPlan, streamingState, clearData]);
-
-  // Update URL when new thread is created
-  useEffect(() => {
-    const shouldUpdateUrl =
-      threadId && !urlThreadId && !isLoadingFromUrlRef.current;
-
-    if (shouldUpdateUrl) {
-      navigate(`/lesson-planner/${threadId}`, { replace: true });
-      // Trigger sidebar refetch when a new conversation is created
-      sidebarRef.current?.refetchConversations();
-    }
-  }, [threadId, urlThreadId, navigate]);
-
-  // Load conversation from URL
-  useEffect(() => {
-    const loadConversation = async () => {
-      // Exit early if no thread ID or already loaded
-      if (!urlThreadId || loadedThreadIdRef.current === urlThreadId) {
-        if (!urlThreadId) loadedThreadIdRef.current = null;
-        return;
-      }
-
-      // Mark as loaded and prevent URL updates during load
-      loadedThreadIdRef.current = urlThreadId;
-      isLoadingFromUrlRef.current = true;
-
-      // Clear previous data
-      setUserMessages([]);
-      setLessonHistory([]);
-      setUserComment("");
-
-      try {
-        // Fetch metadata and history
-        const [conversation, history] = await Promise.all([
-          fetchConversation(urlThreadId),
-          fetchConversationHistory(urlThreadId)
-        ]);
-
-        // Set thread ID for continuation
-        setThreadId(urlThreadId);
-
-        // Restore form state
-        if ("class_title" in conversation) {
-          setClassTitle(conversation.class_title);
-          setCourseTitle(conversation.course_title);
-          setClassNumber(conversation.class_number);
-          setLearningObjectives(conversation.learning_objectives);
-          setKeyTopics(conversation.key_topics);
-          setActivitiesProjects(conversation.activities_projects);
-          if (conversation.user_comment) {
-            setUserComment(conversation.user_comment);
-          }
-        }
-        setHasStarted(true);
-
-        // Parse message history
-        const userMsgs: ConversationMessage[] = [];
-        const plans: LessonPlan[] = [];
-
-        history.messages.forEach((msg) => {
-          if (msg.role === "user") {
-            // Just use the content as is for history display (not for the input field)
-            userMsgs.push(createUserMessage(msg.content));
-          } else if (msg.role === "assistant") {
-            try {
-              plans.push(JSON.parse(msg.content));
-            } catch (e) {
-              logger.error("Failed to parse lesson plan:", e);
-            }
-          }
-        });
-
-        // Update state
-        setUserMessages(userMsgs);
-        setLessonHistory(plans);
-      } catch (error) {
-        logger.error("Failed to load conversation:", error);
-        navigate("/lesson-planner", { replace: true });
-      } finally {
-        // Reset loading flag after render cycle
-        setTimeout(() => {
-          isLoadingFromUrlRef.current = false;
-        }, 0);
-      }
-    };
-
-    loadConversation();
-  }, [urlThreadId, setThreadId, navigate]);
 
   // ============================================================================
   // Event Handlers
@@ -319,7 +226,9 @@ function LessonPlanner() {
     activitiesProjects,
     userComment,
     uploadedFiles,
-    sendMessage
+    sendMessage,
+    setHasStarted,
+    setUserMessages
   ]);
 
   const handleFollowUpSubmit = useCallback(
@@ -356,7 +265,8 @@ function LessonPlanner() {
       keyTopics,
       activitiesProjects,
       threadId,
-      sendMessage
+      sendMessage,
+      setUserMessages
     ]
   );
 
@@ -374,11 +284,10 @@ function LessonPlanner() {
     setActivitiesProjects([""]);
     setUserComment("");
     setUploadedFiles([]);
-    loadedThreadIdRef.current = null;
 
     // Navigate to base route
     navigate("/lesson-planner", { replace: true });
-  }, [resetThread, navigate]);
+  }, [resetThread, setLessonHistory, setUserMessages, setHasStarted, navigate]);
 
   // ============================================================================
   // Render
