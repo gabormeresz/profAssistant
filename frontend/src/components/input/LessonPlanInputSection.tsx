@@ -139,9 +139,7 @@ export function LessonPlanInputSection({
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
           <label className="block text-sm font-medium text-gray-700">
-            Learning Objectives ({LESSON_PLAN.MIN_OBJECTIVES}-
-            {LESSON_PLAN.MAX_OBJECTIVES}){" "}
-            <span className="text-red-500">*</span>
+            Learning Objectives
           </label>
           {learningObjectives.length < LESSON_PLAN.MAX_OBJECTIVES && (
             <button
@@ -196,8 +194,7 @@ export function LessonPlanInputSection({
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
           <label className="block text-sm font-medium text-gray-700">
-            Key Topics ({LESSON_PLAN.MIN_TOPICS}-{LESSON_PLAN.MAX_TOPICS}){" "}
-            <span className="text-red-500">*</span>
+            Key Topics
           </label>
           {keyTopics.length < LESSON_PLAN.MAX_TOPICS && (
             <button
@@ -246,9 +243,7 @@ export function LessonPlanInputSection({
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
           <label className="block text-sm font-medium text-gray-700">
-            Activities & Projects ({LESSON_PLAN.MIN_ACTIVITIES}-
-            {LESSON_PLAN.MAX_ACTIVITIES}){" "}
-            <span className="text-red-500">*</span>
+            Activities & Projects
           </label>
           {activitiesProjects.length < LESSON_PLAN.MAX_ACTIVITIES && (
             <button

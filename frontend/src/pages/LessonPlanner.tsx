@@ -59,11 +59,8 @@ function LessonPlanner() {
   const [courseTitle, setCourseTitle] = useState("");
   const [classNumber, setClassNumber] = useState<number>(1);
   const [classTitle, setClassTitle] = useState("");
-  const [learningObjectives, setLearningObjectives] = useState<string[]>([
-    "",
-    ""
-  ]);
-  const [keyTopics, setKeyTopics] = useState<string[]>(["", "", ""]);
+  const [learningObjectives, setLearningObjectives] = useState<string[]>([""]);
+  const [keyTopics, setKeyTopics] = useState<string[]>([""]);
   const [activitiesProjects, setActivitiesProjects] = useState<string[]>([""]);
   const [userComment, setUserComment] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -171,31 +168,22 @@ function LessonPlanner() {
     const filteredTopics = keyTopics.filter((topic) => topic.trim());
     const filteredActivities = activitiesProjects.filter((act) => act.trim());
 
-    // Validate array lengths
-    if (
-      filteredObjectives.length < LESSON_PLAN.MIN_OBJECTIVES ||
-      filteredObjectives.length > LESSON_PLAN.MAX_OBJECTIVES
-    ) {
+    // Validate maximum array lengths (minimum is 0, so optional)
+    if (filteredObjectives.length > LESSON_PLAN.MAX_OBJECTIVES) {
       alert(
-        `Please provide ${LESSON_PLAN.MIN_OBJECTIVES}-${LESSON_PLAN.MAX_OBJECTIVES} learning objectives`
+        `Please provide at most ${LESSON_PLAN.MAX_OBJECTIVES} learning objectives`
       );
       return;
     }
-    if (
-      filteredTopics.length < LESSON_PLAN.MIN_TOPICS ||
-      filteredTopics.length > LESSON_PLAN.MAX_TOPICS
-    ) {
+    if (filteredTopics.length > LESSON_PLAN.MAX_TOPICS) {
       alert(
-        `Please provide ${LESSON_PLAN.MIN_TOPICS}-${LESSON_PLAN.MAX_TOPICS} key topics`
+        `Please provide at most ${LESSON_PLAN.MAX_TOPICS} key topics`
       );
       return;
     }
-    if (
-      filteredActivities.length < LESSON_PLAN.MIN_ACTIVITIES ||
-      filteredActivities.length > LESSON_PLAN.MAX_ACTIVITIES
-    ) {
+    if (filteredActivities.length > LESSON_PLAN.MAX_ACTIVITIES) {
       alert(
-        `Please provide ${LESSON_PLAN.MIN_ACTIVITIES}-${LESSON_PLAN.MAX_ACTIVITIES} activities`
+        `Please provide at most ${LESSON_PLAN.MAX_ACTIVITIES} activities`
       );
       return;
     }
@@ -279,8 +267,8 @@ function LessonPlanner() {
     setCourseTitle("");
     setClassNumber(1);
     setClassTitle("");
-    setLearningObjectives(["", ""]);
-    setKeyTopics(["", "", ""]);
+    setLearningObjectives([""]);
+    setKeyTopics([""]);
     setActivitiesProjects([""]);
     setUserComment("");
     setUploadedFiles([]);

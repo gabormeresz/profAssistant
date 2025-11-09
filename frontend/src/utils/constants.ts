@@ -45,11 +45,11 @@ export const COURSE_OUTLINE = {
 export const LESSON_PLAN = {
   MIN_CLASS_NUMBER: 1,
   MAX_CLASS_NUMBER: 100,
-  MIN_OBJECTIVES: 2,
+  MIN_OBJECTIVES: 0, // Optional - can be empty
   MAX_OBJECTIVES: 5,
-  MIN_TOPICS: 3,
+  MIN_TOPICS: 0, // Optional - can be empty
   MAX_TOPICS: 7,
-  MIN_ACTIVITIES: 1,
+  MIN_ACTIVITIES: 0, // Optional - can be empty
   MAX_ACTIVITIES: 5
 } as const;
 
