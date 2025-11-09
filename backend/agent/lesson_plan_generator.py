@@ -51,9 +51,14 @@ def build_user_message(is_first_call: bool, course_title: str, class_number: int
         messages += f"Course Title: {course_title}.\n"
         messages += f"Class Number: {class_number}.\n"
         messages += f"Class Title: {class_title}.\n"
-        messages += f"Learning objectives: {', '.join(learning_objectives)}.\n"
-        messages += f"Key topics: {', '.join(key_topics)}.\n"
-        messages += f"Activities/Projects: {', '.join(activities_projects)}.\n"
+
+        # Only include optional fields if they have content
+        if learning_objectives:
+            messages += f"Learning objectives: {', '.join(learning_objectives)}.\n"
+        if key_topics:
+            messages += f"Key topics: {', '.join(key_topics)}.\n"
+        if activities_projects:
+            messages += f"Activities/Projects: {', '.join(activities_projects)}.\n"
 
     # Add user message if provided
     if message.strip():
