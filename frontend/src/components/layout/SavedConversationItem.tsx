@@ -72,9 +72,9 @@ export default function SavedConversationItem({
     } else if (conversation.conversation_type === "lesson_plan") {
       const lesson = conversation as Extract<
         SavedConversation,
-        { subject: string }
+        { course_title: string }
       >;
-      return lesson.subject;
+      return lesson.course_title;
     }
     return "";
   };

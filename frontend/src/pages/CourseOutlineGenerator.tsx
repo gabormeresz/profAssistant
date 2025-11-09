@@ -13,6 +13,7 @@ import {
 import type { SidebarRef } from "../components";
 import { useCourseOutlineSSE } from "../hooks";
 import { COURSE_OUTLINE, UI_MESSAGES } from "../utils/constants";
+import { logger } from "../utils/logger";
 import type { CourseOutline, ConversationMessage } from "../types";
 import {
   fetchConversation,
@@ -199,7 +200,7 @@ function CourseOutlineGenerator() {
             try {
               outlines.push(JSON.parse(msg.content));
             } catch (e) {
-              console.error("Failed to parse course outline:", e);
+              logger.error("Failed to parse course outline:", e);
             }
           }
         });
@@ -208,7 +209,7 @@ function CourseOutlineGenerator() {
         setUserMessages(userMsgs);
         setOutlineHistory(outlines);
       } catch (error) {
-        console.error("Failed to load conversation:", error);
+        logger.error("Failed to load conversation:", error);
         navigate("/outline-generator", { replace: true });
       } finally {
         // Reset loading flag after render cycle

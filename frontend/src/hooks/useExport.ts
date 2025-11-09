@@ -1,6 +1,7 @@
 import { Document, Packer, Paragraph, HeadingLevel } from "docx";
 import { saveAs } from "file-saver";
 import { parseInlineFormatting } from "../utils/markdownParser";
+import { logger } from "../utils/logger";
 
 interface ExportOptions {
   filename?: string;
@@ -135,7 +136,7 @@ export const useExport = () => {
       const blob = await Packer.toBlob(doc);
       saveAs(blob, filename);
     } catch (error) {
-      console.error("Error exporting to DOCX:", error);
+      logger.error("Error exporting to DOCX:", error);
       throw error;
     }
   };

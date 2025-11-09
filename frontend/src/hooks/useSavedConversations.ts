@@ -7,6 +7,7 @@ import {
   fetchConversations,
   deleteConversation as deleteConversationAPI
 } from "../services";
+import { logger } from "../utils/logger";
 
 interface UseSavedConversationsReturn {
   conversations: SavedConversation[];
@@ -43,7 +44,7 @@ export function useSavedConversations(): UseSavedConversationsReturn {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to load conversations";
       setError(errorMessage);
-      console.error("Error fetching conversations:", err);
+      logger.error("Error fetching conversations:", err);
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +68,7 @@ export function useSavedConversations(): UseSavedConversationsReturn {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to delete conversation";
       setError(errorMessage);
-      console.error("Error deleting conversation:", err);
+      logger.error("Error deleting conversation:", err);
       throw err;
     }
   }, []);

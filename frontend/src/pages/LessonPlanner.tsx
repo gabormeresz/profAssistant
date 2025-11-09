@@ -13,6 +13,7 @@ import {
 import type { SidebarRef } from "../components";
 import { useLessonPlanSSE } from "../hooks";
 import { LESSON_PLAN, UI_MESSAGES } from "../utils/constants";
+import { logger } from "../utils/logger";
 import type { LessonPlan, ConversationMessage } from "../types";
 import {
   fetchConversation,
@@ -214,7 +215,7 @@ function LessonPlanner() {
             try {
               plans.push(JSON.parse(msg.content));
             } catch (e) {
-              console.error("Failed to parse lesson plan:", e);
+              logger.error("Failed to parse lesson plan:", e);
             }
           }
         });
@@ -223,7 +224,7 @@ function LessonPlanner() {
         setUserMessages(userMsgs);
         setLessonHistory(plans);
       } catch (error) {
-        console.error("Failed to load conversation:", error);
+        logger.error("Failed to load conversation:", error);
         navigate("/lesson-planner", { replace: true });
       } finally {
         // Reset loading flag after render cycle
