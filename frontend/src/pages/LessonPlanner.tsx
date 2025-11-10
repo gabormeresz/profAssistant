@@ -299,9 +299,8 @@ function LessonPlanner() {
       ref={sidebarRef}
       showSidebar
       onNewConversation={handleNewConversation}
+      header={<Header title={t("header.lessonPlanner")} />}
     >
-      <Header title={t("header.lessonPlanner")} />
-
       {/* Initial form - grey out after first submission */}
       <div className={hasStarted ? "opacity-50 pointer-events-none" : ""}>
         <LessonPlanInputSection

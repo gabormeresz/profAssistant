@@ -221,9 +221,8 @@ function CourseOutlineGenerator() {
       ref={sidebarRef}
       showSidebar
       onNewConversation={handleNewConversation}
+      header={<Header title={t("header.courseOutlineGenerator")} />}
     >
-      <Header title={t("header.courseOutlineGenerator")} />
-
       {/* Initial form - grey out after first submission */}
       <div className={hasStarted ? "opacity-50 pointer-events-none" : ""}>
         <CourseOutlineInputSection

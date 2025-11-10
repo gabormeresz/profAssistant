@@ -6,23 +6,26 @@ interface LayoutProps {
   children: ReactNode;
   showSidebar?: boolean;
   onNewConversation?: () => void;
+  header?: ReactNode;
 }
 
 const Layout = forwardRef<SidebarRef, LayoutProps>(
-  ({ children, showSidebar = false, onNewConversation }, ref) => {
+  ({ children, showSidebar = false, onNewConversation, header }, ref) => {
     if (showSidebar) {
       return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="h-screen bg-gray-50 flex overflow-hidden">
           <Sidebar ref={ref} onNewConversation={onNewConversation} />
-          <main className="flex-1 p-6">
-            <div className="max-w-5xl mx-auto">{children}</div>
+          <main className="flex-1 overflow-y-auto">
+            {header}
+            <div className="max-w-5xl mx-auto p-6">{children}</div>
           </main>
         </div>
       );
     }
 
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="h-screen bg-gray-50 overflow-y-auto">
+        {header}
         <div className="max-w-4xl mx-auto p-6">{children}</div>
       </div>
     );
