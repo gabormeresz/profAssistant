@@ -60,6 +60,7 @@ function CourseOutlineGenerator() {
   const [numberOfClasses, setNumberOfClasses] = useState<number>(
     COURSE_OUTLINE.DEFAULT_CLASSES
   );
+  const [language, setLanguage] = useState<string>("English");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   // SSE streaming hook
@@ -100,6 +101,9 @@ function CourseOutlineGenerator() {
       if (conversation.user_comment) {
         setUserComment(conversation.user_comment);
       }
+      if (conversation.language) {
+        setLanguage(conversation.language);
+      }
     },
     parseResult: (content) => JSON.parse(content) as CourseOutline
   });
@@ -125,9 +129,10 @@ function CourseOutlineGenerator() {
       message: userComment,
       topic,
       number_of_classes: numberOfClasses,
+      language,
       files: uploadedFiles
     });
-  }, [topic, userComment, uploadedFiles, numberOfClasses, sendMessage, setHasStarted, setUserMessages]);
+  }, [topic, userComment, uploadedFiles, numberOfClasses, language, sendMessage, setHasStarted, setUserMessages]);
 
   const handleFollowUpSubmit = useCallback(
     async (message: string, files: File[]) => {
@@ -142,11 +147,12 @@ function CourseOutlineGenerator() {
         message,
         topic,
         number_of_classes: numberOfClasses,
+        language,
         thread_id: threadId || undefined,
         files
       });
     },
-    [topic, numberOfClasses, threadId, sendMessage, setUserMessages]
+    [topic, numberOfClasses, language, threadId, sendMessage, setUserMessages]
   );
 
   const handleNewConversation = useCallback(() => {
@@ -158,6 +164,7 @@ function CourseOutlineGenerator() {
     setUserComment("");
     setTopic("");
     setNumberOfClasses(COURSE_OUTLINE.DEFAULT_CLASSES);
+    setLanguage("English");
     setUploadedFiles([]);
 
     // Navigate to base route
@@ -197,6 +204,8 @@ function CourseOutlineGenerator() {
           setTopic={setTopic}
           numberOfClasses={numberOfClasses}
           setNumberOfClasses={setNumberOfClasses}
+          language={language}
+          setLanguage={setLanguage}
           onSubmit={handleInitialSubmit}
           threadId={threadId}
           uploadedFiles={uploadedFiles}

@@ -44,6 +44,11 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
       formData.append("topic", data.topic);
       formData.append("number_of_classes", data.number_of_classes.toString());
 
+      // Add language if provided
+      if (data.language) {
+        formData.append("language", data.language);
+      }
+
       // Add files if present
       if (data.files && data.files.length > 0) {
         data.files.forEach((file: File) => {

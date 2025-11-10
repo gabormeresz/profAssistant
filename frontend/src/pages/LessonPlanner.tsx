@@ -63,6 +63,7 @@ function LessonPlanner() {
   const [keyTopics, setKeyTopics] = useState<string[]>([""]);
   const [activitiesProjects, setActivitiesProjects] = useState<string[]>([""]);
   const [userComment, setUserComment] = useState("");
+  const [language, setLanguage] = useState<string>("English");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   // SSE streaming hook
@@ -106,6 +107,9 @@ function LessonPlanner() {
       setActivitiesProjects(conversation.activities_projects);
       if (conversation.user_comment) {
         setUserComment(conversation.user_comment);
+      }
+      if (conversation.language) {
+        setLanguage(conversation.language);
       }
     },
     parseResult: (content: string) => JSON.parse(content) as LessonPlan
@@ -203,6 +207,7 @@ function LessonPlanner() {
       learning_objectives: filteredObjectives,
       key_topics: filteredTopics,
       activities_projects: filteredActivities,
+      language,
       files: uploadedFiles
     });
   }, [
@@ -213,6 +218,7 @@ function LessonPlanner() {
     keyTopics,
     activitiesProjects,
     userComment,
+    language,
     uploadedFiles,
     sendMessage,
     setHasStarted,
@@ -241,6 +247,7 @@ function LessonPlanner() {
         learning_objectives: filteredObjectives,
         key_topics: filteredTopics,
         activities_projects: filteredActivities,
+        language,
         thread_id: threadId || undefined,
         files
       });
@@ -252,6 +259,7 @@ function LessonPlanner() {
       learningObjectives,
       keyTopics,
       activitiesProjects,
+      language,
       threadId,
       sendMessage,
       setUserMessages
@@ -271,6 +279,7 @@ function LessonPlanner() {
     setKeyTopics([""]);
     setActivitiesProjects([""]);
     setUserComment("");
+    setLanguage("English");
     setUploadedFiles([]);
 
     // Navigate to base route
@@ -320,6 +329,8 @@ function LessonPlanner() {
           setUserComment={setUserComment}
           uploadedFiles={uploadedFiles}
           setUploadedFiles={setUploadedFiles}
+          language={language}
+          setLanguage={setLanguage}
           onSubmit={handleInitialSubmit}
           threadId={threadId}
         />

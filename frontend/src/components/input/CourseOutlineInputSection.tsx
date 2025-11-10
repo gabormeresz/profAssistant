@@ -9,6 +9,8 @@ interface CourseOutlineInputSectionProps {
   setTopic: (value: string) => void;
   numberOfClasses: number;
   setNumberOfClasses: (value: number) => void;
+  language: string;
+  setLanguage: (value: string) => void;
   onSubmit: () => void;
   threadId: string | null;
   uploadedFiles: File[];
@@ -22,6 +24,8 @@ export default function CourseOutlineInputSection({
   setTopic,
   numberOfClasses,
   setNumberOfClasses,
+  language,
+  setLanguage,
   onSubmit,
   threadId,
   uploadedFiles,
@@ -79,6 +83,27 @@ export default function CourseOutlineInputSection({
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
             placeholder="1"
           />
+        </div>
+
+        {/* Language Selection */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Language
+            {isSessionActive && (
+              <span className="ml-2 text-xs text-gray-500">
+                (locked for this conversation)
+              </span>
+            )}
+          </label>
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            disabled={isSessionActive}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+          >
+            <option value="English">English</option>
+            <option value="Hungarian">Hungarian</option>
+          </select>
         </div>
 
         {/* Message/Comment Field */}

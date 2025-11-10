@@ -24,6 +24,9 @@ class ConversationBase(BaseModel):
     )
     conversation_type: ConversationType = Field(..., description="Type of conversation")
     title: str = Field(..., description="Title or summary of the conversation")
+    language: str = Field(
+        default="Hungarian", description="Language for generated content"
+    )
     created_at: datetime = Field(
         default_factory=datetime.now, description="When the conversation was created"
     )
@@ -84,6 +87,7 @@ class CourseOutlineCreate(BaseModel):
     title: str
     topic: str
     number_of_classes: int
+    language: str = "Hungarian"
     difficulty_level: Optional[str] = None
     target_audience: Optional[str] = None
     user_comment: Optional[str] = None
@@ -99,6 +103,7 @@ class LessonPlanCreate(BaseModel):
     learning_objectives: List[str]
     key_topics: List[str]
     activities_projects: List[str]
+    language: str = "Hungarian"
     user_comment: Optional[str] = None
 
 
@@ -108,6 +113,7 @@ class CourseOutlineUpdate(BaseModel):
     title: Optional[str] = None
     topic: Optional[str] = None
     number_of_classes: Optional[int] = None
+    language: Optional[str] = None
     difficulty_level: Optional[str] = None
     target_audience: Optional[str] = None
     user_comment: Optional[str] = None
@@ -123,6 +129,7 @@ class LessonPlanUpdate(BaseModel):
     learning_objectives: Optional[List[str]] = None
     key_topics: Optional[List[str]] = None
     activities_projects: Optional[List[str]] = None
+    language: Optional[str] = None
     user_comment: Optional[str] = None
 
 

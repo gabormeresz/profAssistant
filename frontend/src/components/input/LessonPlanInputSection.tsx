@@ -20,6 +20,8 @@ interface LessonPlanInputSectionProps {
   setUserComment: Dispatch<SetStateAction<string>>;
   uploadedFiles: File[];
   setUploadedFiles: Dispatch<SetStateAction<File[]>>;
+  language: string;
+  setLanguage: Dispatch<SetStateAction<string>>;
   onSubmit: () => void;
   threadId: string | null;
 }
@@ -41,6 +43,8 @@ export function LessonPlanInputSection({
   setUserComment,
   uploadedFiles,
   setUploadedFiles,
+  language,
+  setLanguage,
   onSubmit,
   threadId
 }: LessonPlanInputSectionProps) {
@@ -133,6 +137,25 @@ export function LessonPlanInputSection({
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
         </div>
+      </div>
+
+      {/* Language Selection */}
+      <div className="mb-6">
+        <label
+          htmlFor="language"
+          className="block text-sm font-medium text-gray-700 mb-2"
+        >
+          Language
+        </label>
+        <select
+          id="language"
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+        >
+          <option value="English">English</option>
+          <option value="Hungarian">Hungarian</option>
+        </select>
       </div>
 
       {/* Learning Objectives */}

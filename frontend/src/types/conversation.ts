@@ -25,6 +25,7 @@ export interface SavedCourseOutline extends SavedConversationBase {
   difficulty_level?: string;
   target_audience?: string;
   user_comment?: string;
+  language?: string;
 }
 
 export interface SavedLessonPlan extends SavedConversationBase {
@@ -36,6 +37,7 @@ export interface SavedLessonPlan extends SavedConversationBase {
   key_topics: string[];
   activities_projects: string[];
   user_comment?: string;
+  language?: string;
 }
 
 export type SavedConversation = SavedCourseOutline | SavedLessonPlan;

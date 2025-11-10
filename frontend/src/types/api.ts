@@ -6,6 +6,7 @@ export interface CourseOutlineRequest {
   message: string;
   topic: string;
   number_of_classes: number;
+  language?: string;
   thread_id?: string;
   files?: File[];
 }
@@ -18,6 +19,7 @@ export interface LessonPlanRequest {
   learning_objectives: string[];
   key_topics: string[];
   activities_projects: string[];
+  language?: string;
   thread_id?: string;
   files?: File[];
 }

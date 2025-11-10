@@ -50,6 +50,11 @@ export const useLessonPlanSSE = (): UseLessonPlanSSEReturn => {
         JSON.stringify(data.activities_projects)
       );
 
+      // Add language if provided
+      if (data.language) {
+        formData.append("language", data.language);
+      }
+
       // Add files if present
       if (data.files && data.files.length > 0) {
         data.files.forEach((file) => {

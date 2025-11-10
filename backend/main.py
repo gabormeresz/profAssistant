@@ -7,10 +7,10 @@ from utils.file_processor import file_processor
 from agent.prompt_enhancer import prompt_enhancer
 from services.conversation_manager import conversation_manager
 from schemas.conversation import (
-    ConversationType, 
+    ConversationType,
     ConversationList,
     CourseOutlineUpdate,
-    LessonPlanUpdate
+    LessonPlanUpdate,
 )
 import json
 from typing import List, Optional
@@ -26,6 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.post("/enhance-prompt")
 async def enhance_prompt(
     message: str = Form(...),
@@ -34,7 +35,7 @@ async def enhance_prompt(
 ):
     """
     Enhance the user's prompt to provide better instructions for educational content generation.
-    
+
     Args:
         message: The user's message/instructions to enhance
         context_type: Type of content being generated ("course_outline" or "lesson_plan")
@@ -45,18 +46,19 @@ async def enhance_prompt(
     try:
         if not message.strip():
             return JSONResponse(
-                content={"error": "Message is required"},
-                status_code=400
+                content={"error": "Message is required"}, status_code=400
             )
-        
+
         # Validate context_type
         valid_contexts = ["course_outline", "lesson_plan"]
         if context_type not in valid_contexts:
             return JSONResponse(
-                content={"error": f"Invalid context_type. Must be one of: {', '.join(valid_contexts)}"},
-                status_code=400
+                content={
+                    "error": f"Invalid context_type. Must be one of: {', '.join(valid_contexts)}"
+                },
+                status_code=400,
             )
-        
+
         # Parse additional_context if provided
         context_dict = None
         if additional_context:
@@ -65,35 +67,41 @@ async def enhance_prompt(
             except json.JSONDecodeError:
                 return JSONResponse(
                     content={"error": "Invalid JSON in additional_context"},
-                    status_code=400
+                    status_code=400,
                 )
 
-        enhanced = await prompt_enhancer(message, context_type, context_dict)
-        return JSONResponse(content={"enhanced_prompt": enhanced})
-    
-    except Exception as e:
-        return JSONResponse(
-            content={"error": str(e)},
-            status_code=500
+        # Cast to Literal type after validation
+        from typing import Literal, cast
+
+        validated_context_type = cast(
+            Literal["course_outline", "lesson_plan"], context_type
         )
+        enhanced = await prompt_enhancer(message, validated_context_type, context_dict)
+        return JSONResponse(content={"enhanced_prompt": enhanced})
+
+    except Exception as e:
+        return JSONResponse(content={"error": str(e)}, status_code=500)
 
 
 async def course_outline_event_generator(
-    message: str, 
-    topic: str, 
-    number_of_classes: int, 
-    thread_id: Optional[str], 
-    file_contents: List[dict]
+    message: str,
+    topic: str,
+    number_of_classes: int,
+    language: str,
+    thread_id: Optional[str],
+    file_contents: List[dict],
 ):
     """
     Generator function that yields Server-Sent Events (SSE) for structured output.
     Yields progress updates and the final structured course outline.
     """
     try:
-        async for event in run_course_outline_generator(message, topic, number_of_classes, thread_id, file_contents):
+        async for event in run_course_outline_generator(
+            message, topic, number_of_classes, thread_id, file_contents, language
+        ):
             if isinstance(event, dict):
                 event_type = event.get("type", "data")
-                
+
                 if event_type == "thread_id":
                     # Send thread_id as a separate SSE event type
                     yield f"event: thread_id\ndata: {json.dumps({'thread_id': event['thread_id']})}\n\n"
@@ -118,28 +126,31 @@ async def generate_course_outline(
     message: str = Form(""),
     topic: str = Form(...),
     number_of_classes: int = Form(...),
+    language: str = Form("English"),
     thread_id: Optional[str] = Form(None),
-    files: Optional[List[UploadFile]] = File(None)
+    files: Optional[List[UploadFile]] = File(None),
 ):
     """
     Handle course outline generation with structured output and optional file uploads.
     Returns a streaming SSE response with progress updates and structured data.
     """
     file_contents = []
-    
+
     # Process uploaded files if any
     if files:
         file_contents += await file_processor(files)
-    
+
     # Return SSE stream
     return StreamingResponse(
-        course_outline_event_generator(message, topic, number_of_classes, thread_id, file_contents),
+        course_outline_event_generator(
+            message, topic, number_of_classes, language, thread_id, file_contents
+        ),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            "X-Accel-Buffering": "no"  # Disable buffering for nginx
-        }
+            "X-Accel-Buffering": "no",  # Disable buffering for nginx
+        },
     )
 
 
@@ -151,8 +162,9 @@ async def lesson_plan_event_generator(
     learning_objectives: List[str],
     key_topics: List[str],
     activities_projects: List[str],
+    language: str,
     thread_id: Optional[str],
-    file_contents: List[dict]
+    file_contents: List[dict],
 ):
     """
     Generator function that yields Server-Sent Events (SSE) for lesson plan generation.
@@ -160,19 +172,20 @@ async def lesson_plan_event_generator(
     """
     try:
         async for event in run_structured_lesson_plan_generator(
-            message, 
-            course_title, 
-            class_number, 
+            message,
+            course_title,
+            class_number,
             class_title,
             learning_objectives,
             key_topics,
             activities_projects,
-            thread_id, 
-            file_contents
+            thread_id,
+            file_contents,
+            language,
         ):
             if isinstance(event, dict):
                 event_type = event.get("type", "data")
-                
+
                 if event_type == "thread_id":
                     # Send thread_id as a separate SSE event type
                     yield f"event: thread_id\ndata: {json.dumps({'thread_id': event['thread_id']})}\n\n"
@@ -201,8 +214,9 @@ async def generate_lesson_plan(
     learning_objectives: str = Form(...),  # JSON string
     key_topics: str = Form(...),  # JSON string
     activities_projects: str = Form(...),  # JSON string
+    language: str = Form("English"),
     thread_id: Optional[str] = Form(None),
-    files: Optional[List[UploadFile]] = File(None)
+    files: Optional[List[UploadFile]] = File(None),
 ):
     """
     Handle lesson plan generation with structured output and optional file uploads.
@@ -214,14 +228,16 @@ async def generate_lesson_plan(
         key_topics_list = json.loads(key_topics)
         activities_projects_list = json.loads(activities_projects)
     except json.JSONDecodeError as e:
-        raise HTTPException(status_code=400, detail=f"Invalid JSON in form fields: {str(e)}")
-    
+        raise HTTPException(
+            status_code=400, detail=f"Invalid JSON in form fields: {str(e)}"
+        )
+
     file_contents = []
-    
+
     # Process uploaded files if any
     if files:
         file_contents += await file_processor(files)
-    
+
     # Return SSE stream
     return StreamingResponse(
         lesson_plan_event_generator(
@@ -232,15 +248,16 @@ async def generate_lesson_plan(
             learning_objectives_list,
             key_topics_list,
             activities_projects_list,
+            language,
             thread_id,
-            file_contents
+            file_contents,
         ),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            "X-Accel-Buffering": "no"  # Disable buffering for nginx
-        }
+            "X-Accel-Buffering": "no",  # Disable buffering for nginx
+        },
     )
 
 
@@ -248,11 +265,10 @@ async def generate_lesson_plan(
 # Conversation Management Endpoints
 # ============================================================================
 
+
 @app.get("/conversations")
 async def list_conversations(
-    conversation_type: Optional[str] = None,
-    limit: int = 100,
-    offset: int = 0
+    conversation_type: Optional[str] = None, limit: int = 100, offset: int = 0
 ):
     """
     List all saved conversations with optional filtering by type.
@@ -260,16 +276,11 @@ async def list_conversations(
     try:
         conv_type = ConversationType(conversation_type) if conversation_type else None
         conversations = conversation_manager.list_conversations(
-            conversation_type=conv_type,
-            limit=limit,
-            offset=offset
+            conversation_type=conv_type, limit=limit, offset=offset
         )
         total = conversation_manager.count_conversations(conversation_type=conv_type)
-        
-        return ConversationList(
-            conversations=conversations,
-            total=total
-        )
+
+        return ConversationList(conversations=conversations, total=total)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid conversation type")
     except Exception as e:
@@ -291,22 +302,24 @@ async def get_conversation(thread_id: str):
 async def update_conversation(thread_id: str, update: CourseOutlineUpdate):
     """
     Update conversation metadata.
-    Note: Currently only supports CourseOutline updates. 
+    Note: Currently only supports CourseOutline updates.
     For lesson plans, use a separate endpoint or extend this with Union types.
     """
     existing = conversation_manager.get_conversation(thread_id)
     if not existing:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    
+
     # Determine type and call appropriate update method
     if existing.conversation_type == ConversationType.COURSE_OUTLINE:
         updated = conversation_manager.update_course_outline(
-            thread_id=thread_id,
-            data=update
+            thread_id=thread_id, data=update
         )
     else:
-        raise HTTPException(status_code=400, detail="Update not supported for this conversation type via this endpoint")
-    
+        raise HTTPException(
+            status_code=400,
+            detail="Update not supported for this conversation type via this endpoint",
+        )
+
     return updated
 
 
@@ -319,7 +332,7 @@ async def delete_conversation(thread_id: str):
     deleted = conversation_manager.delete_conversation(thread_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Conversation not found")
-    
+
     return {"success": True, "message": "Conversation deleted"}
 
 
@@ -331,58 +344,60 @@ async def get_conversation_history(thread_id: str):
     """
     try:
         from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-        
+
         # Get conversation metadata to verify it exists
         conversation = conversation_manager.get_conversation(thread_id)
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
-        
+
         # Connect to checkpoints database and retrieve history
         async with AsyncSqliteSaver.from_conn_string("checkpoints.db") as checkpointer:
             # Get the checkpoint for this thread
             config = {"configurable": {"thread_id": thread_id}}
-            
+
             # Get the latest state
             state = await checkpointer.aget(config)  # type: ignore
-            
+
             if not state:
                 # No messages yet in this thread
                 return {
                     "thread_id": thread_id,
                     "messages": [],
-                    "metadata": conversation.model_dump()
+                    "metadata": conversation.model_dump(),
                 }
-            
+
             # Extract messages from state
             # In LangGraph v1, the checkpoint state is a dict with 'channel_values' key
             messages = []
-            
+
             # State is a dict, and the actual state data is in 'channel_values'
             state_dict = state if isinstance(state, dict) else {}  # type: ignore
-            
+
             # Access the actual channel values
-            if isinstance(state_dict, dict) and 'channel_values' in state_dict:
-                channel_values = state_dict['channel_values']  # type: ignore
-                
-                if isinstance(channel_values, dict) and 'messages' in channel_values:
-                    state_dict = channel_values  # Use channel_values as the actual state
-            
+            if isinstance(state_dict, dict) and "channel_values" in state_dict:
+                channel_values = state_dict["channel_values"]  # type: ignore
+
+                if isinstance(channel_values, dict) and "messages" in channel_values:
+                    state_dict = (
+                        channel_values  # Use channel_values as the actual state
+                    )
+
             if "messages" in state_dict:  # type: ignore
                 raw_messages = state_dict["messages"]  # type: ignore
-                
+
                 # Handle both single message and list of messages
                 if not isinstance(raw_messages, list):
                     raw_messages = [raw_messages]
-                
+
                 # Keep track of whether we have structured_response
                 has_structured_response = "structured_response" in state_dict  # type: ignore
                 structured_response = state_dict.get("structured_response") if has_structured_response else None  # type: ignore
-                
+
                 for i, msg in enumerate(raw_messages):
                     # Extract message content based on structure
                     content = ""
                     role = "assistant"
-                    
+
                     # Determine role from LangChain message type first
                     if hasattr(msg, "__class__"):
                         class_name = msg.__class__.__name__  # type: ignore
@@ -400,13 +415,14 @@ async def get_conversation_history(thread_id: str):
                         role = "user" if msg_type == "human" else "assistant"
                     elif isinstance(msg, dict) and "role" in msg:  # type: ignore
                         role = str(msg["role"])  # type: ignore
-                    
+
                     # For assistant messages, use the structured_response if available
                     # For user messages, use the message content
                     if role == "assistant" and structured_response:
                         # Return the structured response as JSON
                         import json
-                        content = json.dumps(structured_response.model_dump() if hasattr(structured_response, 'model_dump') else structured_response)  # type: ignore
+
+                        content = json.dumps(structured_response.model_dump() if hasattr(structured_response, "model_dump") else structured_response)  # type: ignore
                     else:
                         # LangChain message objects have a content attribute
                         if hasattr(msg, "content"):
@@ -415,21 +431,19 @@ async def get_conversation_history(thread_id: str):
                             content = str(msg["content"])  # type: ignore
                         else:
                             content = str(msg)
-                    
-                    messages.append({
-                        "role": role,
-                        "content": content
-                    })
-            
+
+                    messages.append({"role": role, "content": content})
+
             return {
                 "thread_id": thread_id,
                 "messages": messages,
-                "metadata": conversation.model_dump()
+                "metadata": conversation.model_dump(),
             }
-    
+
     except Exception as e:
         import traceback
+
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve conversation history: {str(e)}")
-
-
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve conversation history: {str(e)}"
+        )

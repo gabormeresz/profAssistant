@@ -62,6 +62,11 @@ export default function SavedConversationItem({
     }
   };
 
+  const getLanguageFlag = () => {
+    const language = conversation.language || "English";
+    return language === "English" ? "EN" : "HU";
+  };
+
   const getSubtitle = () => {
     if (conversation.conversation_type === "course_outline") {
       const outline = conversation as Extract<
@@ -90,6 +95,9 @@ export default function SavedConversationItem({
     >
       <div className="flex items-start gap-2">
         <span className="text-lg flex-shrink-0 mt-0.5">{getIcon()}</span>
+        <span className="text-base flex-shrink-0 mt-0.5" title={conversation.language || "Hungarian"}>
+          {getLanguageFlag()}
+        </span>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <h4
