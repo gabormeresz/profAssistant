@@ -9,7 +9,7 @@ function Home() {
     <Layout>
       <div className="max-w-4xl mx-auto px-4 py-12">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-6">ProfAI</h1>
+          <h1 className="text-4xl font-bold mb-6">ProfAssistant</h1>
           <p className="text-lg text-gray-600 mb-8">{t("home.subtitle")}</p>
 
           <div className="max-w-md mx-auto mb-8">
