@@ -41,11 +41,15 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
       // Prepare form data
       const formData = new FormData();
       formData.append("message", data.message);
-      formData.append("topic", data.topic);
-      formData.append("number_of_classes", data.number_of_classes.toString());
 
-      // Add language if provided
-      if (data.language) {
+      // Only append initial request fields if provided
+      if (data.topic !== undefined) {
+        formData.append("topic", data.topic);
+      }
+      if (data.number_of_classes !== undefined) {
+        formData.append("number_of_classes", data.number_of_classes.toString());
+      }
+      if (data.language !== undefined) {
         formData.append("language", data.language);
       }
 

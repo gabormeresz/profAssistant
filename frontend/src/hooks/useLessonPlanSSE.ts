@@ -37,21 +37,33 @@ export const useLessonPlanSSE = (): UseLessonPlanSSEReturn => {
       // Prepare form data
       const formData = new FormData();
       formData.append("message", data.message);
-      formData.append("course_title", data.course_title);
-      formData.append("class_number", data.class_number.toString());
-      formData.append("class_title", data.class_title);
-      formData.append(
-        "learning_objectives",
-        JSON.stringify(data.learning_objectives)
-      );
-      formData.append("key_topics", JSON.stringify(data.key_topics));
-      formData.append(
-        "activities_projects",
-        JSON.stringify(data.activities_projects)
-      );
 
-      // Add language if provided
-      if (data.language) {
+      // Only append initial request fields if provided
+      if (data.course_title !== undefined) {
+        formData.append("course_title", data.course_title);
+      }
+      if (data.class_number !== undefined) {
+        formData.append("class_number", data.class_number.toString());
+      }
+      if (data.class_title !== undefined) {
+        formData.append("class_title", data.class_title);
+      }
+      if (data.learning_objectives !== undefined) {
+        formData.append(
+          "learning_objectives",
+          JSON.stringify(data.learning_objectives)
+        );
+      }
+      if (data.key_topics !== undefined) {
+        formData.append("key_topics", JSON.stringify(data.key_topics));
+      }
+      if (data.activities_projects !== undefined) {
+        formData.append(
+          "activities_projects",
+          JSON.stringify(data.activities_projects)
+        );
+      }
+      if (data.language !== undefined) {
         formData.append("language", data.language);
       }
 

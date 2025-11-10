@@ -5,7 +5,7 @@ Returns validated Pydantic LessonPlan model with progress updates.
 
 from langchain.agents import create_agent, AgentState
 from schemas.lesson_plan import LessonPlan
-from schemas.conversation import ConversationType, LessonPlanCreate
+from schemas.conversation import ConversationType, LessonPlanCreate, LessonPlanMetadata
 from typing import Dict, List, Optional
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from .tools import web_search
@@ -84,15 +84,15 @@ def generate_thread_id(thread_id: str | None) -> str:
 
 async def run_structured_lesson_plan_generator(
     message: str,
-    course_title: str,
-    class_number: int,
-    class_title: str,
-    learning_objectives: List[str],
-    key_topics: List[str],
-    activities_projects: List[str],
+    course_title: str | None = None,
+    class_number: int | None = None,
+    class_title: str | None = None,
+    learning_objectives: List[str] | None = None,
+    key_topics: List[str] | None = None,
+    activities_projects: List[str] | None = None,
     thread_id: str | None = None,
     file_contents: List[Dict[str, str]] | None = None,
-    language: str = "Hungarian",
+    language: str | None = None,
 ):
     """
     Run the LangChain model with structured output using LessonPlan schema.
@@ -100,31 +100,17 @@ async def run_structured_lesson_plan_generator(
 
     Args:
         message: The main user message/prompt (optional additional context)
-        course_title: The title of the course
-        class_number: The sequential number of the class
-        class_title: The title of the class
-        learning_objectives: List of learning objectives for the class
-        key_topics: List of key topics for the class
-        activities_projects: List of activities/projects for the class
+        course_title: The title of the course (required for first call, ignored on follow-ups)
+        class_number: The sequential number of the class (required for first call, ignored on follow-ups)
+        class_title: The title of the class (required for first call, ignored on follow-ups)
+        learning_objectives: List of learning objectives for the class (required for first call, ignored on follow-ups)
+        key_topics: List of key topics for the class (required for first call, ignored on follow-ups)
+        activities_projects: List of activities/projects for the class (required for first call, ignored on follow-ups)
         thread_id: Optional thread ID for conversation continuity. If None, creates a new one.
         file_contents: Optional list of file contents with filename and content
-        language: Language for the generated content (default: Hungarian)
+        language: Language for the generated content (required for first call, ignored on follow-ups)
     Returns:
         Generator that yields progress updates and structured data
-    """
-
-    system_prompt = f"""
-        You are an expert higher-education teaching assistant that generates
-        professional, well-structured university lesson plans.
-        
-        If the user provides reference materials (file uploads), use them as contextual inspiration and do not copy them verbatim.
-        
-        You can use the available tools to gather more information any time.
-        
-        Generate a structured lesson plan following the provided schema with detailed information.
-        The output language must be {language}.
-        All lesson content (titles, objectives, activities, etc.) should be written in {language},
-        but keep all JSON field names in English to conform to the schema.
     """
 
     try:
@@ -138,6 +124,20 @@ async def run_structured_lesson_plan_generator(
 
         # Save or update conversation metadata
         if is_first_call:
+            # Validate required parameters for first call
+            if (
+                course_title is None
+                or class_number is None
+                or class_title is None
+                or learning_objectives is None
+                or key_topics is None
+                or activities_projects is None
+                or language is None
+            ):
+                raise ValueError(
+                    "All lesson plan parameters are required for the first call"
+                )
+
             # Create new conversation metadata
             title = f"{class_title[:50]}..." if len(class_title) > 50 else class_title
             conversation_manager.create_lesson_plan(
@@ -158,6 +158,34 @@ async def run_structured_lesson_plan_generator(
         else:
             # Update existing conversation (increment message count, update timestamp)
             conversation_manager.increment_message_count(thread_id)
+            # Load all parameters from the saved conversation
+            conversation = conversation_manager.get_conversation(thread_id)
+            if conversation and isinstance(conversation, LessonPlanMetadata):
+                language = conversation.language
+                course_title = conversation.course_title
+                class_number = conversation.class_number
+                class_title = conversation.class_title
+                learning_objectives = conversation.learning_objectives
+                key_topics = conversation.key_topics
+                activities_projects = conversation.activities_projects
+            else:
+                raise ValueError(
+                    f"Conversation not found or invalid type for thread_id: {thread_id}"
+                )
+
+        system_prompt = f"""
+        You are an expert higher-education teaching assistant that generates
+        professional, well-structured university lesson plans.
+        
+        If the user provides reference materials (file uploads), use them as contextual inspiration and do not copy them verbatim.
+        
+        You can use the available tools to gather more information any time.
+        
+        Generate a structured lesson plan following the provided schema with detailed information.
+        The output language must be {language}.
+        All lesson content (titles, objectives, activities, etc.) should be written in {language},
+        but keep all JSON field names in English to conform to the schema.
+    """
 
         # Setup persistent SQLite checkpointer using async context manager
         async with AsyncSqliteSaver.from_conn_string("checkpoints.db") as memory:

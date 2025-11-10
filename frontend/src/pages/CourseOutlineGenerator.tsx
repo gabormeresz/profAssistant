@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -50,7 +50,7 @@ function createUserMessage(
 function CourseOutlineGenerator() {
   const { threadId: urlThreadId } = useParams<{ threadId?: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // ============================================================================
   // State Management
@@ -62,7 +62,9 @@ function CourseOutlineGenerator() {
   const [numberOfClasses, setNumberOfClasses] = useState<number>(
     COURSE_OUTLINE.DEFAULT_CLASSES
   );
-  const [language, setLanguage] = useState<string>("English");
+  const [language, setLanguage] = useState<string>(
+    i18n.language === "hu" ? "Hungarian" : "English"
+  );
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   // SSE streaming hook
@@ -115,6 +117,17 @@ function CourseOutlineGenerator() {
   });
 
   // ============================================================================
+  // Effects
+  // ============================================================================
+
+  // Sync language field with UI language (only before conversation starts)
+  useEffect(() => {
+    if (!hasStarted) {
+      setLanguage(i18n.language === "hu" ? "Hungarian" : "English");
+    }
+  }, [i18n.language, hasStarted]);
+
+  // ============================================================================
   // Event Handlers
   // ============================================================================
 
@@ -159,16 +172,14 @@ function CourseOutlineGenerator() {
       setUserMessages((prev) => [...prev, userMessage]);
 
       // Send to backend (outline will be added via useEffect)
+      // On follow-ups, only send message, thread_id, and files
       await sendMessage({
         message,
-        topic,
-        number_of_classes: numberOfClasses,
-        language,
         thread_id: threadId || undefined,
         files
       });
     },
-    [topic, numberOfClasses, language, threadId, sendMessage, setUserMessages]
+    [threadId, sendMessage, setUserMessages]
   );
 
   const handleNewConversation = useCallback(() => {
@@ -180,7 +191,7 @@ function CourseOutlineGenerator() {
     setUserComment("");
     setTopic("");
     setNumberOfClasses(COURSE_OUTLINE.DEFAULT_CLASSES);
-    setLanguage("English");
+    setLanguage(i18n.language === "hu" ? "Hungarian" : "English");
     setUploadedFiles([]);
 
     // Navigate to base route
@@ -190,7 +201,8 @@ function CourseOutlineGenerator() {
     setOutlineHistory,
     setUserMessages,
     setHasStarted,
-    navigate
+    navigate,
+    i18n.language
   ]);
 
   // ============================================================================
@@ -245,7 +257,10 @@ function CourseOutlineGenerator() {
             {/* Corresponding assistant response (course outline) */}
             {outlineHistory[index] && (
               <div className="mt-6">
-                <StructuredCourseOutline outline={outlineHistory[index]} />
+                <StructuredCourseOutline
+                  outline={outlineHistory[index]}
+                  language={language}
+                />
               </div>
             )}
           </div>
@@ -254,7 +269,10 @@ function CourseOutlineGenerator() {
         {/* Show current outline being generated (not yet in history) */}
         {courseOutline && (
           <div className="mt-6">
-            <StructuredCourseOutline outline={courseOutline} />
+            <StructuredCourseOutline
+              outline={courseOutline}
+              language={language}
+            />
           </div>
         )}
       </div>

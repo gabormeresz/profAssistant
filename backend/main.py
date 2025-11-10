@@ -85,9 +85,9 @@ async def enhance_prompt(
 
 async def course_outline_event_generator(
     message: str,
-    topic: str,
-    number_of_classes: int,
-    language: str,
+    topic: Optional[str],
+    number_of_classes: Optional[int],
+    language: Optional[str],
     thread_id: Optional[str],
     file_contents: List[dict],
 ):
@@ -124,15 +124,18 @@ async def course_outline_event_generator(
 @app.post("/outline-generator")
 async def generate_course_outline(
     message: str = Form(""),
-    topic: str = Form(...),
-    number_of_classes: int = Form(...),
-    language: str = Form("English"),
+    topic: Optional[str] = Form(None),
+    number_of_classes: Optional[int] = Form(None),
+    language: Optional[str] = Form(None),
     thread_id: Optional[str] = Form(None),
     files: Optional[List[UploadFile]] = File(None),
 ):
     """
     Handle course outline generation with structured output and optional file uploads.
     Returns a streaming SSE response with progress updates and structured data.
+
+    For initial requests: topic, number_of_classes, and language are required.
+    For follow-up requests (with thread_id): only message and files are needed.
     """
     file_contents = []
 
@@ -156,13 +159,13 @@ async def generate_course_outline(
 
 async def lesson_plan_event_generator(
     message: str,
-    course_title: str,
-    class_number: int,
-    class_title: str,
-    learning_objectives: List[str],
-    key_topics: List[str],
-    activities_projects: List[str],
-    language: str,
+    course_title: Optional[str],
+    class_number: Optional[int],
+    class_title: Optional[str],
+    learning_objectives: Optional[List[str]],
+    key_topics: Optional[List[str]],
+    activities_projects: Optional[List[str]],
+    language: Optional[str],
     thread_id: Optional[str],
     file_contents: List[dict],
 ):
@@ -208,25 +211,32 @@ async def lesson_plan_event_generator(
 @app.post("/lesson-planner")
 async def generate_lesson_plan(
     message: str = Form(""),
-    course_title: str = Form(...),
-    class_number: int = Form(...),
-    class_title: str = Form(...),
-    learning_objectives: str = Form(...),  # JSON string
-    key_topics: str = Form(...),  # JSON string
-    activities_projects: str = Form(...),  # JSON string
-    language: str = Form("English"),
+    course_title: Optional[str] = Form(None),
+    class_number: Optional[int] = Form(None),
+    class_title: Optional[str] = Form(None),
+    learning_objectives: Optional[str] = Form(None),  # JSON string
+    key_topics: Optional[str] = Form(None),  # JSON string
+    activities_projects: Optional[str] = Form(None),  # JSON string
+    language: Optional[str] = Form(None),
     thread_id: Optional[str] = Form(None),
     files: Optional[List[UploadFile]] = File(None),
 ):
     """
     Handle lesson plan generation with structured output and optional file uploads.
     Returns a streaming SSE response with progress updates and structured data.
+
+    For initial requests: all lesson plan parameters are required.
+    For follow-up requests (with thread_id): only message and files are needed.
     """
     try:
-        # Parse JSON strings to lists
-        learning_objectives_list = json.loads(learning_objectives)
-        key_topics_list = json.loads(key_topics)
-        activities_projects_list = json.loads(activities_projects)
+        # Parse JSON strings to lists only if they are provided
+        learning_objectives_list = (
+            json.loads(learning_objectives) if learning_objectives else None
+        )
+        key_topics_list = json.loads(key_topics) if key_topics else None
+        activities_projects_list = (
+            json.loads(activities_projects) if activities_projects else None
+        )
     except json.JSONDecodeError as e:
         raise HTTPException(
             status_code=400, detail=f"Invalid JSON in form fields: {str(e)}"

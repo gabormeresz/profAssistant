@@ -51,7 +51,7 @@ function LessonPlanner() {
   const { threadId: urlThreadId } = useParams<{ threadId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // ============================================================================
   // State Management
@@ -65,7 +65,9 @@ function LessonPlanner() {
   const [keyTopics, setKeyTopics] = useState<string[]>([""]);
   const [activitiesProjects, setActivitiesProjects] = useState<string[]>([""]);
   const [userComment, setUserComment] = useState("");
-  const [language, setLanguage] = useState<string>("English");
+  const [language, setLanguage] = useState<string>(
+    i18n.language === "hu" ? "Hungarian" : "English"
+  );
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   // SSE streaming hook
@@ -123,6 +125,13 @@ function LessonPlanner() {
   // Effects
   // ============================================================================
 
+  // Sync language field with UI language (only before conversation starts)
+  useEffect(() => {
+    if (!hasStarted) {
+      setLanguage(i18n.language === "hu" ? "Hungarian" : "English");
+    }
+  }, [i18n.language, hasStarted]);
+
   // Load pre-filled data from navigation state (from course outline)
   useEffect(() => {
     if (location.state) {
@@ -133,6 +142,7 @@ function LessonPlanner() {
         learningObjectives?: string[];
         keyTopics?: string[];
         activitiesProjects?: string[];
+        language?: string;
       };
 
       if (state.courseTitle) setCourseTitle(state.courseTitle);
@@ -143,6 +153,7 @@ function LessonPlanner() {
       if (state.keyTopics) setKeyTopics(state.keyTopics);
       if (state.activitiesProjects)
         setActivitiesProjects(state.activitiesProjects);
+      if (state.language) setLanguage(state.language);
 
       // Clear navigation state after loading
       window.history.replaceState({}, document.title);
@@ -230,41 +241,19 @@ function LessonPlanner() {
     async (message: string, files: File[]) => {
       if (!message.trim() && files.length === 0) return;
 
-      // Filter out empty strings from arrays
-      const filteredObjectives = learningObjectives.filter((obj) => obj.trim());
-      const filteredTopics = keyTopics.filter((topic) => topic.trim());
-      const filteredActivities = activitiesProjects.filter((act) => act.trim());
-
       // Add user message to history
       const userMessage = createUserMessage(message, files);
       setUserMessages((prev) => [...prev, userMessage]);
 
       // Send to backend (lesson plan will be added via useEffect)
+      // On follow-ups, only send message, thread_id, and files
       await sendMessage({
         message,
-        course_title: courseTitle,
-        class_number: classNumber,
-        class_title: classTitle,
-        learning_objectives: filteredObjectives,
-        key_topics: filteredTopics,
-        activities_projects: filteredActivities,
-        language,
         thread_id: threadId || undefined,
         files
       });
     },
-    [
-      courseTitle,
-      classNumber,
-      classTitle,
-      learningObjectives,
-      keyTopics,
-      activitiesProjects,
-      language,
-      threadId,
-      sendMessage,
-      setUserMessages
-    ]
+    [threadId, sendMessage, setUserMessages]
   );
 
   const handleNewConversation = useCallback(() => {
@@ -280,12 +269,19 @@ function LessonPlanner() {
     setKeyTopics([""]);
     setActivitiesProjects([""]);
     setUserComment("");
-    setLanguage("English");
+    setLanguage(i18n.language === "hu" ? "Hungarian" : "English");
     setUploadedFiles([]);
 
     // Navigate to base route
     navigate("/lesson-planner", { replace: true });
-  }, [resetThread, setLessonHistory, setUserMessages, setHasStarted, navigate]);
+  }, [
+    resetThread,
+    setLessonHistory,
+    setUserMessages,
+    setHasStarted,
+    navigate,
+    i18n.language
+  ]);
 
   // ============================================================================
   // Render

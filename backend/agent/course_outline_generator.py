@@ -5,7 +5,11 @@ Returns validated Pydantic CourseOutline model with progress updates.
 
 from typing import Dict, List, Optional
 from schemas.course_outline import CourseOutline
-from schemas.conversation import ConversationType, CourseOutlineCreate
+from schemas.conversation import (
+    ConversationType,
+    CourseOutlineCreate,
+    CourseOutlineMetadata,
+)
 from langchain.agents import create_agent
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langchain.agents import AgentState
@@ -68,11 +72,11 @@ def generate_thread_id(thread_id: str | None) -> str:
 
 async def run_course_outline_generator(
     message: str,
-    topic: str = "general education",
-    number_of_classes: int = 1,
+    topic: str | None = None,
+    number_of_classes: int | None = None,
     thread_id: str | None = None,
     file_contents: List[Dict[str, str]] | None = None,
-    language: str = "Hungarian",
+    language: str | None = None,
 ):
     """
     Run the course outline generator with structured output using CourseOutline schema.
@@ -81,30 +85,14 @@ async def run_course_outline_generator(
 
     Args:
         message: The main user message/prompt (optional additional context)
-        topic: The topic/subject for the course outline
-        number_of_classes: Number of classes in the course outline
+        topic: The topic/subject for the course outline (required for first call, ignored on follow-ups)
+        number_of_classes: Number of classes in the course outline (required for first call, ignored on follow-ups)
         thread_id: Optional thread ID for conversation continuity. If None, creates a new one.
         file_contents: Optional list of file contents with filename and content
-        language: Language for the generated content (default: Hungarian)
+        language: Language for the generated content (required for first call, ignored on follow-ups)
 
     Returns:
         Generator that yields progress updates, tool usage, and structured data
-    """
-
-    system_prompt = f"""
-        You are a helpful educational assistant that generates professional course outlines.
-        Always stick to the topic and number of classes the user provided unless the user explicitly asks otherwise. 
-        
-        If the user provides reference materials (file uploads), use them as contextual inspiration and do not copy them verbatim.
-        Stick to the topic and number of classes even if the reference materials suggest otherwise,
-        however try to extract and use the content of the reference materials if relevant.
-        
-        You can use the available tools to gather more information any time.
-        
-        Generate a structured course outline following the provided schema with detailed information for each class.
-        The output language must be {language}.
-        All course content (titles, objectives, topics, activities, etc.) should be written in {language},
-        but keep all JSON field names in English to conform to the schema.
     """
 
     try:
@@ -118,6 +106,12 @@ async def run_course_outline_generator(
 
         # Save or update conversation metadata
         if is_first_call:
+            # Validate required parameters for first call
+            if topic is None or number_of_classes is None or language is None:
+                raise ValueError(
+                    "topic, number_of_classes, and language are required for the first call"
+                )
+
             # Create new conversation metadata
             title = f"{topic[:50]}..." if len(topic) > 50 else topic
             conversation_manager.create_course_outline(
@@ -134,6 +128,32 @@ async def run_course_outline_generator(
         else:
             # Update existing conversation (increment message count, update timestamp)
             conversation_manager.increment_message_count(thread_id)
+            # Load all parameters from the saved conversation
+            conversation = conversation_manager.get_conversation(thread_id)
+            if conversation and isinstance(conversation, CourseOutlineMetadata):
+                language = conversation.language
+                topic = conversation.topic
+                number_of_classes = conversation.number_of_classes
+            else:
+                raise ValueError(
+                    f"Conversation not found or invalid type for thread_id: {thread_id}"
+                )
+
+        system_prompt = f"""
+        You are a helpful educational assistant that generates professional course outlines.
+        Always stick to the topic and number of classes the user provided unless the user explicitly asks otherwise. 
+        
+        If the user provides reference materials (file uploads), use them as contextual inspiration and do not copy them verbatim.
+        Stick to the topic and number of classes even if the reference materials suggest otherwise,
+        however try to extract and use the content of the reference materials if relevant.
+        
+        You can use the available tools to gather more information any time.
+        
+        Generate a structured course outline following the provided schema with detailed information for each class.
+        The output language must be {language}.
+        All course content (titles, objectives, topics, activities, etc.) should be written in {language},
+        but keep all JSON field names in English to conform to the schema.
+    """
 
         # Setup persistent SQLite checkpointer using async context manager
         async with AsyncSqliteSaver.from_conn_string("checkpoints.db") as memory:

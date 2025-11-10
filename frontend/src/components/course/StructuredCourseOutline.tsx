@@ -6,10 +6,12 @@ import { courseOutlineToMarkdown } from "../../utils";
 
 interface StructuredCourseOutlineProps {
   outline: CourseOutline;
+  language?: string;
 }
 
 export function StructuredCourseOutline({
-  outline
+  outline,
+  language
 }: StructuredCourseOutlineProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -31,7 +33,8 @@ export function StructuredCourseOutline({
         classTitle: courseClass.class_title,
         learningObjectives: courseClass.learning_objectives,
         keyTopics: courseClass.key_topics,
-        activitiesProjects: courseClass.activities_projects
+        activitiesProjects: courseClass.activities_projects,
+        language: language
       }
     });
   };
