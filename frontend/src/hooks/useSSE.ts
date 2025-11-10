@@ -82,7 +82,7 @@ export const useSSE = <T>(): UseSSEReturn<T> => {
     ): Promise<T | null> => {
       // Clear previous data and start loading
       setData(null);
-      setProgressMessage("Initializing...");
+      setProgressMessage("overlay.initializing");
       setLoading(true);
       setStreamingState("connecting");
 
@@ -158,16 +158,27 @@ export const useSSE = <T>(): UseSSEReturn<T> => {
                   setThreadId(parsed.thread_id);
                   logger.debug("Thread ID set:", parsed.thread_id);
                   handlers?.onThreadId?.(parsed.thread_id);
-                } else if (currentEvent === "progress" && parsed.message) {
-                  setProgressMessage(parsed.message);
-                  setLoading(false); // Not loading, but actively processing
-                  handlers?.onProgress?.(parsed.message);
+                } else if (currentEvent === "progress") {
+                  // Handle both old format (message) and new format (message_key)
+                  const messageKey = parsed.message_key || parsed.message;
+                  if (messageKey) {
+                    // Store the translation key and params for the component to translate
+                    const progressData = parsed.params
+                      ? JSON.stringify({
+                          key: messageKey,
+                          params: parsed.params
+                        })
+                      : messageKey;
+                    setProgressMessage(progressData);
+                    setLoading(false); // Not loading, but actively processing
+                    handlers?.onProgress?.(progressData);
+                  }
                 } else if (currentEvent === "complete" && parsed) {
                   // Structured data received
                   const completedData = parsed as T;
                   setData(completedData);
                   finalData = completedData;
-                  setProgressMessage("Complete!");
+                  setProgressMessage("overlay.complete");
                   handlers?.onComplete?.(completedData);
                 } else if (currentEvent === "error" && parsed.message) {
                   logger.error("Stream error:", parsed.message);

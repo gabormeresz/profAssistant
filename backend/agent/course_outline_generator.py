@@ -188,7 +188,7 @@ async def run_course_outline_generator(
             config = {"configurable": {"thread_id": thread_id}}
 
             # Yield progress update
-            yield {"type": "progress", "message": "Generating course outline..."}
+            yield {"type": "progress", "message_key": "overlay.generatingCourseOutline"}
 
             # Track the agent's structured response
             final_result = None
@@ -205,12 +205,20 @@ async def run_course_outline_generator(
                 # Detect tool calls
                 if kind == "on_tool_start":
                     tool_name = event.get("name", "unknown tool")
-                    yield {"type": "progress", "message": f"Using tool: {tool_name}"}
+                    yield {
+                        "type": "progress",
+                        "message_key": "overlay.usingTool",
+                        "params": {"toolName": tool_name},
+                    }
 
                 # Detect tool results
                 if kind == "on_tool_end":
                     tool_name = event.get("name", "unknown tool")
-                    yield {"type": "progress", "message": f"Completed: {tool_name}"}
+                    yield {
+                        "type": "progress",
+                        "message_key": "overlay.completedTool",
+                        "params": {"toolName": tool_name},
+                    }
 
                 # Capture the final structured response from the agent
                 if kind == "on_chain_end" and event.get("name") == "LangGraph":

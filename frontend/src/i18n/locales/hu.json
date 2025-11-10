@@ -12,7 +12,13 @@
     "error": "Hiba"
   },
   "overlay": {
-    "doNotNavigate": "Kérjük, ne navigálj el és ne zárd be az oldalt feldolgozás közben."
+    "doNotNavigate": "Kérjük, ne navigálj el és ne zárd be az oldalt feldolgozás közben.",
+    "initializing": "Inicializálás...",
+    "complete": "Kész!",
+    "generatingCourseOutline": "Tárgytematika generálása...",
+    "generatingLessonPlan": "Óraterv generálása...",
+    "usingTool": "Eszköz használata: {{toolName}}",
+    "completedTool": "Befejezve: {{toolName}}"
   },
   "sidebar": {
     "courseOutlineGenerator": "Tárgytematika Készítő",

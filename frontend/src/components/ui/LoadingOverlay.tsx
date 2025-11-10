@@ -2,12 +2,32 @@ import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 
 interface LoadingOverlayProps {
-  message: string;
+  message?: string;
   show: boolean;
 }
 
 export function LoadingOverlay({ message, show }: LoadingOverlayProps) {
   const { t } = useTranslation();
+
+  // Parse and translate the message
+  const getTranslatedMessage = (msg?: string): string => {
+    if (!msg) return t("common.processing");
+
+    // Try to parse as JSON (for messages with params)
+    try {
+      const parsed = JSON.parse(msg);
+      if (parsed.key && parsed.params) {
+        return t(parsed.key, parsed.params) as string;
+      }
+    } catch {
+      // Not JSON, treat as a simple translation key
+    }
+
+    // Try to translate as a key, fallback to the message itself
+    return t(msg, { defaultValue: msg }) as string;
+  };
+
+  const displayMessage = getTranslatedMessage(message);
 
   // Prevent navigation when overlay is shown
   useEffect(() => {
@@ -61,7 +81,7 @@ export function LoadingOverlay({ message, show }: LoadingOverlayProps) {
 
           {/* Message */}
           <h3 className="text-xl font-semibold text-gray-900 mb-2 text-center">
-            {message || t("common.processing")}
+            {displayMessage}
           </h3>
 
           {/* Warning */}

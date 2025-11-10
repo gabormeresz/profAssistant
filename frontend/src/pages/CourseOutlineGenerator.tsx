@@ -273,10 +273,7 @@ function CourseOutlineGenerator() {
       </div>
 
       {/* Progress indicator */}
-      <LoadingOverlay
-        message={progressMessage || "Processing..."}
-        show={isGenerating}
-      />
+      <LoadingOverlay message={progressMessage} show={isGenerating} />
 
       {/* Follow-up input */}
       {showFollowUpInput && (

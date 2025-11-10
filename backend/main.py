@@ -106,8 +106,16 @@ async def course_outline_event_generator(
                     # Send thread_id as a separate SSE event type
                     yield f"event: thread_id\ndata: {json.dumps({'thread_id': event['thread_id']})}\n\n"
                 elif event_type == "progress":
-                    # Send progress updates
-                    yield f"event: progress\ndata: {json.dumps({'message': event['message']})}\n\n"
+                    # Send progress updates with translation key
+                    progress_data = {
+                        "message_key": event.get(
+                            "message_key", event.get("message", "")
+                        ),
+                    }
+                    # Include params if present (for dynamic translations)
+                    if "params" in event:
+                        progress_data["params"] = event["params"]
+                    yield f"event: progress\ndata: {json.dumps(progress_data)}\n\n"
                 elif event_type == "complete":
                     # Send the complete structured data
                     yield f"event: complete\ndata: {json.dumps(event['data'])}\n\n"
@@ -193,8 +201,16 @@ async def lesson_plan_event_generator(
                     # Send thread_id as a separate SSE event type
                     yield f"event: thread_id\ndata: {json.dumps({'thread_id': event['thread_id']})}\n\n"
                 elif event_type == "progress":
-                    # Send progress updates
-                    yield f"event: progress\ndata: {json.dumps({'message': event['message']})}\n\n"
+                    # Send progress updates with translation key
+                    progress_data = {
+                        "message_key": event.get(
+                            "message_key", event.get("message", "")
+                        ),
+                    }
+                    # Include params if present (for dynamic translations)
+                    if "params" in event:
+                        progress_data["params"] = event["params"]
+                    yield f"event: progress\ndata: {json.dumps(progress_data)}\n\n"
                 elif event_type == "complete":
                     # Send the complete structured data
                     yield f"event: complete\ndata: {json.dumps(event['data'])}\n\n"

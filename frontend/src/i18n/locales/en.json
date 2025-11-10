@@ -12,7 +12,13 @@
     "error": "Error"
   },
   "overlay": {
-    "doNotNavigate": "Please do not navigate away or close this page while processing."
+    "doNotNavigate": "Please do not navigate away or close this page while processing.",
+    "initializing": "Initializing...",
+    "complete": "Complete!",
+    "generatingCourseOutline": "Generating course outline...",
+    "generatingLessonPlan": "Generating lesson plan...",
+    "usingTool": "Using tool: {{toolName}}",
+    "completedTool": "Completed: {{toolName}}"
   },
   "sidebar": {
     "courseOutlineGenerator": "Course Outline Generator",
