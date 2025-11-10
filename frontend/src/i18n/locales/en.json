@@ -37,6 +37,12 @@
     "courseOutlineGenerator": "Course Outline Generator",
     "lessonPlanner": "Lesson Planner"
   },
+  "home": {
+    "subtitle": "Choose a tool to get started",
+    "courseOutlineGenerator": "Course Outline Generator",
+    "courseOutlineGeneratorDescription": "Generate comprehensive course outlines with AI assistance",
+    "lessonPlanner": "Lesson Planner"
+  },
   "threadStatus": {
     "threadId": "Thread ID",
     "newConversation": "New Conversation"

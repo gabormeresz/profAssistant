@@ -78,6 +78,10 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
 
     return (
       <aside className="w-78 bg-white border-r border-gray-200 sticky top-0 h-screen max-h-screen p-4 flex flex-col">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-blue-600">ProfAI</h1>
+        </div>
+
         <LanguageSelector />
 
         <nav className="space-y-2">

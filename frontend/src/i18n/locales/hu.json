@@ -37,6 +37,12 @@
     "courseOutlineGenerator": "Tárgytematika Készítő",
     "lessonPlanner": "Óraterv Készítő"
   },
+  "home": {
+    "subtitle": "Válassz egy eszközt a kezdéshez",
+    "courseOutlineGenerator": "Tárgytematika Készítő",
+    "courseOutlineGeneratorDescription": "Átfogó tárgytematikák generálása AI segítséggel",
+    "lessonPlanner": "Óraterv Készítő"
+  },
   "threadStatus": {
     "threadId": "Beszélgetés azonosító",
     "newConversation": "Új Beszélgetés"
