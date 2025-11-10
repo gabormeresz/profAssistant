@@ -1,4 +1,5 @@
 import type { Dispatch, SetStateAction } from "react";
+import { useTranslation } from "react-i18next";
 import FileUpload from "./FileUpload";
 import PromptEnhancer from "./PromptEnhancer";
 import { LESSON_PLAN } from "../../utils/constants";
@@ -48,6 +49,8 @@ export function LessonPlanInputSection({
   onSubmit,
   threadId
 }: LessonPlanInputSectionProps) {
+  const { t } = useTranslation();
+
   // Helper functions to manage array fields
   const handleArrayChange = (
     index: number,
@@ -80,7 +83,7 @@ export function LessonPlanInputSection({
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">
-        Lesson Plan Details
+        {t("lessonPlan.courseTitle")}
       </h2>
 
       {/* Course Title */}
@@ -89,14 +92,14 @@ export function LessonPlanInputSection({
           htmlFor="courseTitle"
           className="block text-sm font-medium text-gray-700 mb-2"
         >
-          Course Title <span className="text-red-500">*</span>
+          {t("lessonPlan.courseTitle")} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           id="courseTitle"
           value={courseTitle}
           onChange={(e) => setCourseTitle(e.target.value)}
-          placeholder="e.g., Introduction to Web Development"
+          placeholder={t("lessonPlan.courseTitlePlaceholder")}
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
         />
       </div>
@@ -108,7 +111,8 @@ export function LessonPlanInputSection({
             htmlFor="classNumber"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Class # <span className="text-red-500">*</span>
+            {t("lessonPlan.classNumber")}{" "}
+            <span className="text-red-500">*</span>
           </label>
           <input
             type="number"
@@ -126,14 +130,14 @@ export function LessonPlanInputSection({
             htmlFor="classTitle"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
-            Class Title <span className="text-red-500">*</span>
+            {t("lessonPlan.classTitle")} <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             id="classTitle"
             value={classTitle}
             onChange={(e) => setClassTitle(e.target.value)}
-            placeholder="e.g., Introduction to HTML and CSS Basics"
+            placeholder={t("lessonPlan.classTitlePlaceholder")}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
           />
         </div>
@@ -145,7 +149,7 @@ export function LessonPlanInputSection({
           htmlFor="language"
           className="block text-sm font-medium text-gray-700 mb-2"
         >
-          Language
+          {t("lessonPlan.language")}
         </label>
         <select
           id="language"
@@ -162,7 +166,7 @@ export function LessonPlanInputSection({
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
           <label className="block text-sm font-medium text-gray-700">
-            Learning Objectives
+            {t("lessonPlan.learningObjectives")}
           </label>
           {learningObjectives.length < LESSON_PLAN.MAX_OBJECTIVES && (
             <button
@@ -172,7 +176,7 @@ export function LessonPlanInputSection({
               }
               className="text-sm text-green-600 hover:text-green-700 font-medium"
             >
-              + Add Objective
+              {t("lessonPlan.addObjective")}
             </button>
           )}
         </div>
@@ -190,7 +194,7 @@ export function LessonPlanInputSection({
                     setLearningObjectives
                   )
                 }
-                placeholder={`Learning objective ${index + 1}`}
+                placeholder={t("lessonPlan.learningObjectivesPlaceholder")}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
               {learningObjectives.length > LESSON_PLAN.MIN_OBJECTIVES && (
@@ -217,7 +221,7 @@ export function LessonPlanInputSection({
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
           <label className="block text-sm font-medium text-gray-700">
-            Key Topics
+            {t("lessonPlan.keyTopics")}
           </label>
           {keyTopics.length < LESSON_PLAN.MAX_TOPICS && (
             <button
@@ -225,7 +229,7 @@ export function LessonPlanInputSection({
               onClick={() => addArrayItem(keyTopics, setKeyTopics)}
               className="text-sm text-green-600 hover:text-green-700 font-medium"
             >
-              + Add Topic
+              {t("lessonPlan.addTopic")}
             </button>
           )}
         </div>
@@ -243,7 +247,7 @@ export function LessonPlanInputSection({
                     setKeyTopics
                   )
                 }
-                placeholder={`Key topic ${index + 1}`}
+                placeholder={t("lessonPlan.keyTopicsPlaceholder")}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
               {keyTopics.length > LESSON_PLAN.MIN_TOPICS && (
@@ -266,7 +270,7 @@ export function LessonPlanInputSection({
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">
           <label className="block text-sm font-medium text-gray-700">
-            Activities & Projects
+            {t("lessonPlan.activitiesProjects")}
           </label>
           {activitiesProjects.length < LESSON_PLAN.MAX_ACTIVITIES && (
             <button
@@ -276,7 +280,7 @@ export function LessonPlanInputSection({
               }
               className="text-sm text-green-600 hover:text-green-700 font-medium"
             >
-              + Add Activity
+              {t("lessonPlan.addActivity")}
             </button>
           )}
         </div>
@@ -294,7 +298,7 @@ export function LessonPlanInputSection({
                     setActivitiesProjects
                   )
                 }
-                placeholder={`Activity ${index + 1}`}
+                placeholder={t("lessonPlan.activitiesProjectsPlaceholder")}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
               />
               {activitiesProjects.length > LESSON_PLAN.MIN_ACTIVITIES && (
@@ -323,13 +327,13 @@ export function LessonPlanInputSection({
           htmlFor="userComment"
           className="block text-sm font-medium text-gray-700 mb-2"
         >
-          Additional Instructions (Optional)
+          {t("lessonPlan.userComment")}
         </label>
         <textarea
           id="userComment"
           value={userComment}
           onChange={(e) => setUserComment(e.target.value)}
-          placeholder="Any special requirements, teaching methods, or additional context..."
+          placeholder={t("lessonPlan.userCommentPlaceholder")}
           rows={4}
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
         />
@@ -361,7 +365,7 @@ export function LessonPlanInputSection({
             onClick={onSubmit}
             className="px-6 py-3 rounded-md font-medium transition-colors bg-green-600 text-white hover:bg-green-700"
           >
-            Generate Lesson Plan
+            {t("lessonPlan.generateLessonPlan")}
           </button>
         </div>
       )}

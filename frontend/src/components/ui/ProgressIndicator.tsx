@@ -1,9 +1,13 @@
+import { useTranslation } from "react-i18next";
+
 interface ProgressIndicatorProps {
   message: string;
   show: boolean;
 }
 
 export function ProgressIndicator({ message, show }: ProgressIndicatorProps) {
+  const { t } = useTranslation();
+
   if (!show) return null;
 
   return (
@@ -33,7 +37,9 @@ export function ProgressIndicator({ message, show }: ProgressIndicatorProps) {
           </svg>
         </div>
         {/* Message */}
-        <p className="text-blue-800 font-medium">{message}</p>
+        <p className="text-blue-800 font-medium">
+          {message || t("common.processing")}
+        </p>
       </div>
     </div>
   );

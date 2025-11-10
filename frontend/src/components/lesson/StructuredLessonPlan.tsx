@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { LessonPlan } from "../../types";
 import { useExport } from "../../hooks";
 import { lessonPlanToMarkdown } from "../../utils";
@@ -9,6 +10,7 @@ interface StructuredLessonPlanProps {
 export function StructuredLessonPlan({
   lessonPlan
 }: StructuredLessonPlanProps) {
+  const { t } = useTranslation();
   const { exportToDocx } = useExport();
 
   const handleExport = async () => {
@@ -25,7 +27,7 @@ export function StructuredLessonPlan({
       <div className="mb-8 border-b-2 border-green-500 pb-4">
         <div className="flex items-baseline gap-3 mb-2">
           <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded">
-            Class {lessonPlan.class_number}
+            {t("lessonPlanOutput.classNumber")} {lessonPlan.class_number}
           </span>
           <h1 className="text-3xl font-bold text-gray-900 flex-1">
             {lessonPlan.class_title}
@@ -33,7 +35,7 @@ export function StructuredLessonPlan({
           <button
             onClick={handleExport}
             className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
-            title="Export lesson plan to DOCX"
+            title={t("export.exportToDocx")}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -49,7 +51,7 @@ export function StructuredLessonPlan({
                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            Export to DOCX
+            {t("export.exportToDocx")}
           </button>
         </div>
       </div>
@@ -57,7 +59,7 @@ export function StructuredLessonPlan({
       {/* Learning Objective */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-3">
-          Learning Objective
+          {t("lessonPlanOutput.learningObjective")}
         </h2>
         <p className="text-gray-700 bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
           {lessonPlan.learning_objective}
@@ -66,7 +68,9 @@ export function StructuredLessonPlan({
 
       {/* Key Points */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-3">Key Points</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-3">
+          {t("lessonPlanOutput.keyPoints")}
+        </h2>
         <ul className="space-y-2">
           {lessonPlan.key_points.map((point, idx) => (
             <li
@@ -83,7 +87,7 @@ export function StructuredLessonPlan({
       {/* Lesson Breakdown */}
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-800 mb-3">
-          Lesson Breakdown
+          {t("lessonPlanOutput.lessonBreakdown")}
         </h2>
         <div className="space-y-4">
           {lessonPlan.lesson_breakdown.map((section, idx) => (
@@ -102,7 +106,9 @@ export function StructuredLessonPlan({
 
       {/* Activities */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-3">Activities</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-3">
+          {t("lessonPlanOutput.activities")}
+        </h2>
         <div className="space-y-4">
           {lessonPlan.activities.map((activity, idx) => (
             <div
@@ -114,13 +120,13 @@ export function StructuredLessonPlan({
               </h3>
               <div className="mb-3">
                 <span className="text-sm font-semibold text-gray-600">
-                  Objective:{" "}
+                  {t("lessonPlanOutput.objective")}:{" "}
                 </span>
                 <span className="text-gray-700">{activity.objective}</span>
               </div>
               <div>
                 <span className="text-sm font-semibold text-gray-600">
-                  Instructions:{" "}
+                  {t("lessonPlanOutput.instructions")}:{" "}
                 </span>
                 <p className="text-gray-700 mt-1">{activity.instructions}</p>
               </div>
@@ -131,7 +137,9 @@ export function StructuredLessonPlan({
 
       {/* Homework */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-3">Homework</h2>
+        <h2 className="text-xl font-semibold text-gray-800 mb-3">
+          {t("lessonPlanOutput.homework")}
+        </h2>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <p className="text-gray-700">{lessonPlan.homework}</p>
         </div>
@@ -140,7 +148,7 @@ export function StructuredLessonPlan({
       {/* Extra Activities */}
       <div>
         <h2 className="text-xl font-semibold text-gray-800 mb-3">
-          Extra Activities
+          {t("lessonPlanOutput.extraActivities")}
         </h2>
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
           <p className="text-gray-700">{lessonPlan.extra_activities}</p>

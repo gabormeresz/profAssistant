@@ -2,6 +2,8 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useSavedConversations } from "../../hooks";
 import SavedConversationItem from "./SavedConversationItem";
 import { useImperativeHandle, forwardRef } from "react";
+import { useTranslation } from "react-i18next";
+import LanguageSelector from "./LanguageSelector";
 
 interface SidebarProps {
   onNewConversation?: () => void;
@@ -18,6 +20,7 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
     const { threadId: currentThreadId } = useParams<{ threadId?: string }>();
     const { conversations, isLoading, error, deleteConversation, refetch } =
       useSavedConversations();
+    const { t } = useTranslation();
 
     // Expose refetch method to parent components
     useImperativeHandle(ref, () => ({
@@ -43,12 +46,12 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
     const navItems = [
       {
         path: "/outline-generator",
-        label: "Course Outline Generator",
+        label: t("sidebar.courseOutlineGenerator"),
         icon: "📝"
       },
       {
         path: "/lesson-planner",
-        label: "Lesson Planner",
+        label: t("sidebar.lessonPlanner"),
         icon: "📚"
       }
     ];
@@ -75,6 +78,8 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
 
     return (
       <aside className="w-78 bg-white border-r border-gray-200 min-h-screen p-4 flex flex-col">
+        <LanguageSelector />
+
         <nav className="space-y-2">
           {navItems.map((item) => {
             const isActive = currentBasePath === item.path;
@@ -101,7 +106,7 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
         <div className="flex-1 overflow-hidden flex flex-col">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-gray-700 px-3">
-              Recent Conversations
+              {t("sidebar.recentConversations")}
             </h3>
             {conversations.length > 0 && (
               <span className="text-xs text-gray-500 px-3">
@@ -125,9 +130,11 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
 
             {!isLoading && !error && conversations.length === 0 && (
               <div className="px-3 py-8 text-center">
-                <p className="text-sm text-gray-500">No conversations yet</p>
+                <p className="text-sm text-gray-500">
+                  {t("sidebar.noConversations")}
+                </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  Start a new conversation to see it here
+                  {t("sidebar.startNewConversation")}
                 </p>
               </div>
             )}

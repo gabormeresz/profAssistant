@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Layout,
   Header,
@@ -11,7 +12,7 @@ import {
   UserMessage
 } from "../components";
 import { useLessonPlanSSE, useConversationManager } from "../hooks";
-import { LESSON_PLAN, UI_MESSAGES } from "../utils/constants";
+import { LESSON_PLAN } from "../utils/constants";
 import type { LessonPlan, ConversationMessage } from "../types";
 import type { SavedLessonPlan } from "../types/conversation";
 
@@ -50,6 +51,7 @@ function LessonPlanner() {
   const { threadId: urlThreadId } = useParams<{ threadId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   // ============================================================================
   // State Management
@@ -154,18 +156,18 @@ function LessonPlanner() {
   const handleInitialSubmit = useCallback(async () => {
     // Validation
     if (!courseTitle.trim()) {
-      alert(UI_MESSAGES.EMPTY_COURSE_TITLE);
+      alert(t("lessonPlan.emptyCourseTitle"));
       return;
     }
     if (!classTitle.trim()) {
-      alert(UI_MESSAGES.EMPTY_CLASS_TITLE);
+      alert(t("lessonPlan.emptyClassTitle"));
       return;
     }
     if (
       classNumber < LESSON_PLAN.MIN_CLASS_NUMBER ||
       classNumber > LESSON_PLAN.MAX_CLASS_NUMBER
     ) {
-      alert(UI_MESSAGES.INVALID_CLASS_NUMBER);
+      alert(t("lessonPlan.invalidClassNumber"));
       return;
     }
 
@@ -220,7 +222,8 @@ function LessonPlanner() {
     uploadedFiles,
     sendMessage,
     setHasStarted,
-    setUserMessages
+    setUserMessages,
+    t
   ]);
 
   const handleFollowUpSubmit = useCallback(
@@ -302,7 +305,7 @@ function LessonPlanner() {
       showSidebar
       onNewConversation={handleNewConversation}
     >
-      <Header title="Lesson Planner" />
+      <Header title={t("header.lessonPlanner")} />
       <ThreadStatus
         threadId={threadId}
         onNewConversation={handleNewConversation}

@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Layout,
   Header,
@@ -11,7 +12,7 @@ import {
   UserMessage
 } from "../components";
 import { useCourseOutlineSSE, useConversationManager } from "../hooks";
-import { COURSE_OUTLINE, UI_MESSAGES } from "../utils/constants";
+import { COURSE_OUTLINE } from "../utils/constants";
 import type { CourseOutline, ConversationMessage } from "../types";
 import type { SavedCourseOutline } from "../types/conversation";
 
@@ -49,6 +50,7 @@ function createUserMessage(
 function CourseOutlineGenerator() {
   const { threadId: urlThreadId } = useParams<{ threadId?: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // ============================================================================
   // State Management
@@ -118,7 +120,7 @@ function CourseOutlineGenerator() {
 
   const handleInitialSubmit = useCallback(async () => {
     if (!topic.trim()) {
-      alert(UI_MESSAGES.EMPTY_TOPIC);
+      alert(t("courseOutline.emptyTopic"));
       return;
     }
 
@@ -144,7 +146,8 @@ function CourseOutlineGenerator() {
     language,
     sendMessage,
     setHasStarted,
-    setUserMessages
+    setUserMessages,
+    t
   ]);
 
   const handleFollowUpSubmit = useCallback(
@@ -208,7 +211,7 @@ function CourseOutlineGenerator() {
       showSidebar
       onNewConversation={handleNewConversation}
     >
-      <Header title="Course Outline Generator" />
+      <Header title={t("header.courseOutlineGenerator")} />
       <ThreadStatus
         threadId={threadId}
         onNewConversation={handleNewConversation}

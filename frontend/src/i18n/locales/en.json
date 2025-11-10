@@ -1,0 +1,123 @@
+{
+  "common": {
+    "language": "Language",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "new": "New",
+    "save": "Save",
+    "export": "Export",
+    "loading": "Loading...",
+    "processing": "Processing...",
+    "error": "Error"
+  },
+  "sidebar": {
+    "courseOutlineGenerator": "Course Outline Generator",
+    "lessonPlanner": "Lesson Planner",
+    "recentConversations": "Recent Conversations",
+    "noConversations": "No conversations yet",
+    "startNewConversation": "Start a new conversation to see it here"
+  },
+  "languageSelector": {
+    "selectLanguage": "Select Language",
+    "english": "English",
+    "hungarian": "Hungarian"
+  },
+  "header": {
+    "courseOutlineGenerator": "Course Outline Generator",
+    "lessonPlanner": "Lesson Planner"
+  },
+  "threadStatus": {
+    "threadId": "Thread ID",
+    "newConversation": "New Conversation"
+  },
+  "courseOutline": {
+    "topic": "Topic / Subject",
+    "topicPlaceholder": "e.g., Mathematics, History, Science...",
+    "numberOfClasses": "Number of Classes",
+    "language": "Language",
+    "languagePlaceholder": "Select language for the course",
+    "userComment": "Additional Instructions (Optional)",
+    "userCommentPlaceholder": "Any specific requirements or preferences for the course outline...",
+    "enhancePrompt": "Enhance Prompt",
+    "uploadFiles": "Upload Supporting Files",
+    "generateOutline": "Generate Course Outline",
+    "locked": "(locked for this conversation)",
+    "lockedClasses": "(locked for this conversation, ask in comment to add or remove classes)",
+    "emptyTopic": "Please enter a topic",
+    "classTitle": "Class Title",
+    "learningObjectives": "Learning Objectives",
+    "keyTopics": "Key Topics",
+    "activitiesProjects": "Activities/Projects",
+    "exportAs": "Export as"
+  },
+  "lessonPlan": {
+    "courseTitle": "Course Title",
+    "courseTitlePlaceholder": "e.g., Introduction to Programming",
+    "classNumber": "Class Number",
+    "classTitle": "Class Title",
+    "classTitlePlaceholder": "e.g., Variables and Data Types",
+    "learningObjectives": "Learning Objectives (Optional)",
+    "learningObjectivesPlaceholder": "What students should learn...",
+    "addObjective": "Add Objective",
+    "keyTopics": "Key Topics (Optional)",
+    "keyTopicsPlaceholder": "Main concepts to cover...",
+    "addTopic": "Add Topic",
+    "activitiesProjects": "Activities/Projects (Optional)",
+    "activitiesProjectsPlaceholder": "Hands-on activities or assignments...",
+    "addActivity": "Add Activity",
+    "userComment": "Additional Instructions (Optional)",
+    "userCommentPlaceholder": "Any specific requirements or teaching preferences...",
+    "language": "Language",
+    "languagePlaceholder": "Select language for the lesson plan",
+    "uploadFiles": "Upload Supporting Files",
+    "generateLessonPlan": "Generate Lesson Plan",
+    "locked": "(locked for this conversation)",
+    "emptyCourseTitle": "Please enter a course title",
+    "emptyClassTitle": "Please enter a class title",
+    "invalidClassNumber": "Please enter a valid class number"
+  },
+  "followUp": {
+    "placeholder": "Ask for modifications or refinements...",
+    "uploadFiles": "Upload files",
+    "send": "Send"
+  },
+  "fileUpload": {
+    "dragDrop": "Drag and drop files here, or click to select",
+    "supportedFormats": "Supported formats: PDF, DOCX, TXT, MD (max {{maxSize}}MB)",
+    "remove": "Remove",
+    "tooLarge": "File {{filename}} is too large. Max size is {{maxSize}}MB.",
+    "unsupportedType": "File {{filename}} type not supported. Allowed: PDF, DOCX, TXT, MD"
+  },
+  "promptEnhancer": {
+    "enhance": "Enhance Prompt",
+    "enhancing": "Enhancing...",
+    "emptyFields": "Please enter both a topic and a comment to enhance.",
+    "error": "Failed to enhance prompt"
+  },
+  "export": {
+    "exportAs": "Export as",
+    "docx": "DOCX",
+    "markdown": "Markdown",
+    "json": "JSON",
+    "exportToDocx": "Export to DOCX",
+    "createLessonPlanDraft": "Create Lesson Plan Draft"
+  },
+  "lessonPlanOutput": {
+    "classNumber": "Class",
+    "learningObjective": "Learning Objective",
+    "keyPoints": "Key Points",
+    "lessonBreakdown": "Lesson Breakdown",
+    "activities": "Activities",
+    "objective": "Objective",
+    "instructions": "Instructions",
+    "homework": "Homework",
+    "extraActivities": "Extra Activities"
+  },
+  "validation": {
+    "required": "This field is required",
+    "tooShort": "Input is too short",
+    "tooLong": "Input is too long",
+    "invalidNumber": "Please enter a valid number"
+  }
+}

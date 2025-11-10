@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { CourseOutline } from "../../types";
 import { useExport } from "../../hooks";
 import { courseOutlineToMarkdown } from "../../utils";
@@ -11,6 +12,7 @@ export function StructuredCourseOutline({
   outline
 }: StructuredCourseOutlineProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { exportToDocx } = useExport();
 
   const handleExport = async () => {
@@ -45,7 +47,7 @@ export function StructuredCourseOutline({
           <button
             onClick={handleExport}
             className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
-            title="Export course outline to DOCX"
+            title={t("export.exportToDocx")}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -61,7 +63,7 @@ export function StructuredCourseOutline({
                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
               />
             </svg>
-            Export to DOCX
+            {t("export.exportToDocx")}
           </button>
         </div>
       </div>
@@ -76,7 +78,7 @@ export function StructuredCourseOutline({
             {/* Class Header */}
             <div className="flex items-baseline gap-3 mb-4">
               <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded">
-                Class {courseClass.class_number}
+                {t("lessonPlanOutput.classNumber")} {courseClass.class_number}
               </span>
               <h2 className="text-2xl font-semibold text-gray-800 flex-1">
                 {courseClass.class_title}
@@ -84,7 +86,7 @@ export function StructuredCourseOutline({
               <button
                 onClick={() => handleCreateLessonPlan(courseClass)}
                 className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors flex items-center gap-2"
-                title="Create a detailed lesson plan for this class"
+                title={t("export.createLessonPlanDraft")}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -100,14 +102,14 @@ export function StructuredCourseOutline({
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                Create Lesson Plan Draft
+                {t("export.createLessonPlanDraft")}
               </button>
             </div>
 
             {/* Learning Objectives */}
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                Learning Objectives
+                {t("courseOutline.learningObjectives")}
               </h3>
               <ul className="list-disc list-inside space-y-1 text-gray-600">
                 {courseClass.learning_objectives.map((objective, idx) => (
@@ -121,7 +123,7 @@ export function StructuredCourseOutline({
             {/* Key Topics */}
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                Key Topics
+                {t("courseOutline.keyTopics")}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {courseClass.key_topics.map((topic, idx) => (
@@ -138,7 +140,7 @@ export function StructuredCourseOutline({
             {/* Activities & Projects */}
             <div>
               <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                Activities & Projects
+                {t("courseOutline.activitiesProjects")}
               </h3>
               <ul className="list-disc list-inside space-y-1 text-gray-600">
                 {courseClass.activities_projects.map((activity, idx) => (

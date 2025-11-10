@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 interface ThreadStatusProps {
   threadId: string | null;
   onNewConversation: () => void;
@@ -7,6 +9,8 @@ export default function ThreadStatus({
   threadId,
   onNewConversation
 }: ThreadStatusProps) {
+  const { t } = useTranslation();
+
   if (!threadId) {
     return null;
   }
@@ -23,7 +27,7 @@ export default function ThreadStatus({
         onClick={onNewConversation}
         className="text-sm text-blue-600 hover:text-blue-800 font-medium"
       >
-        New Conversation
+        {t("threadStatus.newConversation")}
       </button>
     </div>
   );

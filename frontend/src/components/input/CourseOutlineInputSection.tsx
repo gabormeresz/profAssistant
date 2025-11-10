@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import FileUpload from "./FileUpload";
 import PromptEnhancer from "./PromptEnhancer";
 import { COURSE_OUTLINE } from "../../utils/constants";
@@ -31,6 +32,7 @@ export default function CourseOutlineInputSection({
   uploadedFiles,
   setUploadedFiles
 }: CourseOutlineInputSectionProps) {
+  const { t } = useTranslation();
   const isSessionActive = threadId !== null;
   const isButtonDisabled =
     !topic.trim() || numberOfClasses < COURSE_OUTLINE.MIN_CLASSES;
@@ -41,10 +43,10 @@ export default function CourseOutlineInputSection({
         {/* Topic Field */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Topic / Subject
+            {t("courseOutline.topic")}
             {isSessionActive && (
               <span className="ml-2 text-xs text-gray-500">
-                (locked for this conversation)
+                {t("courseOutline.locked")}
               </span>
             )}
           </label>
@@ -54,18 +56,17 @@ export default function CourseOutlineInputSection({
             onChange={(e) => setTopic(e.target.value)}
             disabled={isSessionActive}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
-            placeholder="e.g., Mathematics, History, Science..."
+            placeholder={t("courseOutline.topicPlaceholder")}
           />
         </div>
 
         {/* Number of Classes Field */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Number of Classes
+            {t("courseOutline.numberOfClasses")}
             {isSessionActive && (
               <span className="ml-2 text-xs text-gray-500">
-                (locked for this conversation, ask in comment to add or remove
-                classes)
+                {t("courseOutline.lockedClasses")}
               </span>
             )}
           </label>
@@ -88,10 +89,10 @@ export default function CourseOutlineInputSection({
         {/* Language Selection */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Language
+            {t("courseOutline.language")}
             {isSessionActive && (
               <span className="ml-2 text-xs text-gray-500">
-                (locked for this conversation)
+                {t("courseOutline.locked")}
               </span>
             )}
           </label>
@@ -109,13 +110,13 @@ export default function CourseOutlineInputSection({
         {/* Message/Comment Field */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Your comment
+            {t("courseOutline.userComment")}
           </label>
           <textarea
             value={userComment}
             onChange={(e) => setUserComment(e.target.value)}
             className="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-colors"
-            placeholder="Add any additional context or requirements..."
+            placeholder={t("courseOutline.userCommentPlaceholder")}
           />
 
           {/* Prompt Enhancer */}
@@ -146,7 +147,7 @@ export default function CourseOutlineInputSection({
             disabled={isButtonDisabled}
             className="px-6 py-3 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
           >
-            Generate Course Outline
+            {t("courseOutline.generateOutline")}
           </button>
         </div>
       )}

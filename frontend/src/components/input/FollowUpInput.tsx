@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Send } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import FileUpload from "./FileUpload";
 import type { StreamingState } from "../../types";
 
@@ -12,6 +13,7 @@ export default function FollowUpInput({
   onSubmit,
   streamingState
 }: FollowUpInputProps) {
+  const { t } = useTranslation();
   const [message, setMessage] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
@@ -52,7 +54,7 @@ export default function FollowUpInput({
             onKeyDown={handleKeyDown}
             disabled={isDisabled}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed"
-            placeholder="Type your follow-up message... (Shift+Enter for new line)"
+            placeholder={t("followUp.placeholder")}
             rows={2}
           />
 
@@ -65,7 +67,7 @@ export default function FollowUpInput({
             className="flex-shrink-0 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
             <Send className="h-5 w-5" />
-            <span className="hidden sm:inline">Send</span>
+            <span className="hidden sm:inline">{t("followUp.send")}</span>
           </button>
         </div>
 
