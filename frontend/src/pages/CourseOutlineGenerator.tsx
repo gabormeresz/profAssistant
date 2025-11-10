@@ -65,6 +65,7 @@ function CourseOutlineGenerator() {
     i18n.language === "hu" ? "Hungarian" : "English"
   );
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   // SSE streaming hook
   const {
@@ -211,7 +212,8 @@ function CourseOutlineGenerator() {
   const isGenerating =
     loading ||
     streamingState === "streaming" ||
-    streamingState === "connecting";
+    streamingState === "connecting" ||
+    isEnhancing;
 
   const showFollowUpInput =
     hasStarted && (streamingState === "complete" || streamingState === "idle");
@@ -238,6 +240,7 @@ function CourseOutlineGenerator() {
           threadId={threadId}
           uploadedFiles={uploadedFiles}
           setUploadedFiles={setUploadedFiles}
+          onEnhancerLoadingChange={setIsEnhancing}
         />
       </div>
 
@@ -272,7 +275,10 @@ function CourseOutlineGenerator() {
       </div>
 
       {/* Progress indicator */}
-      <LoadingOverlay message={progressMessage} show={isGenerating} />
+      <LoadingOverlay
+        message={isEnhancing ? t("overlay.enhancingPrompt") : progressMessage}
+        show={isGenerating}
+      />
 
       {/* Follow-up input */}
       {showFollowUpInput && (

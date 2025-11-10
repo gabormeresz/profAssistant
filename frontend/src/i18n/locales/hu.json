@@ -17,6 +17,7 @@
     "complete": "Kész!",
     "generatingCourseOutline": "Tárgytematika generálása...",
     "generatingLessonPlan": "Óraterv generálása...",
+    "enhancingPrompt": "Prompt javítása...",
     "usingTool": "Eszköz használata: {{toolName}}",
     "completedTool": "Befejezve: {{toolName}}"
   },

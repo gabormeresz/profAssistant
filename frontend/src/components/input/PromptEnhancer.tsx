@@ -8,13 +8,15 @@ interface PromptEnhancerProps {
   contextType: "course_outline" | "lesson_plan";
   additionalContext?: Record<string, unknown>;
   onMessageChange: (message: string) => void;
+  onLoadingChange?: (isLoading: boolean) => void;
 }
 
 export default function PromptEnhancer({
   message,
   contextType,
   additionalContext,
-  onMessageChange
+  onMessageChange,
+  onLoadingChange
 }: PromptEnhancerProps) {
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [error, setError] = useState("");
@@ -24,6 +26,7 @@ export default function PromptEnhancer({
 
   const handleEnhance = async () => {
     setIsEnhancing(true);
+    onLoadingChange?.(true);
     setError("");
 
     try {
@@ -46,6 +49,7 @@ export default function PromptEnhancer({
       );
     } finally {
       setIsEnhancing(false);
+      onLoadingChange?.(false);
     }
   };
 

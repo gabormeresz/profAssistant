@@ -17,6 +17,7 @@
     "complete": "Complete!",
     "generatingCourseOutline": "Generating course outline...",
     "generatingLessonPlan": "Generating lesson plan...",
+    "enhancingPrompt": "Enhancing your prompt...",
     "usingTool": "Using tool: {{toolName}}",
     "completedTool": "Completed: {{toolName}}"
   },

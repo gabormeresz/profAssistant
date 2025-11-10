@@ -16,6 +16,7 @@ interface CourseOutlineInputSectionProps {
   threadId: string | null;
   uploadedFiles: File[];
   setUploadedFiles: (files: File[]) => void;
+  onEnhancerLoadingChange?: (isLoading: boolean) => void;
 }
 
 export default function CourseOutlineInputSection({
@@ -30,7 +31,8 @@ export default function CourseOutlineInputSection({
   onSubmit,
   threadId,
   uploadedFiles,
-  setUploadedFiles
+  setUploadedFiles,
+  onEnhancerLoadingChange
 }: CourseOutlineInputSectionProps) {
   const { t } = useTranslation();
   const isSessionActive = threadId !== null;
@@ -128,6 +130,7 @@ export default function CourseOutlineInputSection({
               num_classes: numberOfClasses
             }}
             onMessageChange={setUserComment}
+            onLoadingChange={onEnhancerLoadingChange}
           />
         </div>
 

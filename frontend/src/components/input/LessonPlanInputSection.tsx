@@ -25,6 +25,7 @@ interface LessonPlanInputSectionProps {
   setLanguage: Dispatch<SetStateAction<string>>;
   onSubmit: () => void;
   threadId: string | null;
+  onEnhancerLoadingChange?: (isLoading: boolean) => void;
 }
 
 export function LessonPlanInputSection({
@@ -47,7 +48,8 @@ export function LessonPlanInputSection({
   language,
   setLanguage,
   onSubmit,
-  threadId
+  threadId,
+  onEnhancerLoadingChange
 }: LessonPlanInputSectionProps) {
   const { t } = useTranslation();
 
@@ -350,6 +352,7 @@ export function LessonPlanInputSection({
             activities_projects: activitiesProjects.filter((act) => act.trim())
           }}
           onMessageChange={setUserComment}
+          onLoadingChange={onEnhancerLoadingChange}
         />
       </div>
 

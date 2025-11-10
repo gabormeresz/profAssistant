@@ -68,6 +68,7 @@ function LessonPlanner() {
     i18n.language === "hu" ? "Hungarian" : "English"
   );
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   // SSE streaming hook
   const {
@@ -289,7 +290,8 @@ function LessonPlanner() {
   const isGenerating =
     loading ||
     streamingState === "streaming" ||
-    streamingState === "connecting";
+    streamingState === "connecting" ||
+    isEnhancing;
 
   const showFollowUpInput =
     hasStarted && (streamingState === "complete" || streamingState === "idle");
@@ -324,6 +326,7 @@ function LessonPlanner() {
           setLanguage={setLanguage}
           onSubmit={handleInitialSubmit}
           threadId={threadId}
+          onEnhancerLoadingChange={setIsEnhancing}
         />
       </div>
 
@@ -352,7 +355,10 @@ function LessonPlanner() {
       </div>
 
       {/* Progress indicator */}
-      <LoadingOverlay message={progressMessage} show={isGenerating} />
+      <LoadingOverlay
+        message={isEnhancing ? t("overlay.enhancingPrompt") : progressMessage}
+        show={isGenerating}
+      />
 
       {/* Follow-up input */}
       {showFollowUpInput && (
