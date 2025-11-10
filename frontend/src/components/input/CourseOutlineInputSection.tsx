@@ -35,7 +35,6 @@ export default function CourseOutlineInputSection({
   onEnhancerLoadingChange
 }: CourseOutlineInputSectionProps) {
   const { t } = useTranslation();
-  const isSessionActive = threadId !== null;
   const isButtonDisabled =
     !topic.trim() || numberOfClasses < COURSE_OUTLINE.MIN_CLASSES;
 
@@ -44,36 +43,34 @@ export default function CourseOutlineInputSection({
       <div className="space-y-4">
         {/* Topic Field */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("courseOutline.topic")}
-            {isSessionActive && (
-              <span className="ml-2 text-xs text-gray-500">
-                {t("courseOutline.locked")}
-              </span>
-            )}
+          <label
+            htmlFor="topic"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {t("courseOutline.topic")} <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
+            id="topic"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            disabled={isSessionActive}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             placeholder={t("courseOutline.topicPlaceholder")}
           />
         </div>
 
         {/* Number of Classes Field */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("courseOutline.numberOfClasses")}
-            {isSessionActive && (
-              <span className="ml-2 text-xs text-gray-500">
-                {t("courseOutline.lockedClasses")}
-              </span>
-            )}
+          <label
+            htmlFor="numberOfClasses"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {t("courseOutline.numberOfClasses")}{" "}
+            <span className="text-red-500">*</span>
           </label>
           <input
             type="number"
+            id="numberOfClasses"
             min={COURSE_OUTLINE.MIN_CLASSES}
             max={COURSE_OUTLINE.MAX_CLASSES}
             value={numberOfClasses}
@@ -82,27 +79,25 @@ export default function CourseOutlineInputSection({
                 parseInt(e.target.value) || COURSE_OUTLINE.DEFAULT_CLASSES
               )
             }
-            disabled={isSessionActive}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             placeholder="1"
           />
         </div>
 
         {/* Language Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("courseOutline.language")}
-            {isSessionActive && (
-              <span className="ml-2 text-xs text-gray-500">
-                {t("courseOutline.locked")}
-              </span>
-            )}
+          <label
+            htmlFor="language"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            {t("courseOutline.language")}{" "}
+            <span className="text-red-500">*</span>
           </label>
           <select
+            id="language"
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
-            disabled={isSessionActive}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
           >
             <option value="English">English</option>
             <option value="Hungarian">Hungarian</option>
@@ -111,10 +106,14 @@ export default function CourseOutlineInputSection({
 
         {/* Message/Comment Field */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="userComment"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             {t("courseOutline.userComment")}
           </label>
           <textarea
+            id="userComment"
             value={userComment}
             onChange={(e) => setUserComment(e.target.value)}
             className="w-full h-32 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-colors"
@@ -135,15 +134,11 @@ export default function CourseOutlineInputSection({
         </div>
 
         {/* File Upload */}
-        <FileUpload
-          files={uploadedFiles}
-          onFilesChange={setUploadedFiles}
-          disabled={isSessionActive}
-        />
+        <FileUpload files={uploadedFiles} onFilesChange={setUploadedFiles} />
       </div>
 
       {/* Submit Button */}
-      {!isSessionActive && (
+      {!threadId && (
         <div className="flex justify-end mt-4">
           <button
             onClick={onSubmit}

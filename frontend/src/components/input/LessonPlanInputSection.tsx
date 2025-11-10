@@ -53,6 +53,12 @@ export function LessonPlanInputSection({
 }: LessonPlanInputSectionProps) {
   const { t } = useTranslation();
 
+  // Validation logic
+  const isButtonDisabled =
+    !courseTitle.trim() ||
+    !classTitle.trim() ||
+    classNumber < LESSON_PLAN.MIN_CLASS_NUMBER;
+
   // Helper functions to manage array fields
   const handleArrayChange = (
     index: number,
@@ -83,7 +89,7 @@ export function LessonPlanInputSection({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">
         {t("lessonPlan.courseTitle")}
       </h2>
@@ -102,7 +108,7 @@ export function LessonPlanInputSection({
           value={courseTitle}
           onChange={(e) => setCourseTitle(e.target.value)}
           placeholder={t("lessonPlan.courseTitlePlaceholder")}
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
       </div>
 
@@ -123,7 +129,7 @@ export function LessonPlanInputSection({
             onChange={(e) => setClassNumber(Number(e.target.value))}
             min={LESSON_PLAN.MIN_CLASS_NUMBER}
             max={LESSON_PLAN.MAX_CLASS_NUMBER}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
 
@@ -140,7 +146,7 @@ export function LessonPlanInputSection({
             value={classTitle}
             onChange={(e) => setClassTitle(e.target.value)}
             placeholder={t("lessonPlan.classTitlePlaceholder")}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
       </div>
@@ -151,13 +157,13 @@ export function LessonPlanInputSection({
           htmlFor="language"
           className="block text-sm font-medium text-gray-700 mb-2"
         >
-          {t("lessonPlan.language")}
+          {t("lessonPlan.language")} <span className="text-red-500">*</span>
         </label>
         <select
           id="language"
           value={language}
           onChange={(e) => setLanguage(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         >
           <option value="English">English</option>
           <option value="Hungarian">Hungarian</option>
@@ -176,7 +182,7 @@ export function LessonPlanInputSection({
               onClick={() =>
                 addArrayItem(learningObjectives, setLearningObjectives)
               }
-              className="text-sm text-green-600 hover:text-green-700 font-medium"
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
             >
               {t("lessonPlan.addObjective")}
             </button>
@@ -197,7 +203,7 @@ export function LessonPlanInputSection({
                   )
                 }
                 placeholder={t("lessonPlan.learningObjectivesPlaceholder")}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               {learningObjectives.length > LESSON_PLAN.MIN_OBJECTIVES && (
                 <button
@@ -229,7 +235,7 @@ export function LessonPlanInputSection({
             <button
               type="button"
               onClick={() => addArrayItem(keyTopics, setKeyTopics)}
-              className="text-sm text-green-600 hover:text-green-700 font-medium"
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
             >
               {t("lessonPlan.addTopic")}
             </button>
@@ -250,7 +256,7 @@ export function LessonPlanInputSection({
                   )
                 }
                 placeholder={t("lessonPlan.keyTopicsPlaceholder")}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               {keyTopics.length > LESSON_PLAN.MIN_TOPICS && (
                 <button
@@ -280,7 +286,7 @@ export function LessonPlanInputSection({
               onClick={() =>
                 addArrayItem(activitiesProjects, setActivitiesProjects)
               }
-              className="text-sm text-green-600 hover:text-green-700 font-medium"
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
             >
               {t("lessonPlan.addActivity")}
             </button>
@@ -301,7 +307,7 @@ export function LessonPlanInputSection({
                   )
                 }
                 placeholder={t("lessonPlan.activitiesProjectsPlaceholder")}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
               {activitiesProjects.length > LESSON_PLAN.MIN_ACTIVITIES && (
                 <button
@@ -337,7 +343,7 @@ export function LessonPlanInputSection({
           onChange={(e) => setUserComment(e.target.value)}
           placeholder={t("lessonPlan.userCommentPlaceholder")}
           rows={4}
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
         />
 
         {/* Prompt Enhancer */}
@@ -366,7 +372,8 @@ export function LessonPlanInputSection({
         <div className="flex justify-end">
           <button
             onClick={onSubmit}
-            className="px-6 py-3 rounded-md font-medium transition-colors bg-green-600 text-white hover:bg-green-700"
+            disabled={isButtonDisabled}
+            className="px-6 py-3 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
           >
             {t("lessonPlan.generateLessonPlan")}
           </button>
