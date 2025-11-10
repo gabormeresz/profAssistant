@@ -12,7 +12,7 @@
     "error": "Hiba"
   },
   "sidebar": {
-    "courseOutlineGenerator": "Tantárgyvázlat Generátor",
+    "courseOutlineGenerator": "Tárgytematika Készítő",
     "lessonPlanner": "Óraterv Készítő",
     "recentConversations": "Legutóbbi Beszélgetések",
     "noConversations": "Még nincsenek beszélgetések",
@@ -24,7 +24,7 @@
     "hungarian": "Magyar"
   },
   "header": {
-    "courseOutlineGenerator": "Tantárgyvázlat Generátor",
+    "courseOutlineGenerator": "Tárgytematika Készítő",
     "lessonPlanner": "Óraterv Készítő"
   },
   "threadStatus": {
@@ -38,10 +38,10 @@
     "language": "Nyelv",
     "languagePlaceholder": "Válaszd ki a kurzus nyelvét",
     "userComment": "További Utasítások (Opcionális)",
-    "userCommentPlaceholder": "Bármilyen konkrét követelmény vagy preferencia a tantárgyvázlathoz...",
+    "userCommentPlaceholder": "Bármilyen konkrét követelmény vagy preferencia a tematikához...",
     "enhancePrompt": "Utasítás Javítása",
     "uploadFiles": "Támogató Fájlok Feltöltése",
-    "generateOutline": "Tantárgyvázlat Generálása",
+    "generateOutline": "Tematika Generálása",
     "locked": "(zárolva ehhez a beszélgetéshez)",
     "lockedClasses": "(zárolva ehhez a beszélgetéshez, kérdezz a megjegyzésben órák hozzáadásához vagy eltávolításához)",
     "emptyTopic": "Kérlek adj meg egy témát",
