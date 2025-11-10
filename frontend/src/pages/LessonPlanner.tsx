@@ -5,7 +5,6 @@ import {
   Layout,
   Header,
   LessonPlanInputSection,
-  ThreadStatus,
   StructuredLessonPlan,
   ProgressIndicator,
   FollowUpInput,
@@ -302,10 +301,6 @@ function LessonPlanner() {
       onNewConversation={handleNewConversation}
     >
       <Header title={t("header.lessonPlanner")} />
-      <ThreadStatus
-        threadId={threadId}
-        onNewConversation={handleNewConversation}
-      />
 
       {/* Initial form - grey out after first submission */}
       <div className={hasStarted ? "opacity-50 pointer-events-none" : ""}>

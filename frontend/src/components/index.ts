@@ -15,7 +15,7 @@ export {
 } from "./input";
 
 // UI components
-export { ThreadStatus, ProgressIndicator } from "./ui";
+export { ProgressIndicator } from "./ui";
 
 // Course components
 export { StructuredCourseOutline } from "./course";

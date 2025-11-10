@@ -5,7 +5,6 @@ import {
   Layout,
   Header,
   CourseOutlineInputSection,
-  ThreadStatus,
   StructuredCourseOutline,
   ProgressIndicator,
   FollowUpInput,
@@ -224,10 +223,6 @@ function CourseOutlineGenerator() {
       onNewConversation={handleNewConversation}
     >
       <Header title={t("header.courseOutlineGenerator")} />
-      <ThreadStatus
-        threadId={threadId}
-        onNewConversation={handleNewConversation}
-      />
 
       {/* Initial form - grey out after first submission */}
       <div className={hasStarted ? "opacity-50 pointer-events-none" : ""}>
