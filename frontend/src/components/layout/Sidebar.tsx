@@ -77,7 +77,7 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
     };
 
     return (
-      <aside className="w-78 bg-white border-r border-gray-200 min-h-screen p-4 flex flex-col">
+      <aside className="w-78 bg-white border-r border-gray-200 sticky top-0 h-screen max-h-screen p-4 flex flex-col">
         <LanguageSelector />
 
         <nav className="space-y-2">
@@ -103,8 +103,8 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
 
         <hr className="my-6 border-gray-200" />
 
-        <div className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between mb-3">
+        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="flex items-center justify-between mb-3 flex-shrink-0">
             <h3 className="text-sm font-semibold text-gray-700 px-3">
               {t("sidebar.recentConversations")}
             </h3>
@@ -115,7 +115,7 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto space-y-1">
+          <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
             {isLoading && (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
