@@ -93,8 +93,12 @@ function CourseOutlineGenerator() {
     result: courseOutline,
     streamingState,
     clearData,
-    isCorrectType: (conversation: unknown): conversation is SavedCourseOutline =>
-      typeof conversation === "object" && conversation !== null && "topic" in conversation,
+    isCorrectType: (
+      conversation: unknown
+    ): conversation is SavedCourseOutline =>
+      typeof conversation === "object" &&
+      conversation !== null &&
+      "topic" in conversation,
     restoreFormState: (conversation: SavedCourseOutline) => {
       setTopic(conversation.topic);
       setNumberOfClasses(conversation.number_of_classes);
@@ -132,7 +136,16 @@ function CourseOutlineGenerator() {
       language,
       files: uploadedFiles
     });
-  }, [topic, userComment, uploadedFiles, numberOfClasses, language, sendMessage, setHasStarted, setUserMessages]);
+  }, [
+    topic,
+    userComment,
+    uploadedFiles,
+    numberOfClasses,
+    language,
+    sendMessage,
+    setHasStarted,
+    setUserMessages
+  ]);
 
   const handleFollowUpSubmit = useCallback(
     async (message: string, files: File[]) => {
@@ -169,7 +182,13 @@ function CourseOutlineGenerator() {
 
     // Navigate to base route
     navigate("/outline-generator", { replace: true });
-  }, [resetThread, setOutlineHistory, setUserMessages, setHasStarted, navigate]);
+  }, [
+    resetThread,
+    setOutlineHistory,
+    setUserMessages,
+    setHasStarted,
+    navigate
+  ]);
 
   // ============================================================================
   // Render

@@ -95,7 +95,10 @@ export default function SavedConversationItem({
     >
       <div className="flex items-start gap-2">
         <span className="text-lg flex-shrink-0 mt-0.5">{getIcon()}</span>
-        <span className="text-base flex-shrink-0 mt-0.5" title={conversation.language || "Hungarian"}>
+        <span
+          className="text-base flex-shrink-0 mt-0.5"
+          title={conversation.language || "Hungarian"}
+        >
           {getLanguageFlag()}
         </span>
         <div className="flex-1 min-w-0">

@@ -97,7 +97,9 @@ function LessonPlanner() {
     streamingState,
     clearData,
     isCorrectType: (conversation: unknown): conversation is SavedLessonPlan =>
-      typeof conversation === "object" && conversation !== null && "class_title" in conversation,
+      typeof conversation === "object" &&
+      conversation !== null &&
+      "class_title" in conversation,
     restoreFormState: (conversation: SavedLessonPlan) => {
       setClassTitle(conversation.class_title);
       setCourseTitle(conversation.course_title);
@@ -180,15 +182,11 @@ function LessonPlanner() {
       return;
     }
     if (filteredTopics.length > LESSON_PLAN.MAX_TOPICS) {
-      alert(
-        `Please provide at most ${LESSON_PLAN.MAX_TOPICS} key topics`
-      );
+      alert(`Please provide at most ${LESSON_PLAN.MAX_TOPICS} key topics`);
       return;
     }
     if (filteredActivities.length > LESSON_PLAN.MAX_ACTIVITIES) {
-      alert(
-        `Please provide at most ${LESSON_PLAN.MAX_ACTIVITIES} activities`
-      );
+      alert(`Please provide at most ${LESSON_PLAN.MAX_ACTIVITIES} activities`);
       return;
     }
 
