@@ -9,7 +9,9 @@
     "export": "Export",
     "loading": "Loading...",
     "processing": "Processing...",
-    "error": "Error"
+    "error": "Error",
+    "scrollToBottom": "Scroll to Bottom",
+    "scrollToTop": "Scroll to Top"
   },
   "overlay": {
     "doNotNavigate": "Please do not navigate away or close this page while processing.",

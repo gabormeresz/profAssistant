@@ -9,7 +9,9 @@
     "export": "Exportálás",
     "loading": "Betöltés...",
     "processing": "Feldolgozás...",
-    "error": "Hiba"
+    "error": "Hiba",
+    "scrollToBottom": "Görgetés az aljára",
+    "scrollToTop": "Görgetés a tetejére"
   },
   "overlay": {
     "doNotNavigate": "Kérjük, ne navigálj el és ne zárd be az oldalt feldolgozás közben.",
