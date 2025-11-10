@@ -11,6 +11,9 @@
     "processing": "Processing...",
     "error": "Error"
   },
+  "overlay": {
+    "doNotNavigate": "Please do not navigate away or close this page while processing."
+  },
   "sidebar": {
     "courseOutlineGenerator": "Course Outline Generator",
     "lessonPlanner": "Lesson Planner",

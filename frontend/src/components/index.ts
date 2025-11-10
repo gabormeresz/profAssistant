@@ -15,7 +15,7 @@ export {
 } from "./input";
 
 // UI components
-export { ProgressIndicator } from "./ui";
+export { LoadingOverlay } from "./ui";
 
 // Course components
 export { StructuredCourseOutline } from "./course";

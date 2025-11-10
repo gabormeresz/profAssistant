@@ -6,7 +6,7 @@ import {
   Header,
   LessonPlanInputSection,
   StructuredLessonPlan,
-  ProgressIndicator,
+  LoadingOverlay,
   FollowUpInput,
   UserMessage
 } from "../components";
@@ -353,7 +353,7 @@ function LessonPlanner() {
       </div>
 
       {/* Progress indicator */}
-      <ProgressIndicator
+      <LoadingOverlay
         message={progressMessage || "Processing..."}
         show={isGenerating}
       />

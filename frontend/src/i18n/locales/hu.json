@@ -11,6 +11,9 @@
     "processing": "Feldolgozás...",
     "error": "Hiba"
   },
+  "overlay": {
+    "doNotNavigate": "Kérjük, ne navigálj el és ne zárd be az oldalt feldolgozás közben."
+  },
   "sidebar": {
     "courseOutlineGenerator": "Tárgytematika Készítő",
     "lessonPlanner": "Óraterv Készítő",

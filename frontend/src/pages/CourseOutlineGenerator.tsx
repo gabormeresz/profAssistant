@@ -6,7 +6,7 @@ import {
   Header,
   CourseOutlineInputSection,
   StructuredCourseOutline,
-  ProgressIndicator,
+  LoadingOverlay,
   FollowUpInput,
   UserMessage
 } from "../components";
@@ -273,7 +273,7 @@ function CourseOutlineGenerator() {
       </div>
 
       {/* Progress indicator */}
-      <ProgressIndicator
+      <LoadingOverlay
         message={progressMessage || "Processing..."}
         show={isGenerating}
       />
