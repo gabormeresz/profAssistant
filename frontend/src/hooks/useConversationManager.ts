@@ -241,8 +241,14 @@ export function useConversationManager<TResult, TConversation>(
       return [...prev, result];
     });
 
-    const timeoutId = setTimeout(() => clearData(), 100);
-    return () => clearTimeout(timeoutId);
+    // Clear data after ensuring React has rendered the updated history
+    // Use requestAnimationFrame to wait for the next paint
+    const rafId = requestAnimationFrame(() => {
+      // Add another microtask delay to ensure render is complete
+      setTimeout(() => clearData(), 0);
+    });
+
+    return () => cancelAnimationFrame(rafId);
   }, [result, streamingState, clearData]);
 
   return {
