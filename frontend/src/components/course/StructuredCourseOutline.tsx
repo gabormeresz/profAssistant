@@ -26,7 +26,7 @@ export function StructuredCourseOutline({
   };
 
   const handleCreateLessonPlan = (courseClass: (typeof outline.classes)[0]) => {
-    navigate("/lesson-planner", {
+    navigate("/lesson-plan-generator", {
       state: {
         courseTitle: outline.course_title,
         classNumber: courseClass.class_number,

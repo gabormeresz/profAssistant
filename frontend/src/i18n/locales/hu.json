@@ -25,7 +25,9 @@
   },
   "sidebar": {
     "courseOutlineGenerator": "Tárgytematika Készítő",
-    "lessonPlanner": "Óraterv Készítő",
+    "lessonPlanGenerator": "Óraterv Készítő",
+    "presentationGenerator": "Prezentáció Készítő",
+    "assessmentGenerator": "Értékelés Készítő",
     "recentConversations": "Legutóbbi Beszélgetések",
     "noConversations": "Még nincsenek beszélgetések",
     "startNewConversation": "Indíts egy új beszélgetést, hogy itt megjelenjen",
@@ -38,13 +40,11 @@
   },
   "header": {
     "courseOutlineGenerator": "Tárgytematika Készítő",
-    "lessonPlanner": "Óraterv Készítő"
+    "lessonPlanGenerator": "Óraterv Készítő",
+    "presentationGenerator": "Prezentáció Készítő",
+    "assessmentGenerator": "Értékelés Készítő"
   },
   "home": {
-    "subtitle": "Válassz egy eszközt a kezdéshez",
-    "courseOutlineGenerator": "Tárgytematika Készítő",
-    "courseOutlineGeneratorDescription": "Átfogó tárgytematikák generálása AI segítséggel",
-    "lessonPlanner": "Óraterv Készítő",
     "login": "Bejelentkezés",
     "signup": "Regisztráció",
     "hero": {

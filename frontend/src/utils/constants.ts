@@ -1,8 +1,10 @@
 // API Configuration
 export const API_BASE_URL = "http://localhost:8000";
 export const API_ENDPOINTS = {
-  OUTLINE_GENERATOR: `${API_BASE_URL}/outline-generator`,
-  LESSON_PLANNER: `${API_BASE_URL}/lesson-planner`,
+  COURSE_OUTLINE_GENERATOR: `${API_BASE_URL}/course-outline-generator`,
+  LESSON_PLAN_GENERATOR: `${API_BASE_URL}/lesson-plan-generator`,
+  PRESENTATION_GENERATOR: `${API_BASE_URL}/presentation-generator`,
+  ASSESSMENT_GENERATOR: `${API_BASE_URL}/assessment-generator`,
   ENHANCE_PROMPT: `${API_BASE_URL}/enhance-prompt`
 } as const;
 

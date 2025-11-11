@@ -20,8 +20,8 @@ export default function SavedConversationItem({
   const handleClick = () => {
     // Navigate to the appropriate page based on conversation type using URL params
     const routes: Record<string, string> = {
-      course_outline: `/outline-generator/${conversation.thread_id}`,
-      lesson_plan: `/lesson-planner/${conversation.thread_id}`
+      course_outline: `/course-outline-generator/${conversation.thread_id}`,
+      lesson_plan: `/lesson-plan-generator/${conversation.thread_id}`
     };
 
     const route = routes[conversation.conversation_type];

@@ -81,7 +81,7 @@ function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Feature 1 */}
-            <Link to="/outline-generator" className="group">
+            <Link to="/course-outline-generator" className="group">
               <div className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-shadow">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
                   <FileText
@@ -99,7 +99,7 @@ function Home() {
             </Link>
 
             {/* Feature 2 */}
-            <Link to="/lesson-planner" className="group">
+            <Link to="/lesson-plan-generator" className="group">
               <div className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-shadow">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
                   <BookOpen

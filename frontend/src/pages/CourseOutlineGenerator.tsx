@@ -90,7 +90,7 @@ function CourseOutlineGenerator() {
     setResultHistory: setOutlineHistory,
     sidebarRef
   } = useConversationManager<CourseOutline, SavedCourseOutline>({
-    routePath: "/outline-generator",
+    routePath: "/course-outline-generator",
     urlThreadId,
     threadId,
     setThreadId,
@@ -195,7 +195,7 @@ function CourseOutlineGenerator() {
     setUploadedFiles([]);
 
     // Navigate to base route
-    navigate("/outline-generator", { replace: true });
+    navigate("/course-outline-generator", { replace: true });
   }, [
     resetThread,
     setOutlineHistory,

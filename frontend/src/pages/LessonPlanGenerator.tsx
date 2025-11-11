@@ -46,7 +46,7 @@ function createUserMessage(
 // Component
 // ============================================================================
 
-function LessonPlanner() {
+function LessonPlanGenerator() {
   const { threadId: urlThreadId } = useParams<{ threadId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -93,7 +93,7 @@ function LessonPlanner() {
     setResultHistory: setLessonHistory,
     sidebarRef
   } = useConversationManager<LessonPlan, SavedLessonPlan>({
-    routePath: "/lesson-planner",
+    routePath: "/lesson-plan-generator",
     urlThreadId,
     threadId,
     setThreadId,
@@ -273,7 +273,7 @@ function LessonPlanner() {
     setUploadedFiles([]);
 
     // Navigate to base route
-    navigate("/lesson-planner", { replace: true });
+    navigate("/lesson-plan-generator", { replace: true });
   }, [
     resetThread,
     setLessonHistory,
@@ -301,7 +301,7 @@ function LessonPlanner() {
       ref={sidebarRef}
       showSidebar
       onNewConversation={handleNewConversation}
-      header={<Header title={t("header.lessonPlanner")} />}
+      header={<Header title={t("header.lessonPlanGenerator")} />}
     >
       {/* Initial form - grey out after first submission */}
       <div className={hasStarted ? "opacity-50 pointer-events-none" : ""}>
@@ -371,4 +371,4 @@ function LessonPlanner() {
   );
 }
 
-export default LessonPlanner;
+export default LessonPlanGenerator;

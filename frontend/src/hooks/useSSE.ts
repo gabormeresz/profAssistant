@@ -51,7 +51,7 @@ export interface UseSSEReturn<T> {
  *   const formData = new FormData();
  *   formData.append("message", message);
  *
- *   await sendRequest(API_ENDPOINTS.OUTLINE_GENERATOR, formData);
+ *   await sendRequest(API_ENDPOINTS.COURSE_OUTLINE_GENERATOR, formData);
  * };
  * ```
  */

@@ -4,7 +4,7 @@ import SavedConversationItem from "./SavedConversationItem";
 import { useImperativeHandle, forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
-import { FileText, BookOpen } from "lucide-react";
+import { FileText, BookOpen, Presentation, ClipboardList } from "lucide-react";
 
 interface SidebarProps {
   onNewConversation?: () => void;
@@ -46,14 +46,24 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
 
     const navItems = [
       {
-        path: "/outline-generator",
+        path: "/course-outline-generator",
         label: t("sidebar.courseOutlineGenerator"),
         icon: FileText
       },
       {
-        path: "/lesson-planner",
-        label: t("sidebar.lessonPlanner"),
+        path: "/lesson-plan-generator",
+        label: t("sidebar.lessonPlanGenerator"),
         icon: BookOpen
+      },
+      {
+        path: "/presentation-generator",
+        label: t("sidebar.presentationGenerator"),
+        icon: Presentation
+      },
+      {
+        path: "/assessment-generator",
+        label: t("sidebar.assessmentGenerator"),
+        icon: ClipboardList
       }
     ];
 

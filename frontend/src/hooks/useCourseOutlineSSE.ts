@@ -61,11 +61,15 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
       }
 
       // Send request using generic SSE hook
-      return await sendRequest(API_ENDPOINTS.OUTLINE_GENERATOR, formData, {
-        onComplete: () => {
-          // Custom handler for complete event if needed
+      return await sendRequest(
+        API_ENDPOINTS.COURSE_OUTLINE_GENERATOR,
+        formData,
+        {
+          onComplete: () => {
+            // Custom handler for complete event if needed
+          }
         }
-      });
+      );
     },
     [sendRequest]
   );

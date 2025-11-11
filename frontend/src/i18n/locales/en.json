@@ -25,7 +25,9 @@
   },
   "sidebar": {
     "courseOutlineGenerator": "Course Outline Generator",
-    "lessonPlanner": "Lesson Planner",
+    "lessonPlanGenerator": "Lesson Plan Generator",
+    "presentationGenerator": "Presentation Generator",
+    "assessmentGenerator": "Assessment Generator",
     "recentConversations": "Recent Conversations",
     "noConversations": "No conversations yet",
     "startNewConversation": "Start a new conversation to see it here",
@@ -38,13 +40,11 @@
   },
   "header": {
     "courseOutlineGenerator": "Course Outline Generator",
-    "lessonPlanner": "Lesson Planner"
+    "lessonPlanGenerator": "Lesson Plan Generator",
+    "presentationGenerator": "Presentation Generator",
+    "assessmentGenerator": "Assessment Generator"
   },
   "home": {
-    "subtitle": "Choose a tool to get started",
-    "courseOutlineGenerator": "Course Outline Generator",
-    "courseOutlineGeneratorDescription": "Generate comprehensive course outlines with AI assistance",
-    "lessonPlanner": "Lesson Planner",
     "login": "Login",
     "signup": "Register",
     "hero": {
