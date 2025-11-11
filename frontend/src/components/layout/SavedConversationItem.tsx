@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import type { SavedConversation } from "../../types/conversation";
 import { FileText, BookOpen, MessageCircle } from "lucide-react";
 
@@ -14,6 +15,7 @@ export default function SavedConversationItem({
   isActive = false
 }: SavedConversationItemProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleClick = () => {
     // Navigate to the appropriate page based on conversation type using URL params
@@ -38,19 +40,19 @@ export default function SavedConversationItem({
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+  // const formatDate = (dateString: string) => {
+  //   const date = new Date(dateString);
+  //   const now = new Date();
+  //   const diffMs = now.getTime() - date.getTime();
+  //   const diffMins = Math.floor(diffMs / 60000);
+  //   const diffHours = Math.floor(diffMs / 3600000);
+  //   const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString();
-  };
+  //   if (diffMins < 60) return `${diffMins}m ago`;
+  //   if (diffHours < 24) return `${diffHours}h ago`;
+  //   if (diffDays < 7) return `${diffDays}d ago`;
+  //   return date.toLocaleDateString();
+  // };
 
   const getIcon = () => {
     switch (conversation.conversation_type) {
@@ -74,7 +76,7 @@ export default function SavedConversationItem({
         SavedConversation,
         { topic: string }
       >;
-      return `${outline.number_of_classes} classes`;
+      return `${outline.number_of_classes} ${t("sidebar.classes")}`;
     } else if (conversation.conversation_type === "lesson_plan") {
       const lesson = conversation as Extract<
         SavedConversation,
@@ -151,7 +153,7 @@ export default function SavedConversationItem({
           >
             {getSubtitle()}
           </p>
-          <div className="flex items-center gap-2 mt-1">
+          {/* <div className="flex items-center gap-2 mt-1">
             <span
               className={`text-xs ${
                 isActive ? "text-white" : "text-[#cddaef]"
@@ -159,7 +161,7 @@ export default function SavedConversationItem({
             >
               {formatDate(conversation.updated_at)}
             </span>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

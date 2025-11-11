@@ -28,7 +28,8 @@
     "lessonPlanner": "Lesson Planner",
     "recentConversations": "Recent Conversations",
     "noConversations": "No conversations yet",
-    "startNewConversation": "Start a new conversation to see it here"
+    "startNewConversation": "Start a new conversation to see it here",
+    "classes": "classes"
   },
   "languageSelector": {
     "selectLanguage": "Select Language",

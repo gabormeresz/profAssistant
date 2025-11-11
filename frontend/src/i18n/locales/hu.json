@@ -28,7 +28,8 @@
     "lessonPlanner": "Óraterv Készítő",
     "recentConversations": "Legutóbbi Beszélgetések",
     "noConversations": "Még nincsenek beszélgetések",
-    "startNewConversation": "Indíts egy új beszélgetést, hogy itt megjelenjen"
+    "startNewConversation": "Indíts egy új beszélgetést, hogy itt megjelenjen",
+    "classes": "óra"
   },
   "languageSelector": {
     "selectLanguage": "Nyelv Választása",
