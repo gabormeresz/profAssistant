@@ -78,7 +78,7 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
     };
 
     return (
-      <aside className="w-78 bg-[#2a3342] border-r border-[#1f2937] sticky top-0 h-screen max-h-screen p-4 flex flex-col">
+      <aside className="w-88 bg-[#2a3342] border-r border-[#1f2937] sticky top-0 h-screen max-h-screen p-4 flex flex-col">
         <div className="mb-6 text-center">
           <Link to="/" className="text-2xl font-bold transition-colors">
             <span className="text-white">Prof</span>
