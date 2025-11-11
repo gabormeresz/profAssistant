@@ -110,7 +110,7 @@ export default function SavedConversationItem({
           );
         })()}
         <span
-          className={`text-base flex-shrink-0 ${
+          className={`text-sm flex-shrink-0 ${
             isActive ? "text-white" : "text-[#cddaef]"
           }`}
           title={conversation.language || "Hungarian"}
