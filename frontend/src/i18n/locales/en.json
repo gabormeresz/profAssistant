@@ -44,7 +44,36 @@
     "subtitle": "Choose a tool to get started",
     "courseOutlineGenerator": "Course Outline Generator",
     "courseOutlineGeneratorDescription": "Generate comprehensive course outlines with AI assistance",
-    "lessonPlanner": "Lesson Planner"
+    "lessonPlanner": "Lesson Planner",
+    "login": "Login",
+    "signup": "Register",
+    "hero": {
+      "title": "Intelligent Assistant for University Professors",
+      "subtitle": "This application uses artificial intelligence to support university educators throughout the entire course preparation process. It saves time, brings order to work, and offers inspiring ideas for every lesson.",
+      "cta": "Register",
+      "imagePlaceholder": "University professors collaborating"
+    },
+    "features": {
+      "courseOutline": {
+        "title": "Semester Course Planning",
+        "description": "Generates semester-based course outlines for specified subjects and topics."
+      },
+      "lessonPlan": {
+        "title": "Lesson Plan Creation",
+        "description": "Creates detailed lesson plans with objectives, learning suggestions, and assessment recommendations."
+      },
+      "presentation": {
+        "title": "Presentation Generation",
+        "description": "Automatically creates presentations from previously prepared lesson plans."
+      },
+      "assessment": {
+        "title": "Test / Assessment Generation",
+        "description": "Creates questions and tasks aligned with the given topic."
+      }
+    },
+    "footer": {
+      "rights": "Gábor Merész"
+    }
   },
   "threadStatus": {
     "threadId": "Thread ID",

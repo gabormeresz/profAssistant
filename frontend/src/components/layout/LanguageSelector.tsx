@@ -3,7 +3,11 @@ import { Globe, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import "flag-icons/css/flag-icons.min.css";
 
-const LanguageSelector = () => {
+interface LanguageSelectorProps {
+  variant?: "sidebar" | "header";
+}
+
+const LanguageSelector = ({ variant = "sidebar" }: LanguageSelectorProps) => {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -35,21 +39,70 @@ const LanguageSelector = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Sidebar styles
+  if (variant === "sidebar") {
+    return (
+      <div className="mb-6">
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[#cddaef] hover:text-white hover:bg-[#333f51] focus:outline-none focus:border-transparent cursor-pointer transition-colors"
+          >
+            <Globe className="w-5 h-5 opacity-70" />
+            <div className="flex items-center justify-between flex-1">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`fi fi-${currentLanguage?.flag} rounded-sm`}
+                ></span>
+                <span>{currentLanguage?.label}</span>
+              </div>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform ${
+                  isOpen ? "rotate-180" : ""
+                }`}
+              />
+            </div>
+          </button>
+
+          {isOpen && (
+            <div className="absolute z-10 w-full mt-1 bg-[#2a3342] border border-[#3d4a5c] rounded-md shadow-lg">
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => handleLanguageChange(lang.code)}
+                  className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-[#333f51] hover:text-white first:rounded-t-md last:rounded-b-md transition-colors ${
+                    i18n.language === lang.code
+                      ? "bg-[#333f51] text-white font-medium"
+                      : "text-[#cddaef]"
+                  }`}
+                >
+                  <span className={`fi fi-${lang.flag} rounded-sm`}></span>
+                  <span>{lang.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Header styles
   return (
-    <div className="mb-6">
+    <div className="relative">
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[#cddaef] hover:text-white hover:bg-[#333f51] focus:outline-none focus:border-transparent cursor-pointer transition-colors"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none cursor-pointer transition-colors h-10"
         >
-          <Globe className="w-5 h-5 opacity-70" />
-          <div className="flex items-center justify-between flex-1">
-            <div className="flex items-center gap-2">
-              <span
-                className={`fi fi-${currentLanguage?.flag} rounded-sm`}
-              ></span>
-              <span>{currentLanguage?.label}</span>
-            </div>
+          <Globe className="w-5 h-5" />
+          <div className="flex items-center gap-2">
+            <span
+              className={`fi fi-${currentLanguage?.flag} rounded-sm`}
+            ></span>
+            <span className="whitespace-nowrap text-sm">
+              {currentLanguage?.label}
+            </span>
             <ChevronDown
               className={`w-4 h-4 transition-transform ${
                 isOpen ? "rotate-180" : ""
@@ -59,15 +112,15 @@ const LanguageSelector = () => {
         </button>
 
         {isOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-[#2a3342] border border-[#3d4a5c] rounded-md shadow-lg">
+          <div className="absolute z-10 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg min-w-[140px]">
             {languages.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => handleLanguageChange(lang.code)}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-[#333f51] hover:text-white first:rounded-t-md last:rounded-b-md transition-colors ${
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-100 first:rounded-t-md last:rounded-b-md transition-colors ${
                   i18n.language === lang.code
-                    ? "bg-[#333f51] text-white font-medium"
-                    : "text-[#cddaef]"
+                    ? "bg-gray-100 text-gray-900 font-medium"
+                    : "text-gray-700"
                 }`}
               >
                 <span className={`fi fi-${lang.flag} rounded-sm`}></span>

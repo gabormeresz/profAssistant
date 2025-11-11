@@ -44,7 +44,36 @@
     "subtitle": "Válassz egy eszközt a kezdéshez",
     "courseOutlineGenerator": "Tárgytematika Készítő",
     "courseOutlineGeneratorDescription": "Átfogó tárgytematikák generálása AI segítséggel",
-    "lessonPlanner": "Óraterv Készítő"
+    "lessonPlanner": "Óraterv Készítő",
+    "login": "Bejelentkezés",
+    "signup": "Regisztráció",
+    "hero": {
+      "title": "Intelligens asszisztens egyetemi tanároknak",
+      "subtitle": "Ez az alkalmazás mesterséges intelligencia segítségével támogatja az egyetemi oktatókat a tananyag-előkészítés teljes folyamatában. Időt takarít meg, rendszert visz a munkába, és inspiratív ötleteket kínál minden tanórához.",
+      "cta": "Regisztráció",
+      "imagePlaceholder": "Egyetemi tanárok együttműködése"
+    },
+    "features": {
+      "courseOutline": {
+        "title": "Féléves tematika tervezés",
+        "description": "Félévente bontott tematikát generál a megadott tárgyhoz és témakörökhoz."
+      },
+      "lessonPlan": {
+        "title": "Óraterv készítés tematikából",
+        "description": "Részletes óravázlatokat hoz létre, célokat, tanulási javaslatokat és értékelési javaslatokat ad."
+      },
+      "presentation": {
+        "title": "Prezentáció generálás óraterv ből",
+        "description": "Az előzetesen készített óratervből automatikusan készít előadásokat."
+      },
+      "assessment": {
+        "title": "Teszt / számonkérés generálás",
+        "description": "Az adott témához illeszkedő kérdéssorokat és feladatokat hoz létre."
+      }
+    },
+    "footer": {
+      "rights": "Merész Gábor"
+    }
   },
   "threadStatus": {
     "threadId": "Beszélgetés azonosító",
