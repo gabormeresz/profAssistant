@@ -132,7 +132,7 @@ async def course_outline_event_generator(
         yield f"event: error\ndata: {json.dumps({'message': str(e)})}\n\n"
 
 
-@app.post("/outline-generator")
+@app.post("/course-outline-generator")
 async def generate_course_outline(
     message: str = Form(""),
     topic: Optional[str] = Form(None),
@@ -227,7 +227,7 @@ async def lesson_plan_event_generator(
         yield f"event: error\ndata: {json.dumps({'message': str(e)})}\n\n"
 
 
-@app.post("/lesson-planner")
+@app.post("/lesson-plan-generator")
 async def generate_lesson_plan(
     message: str = Form(""),
     course_title: Optional[str] = Form(None),
