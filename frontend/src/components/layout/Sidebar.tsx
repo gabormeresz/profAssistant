@@ -4,6 +4,7 @@ import SavedConversationItem from "./SavedConversationItem";
 import { useImperativeHandle, forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
+import { FileText, BookOpen } from "lucide-react";
 
 interface SidebarProps {
   onNewConversation?: () => void;
@@ -47,12 +48,12 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
       {
         path: "/outline-generator",
         label: t("sidebar.courseOutlineGenerator"),
-        icon: "📝"
+        icon: FileText
       },
       {
         path: "/lesson-planner",
         label: t("sidebar.lessonPlanner"),
-        icon: "📚"
+        icon: BookOpen
       }
     ];
 
@@ -77,10 +78,11 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
     };
 
     return (
-      <aside className="w-78 bg-white border-r border-gray-200 sticky top-0 h-screen max-h-screen p-4 flex flex-col">
-        <div className="mb-6">
-          <Link to="/" className="text-2xl font-bold text-blue-600">
-            ProfAssistant
+      <aside className="w-78 bg-[#2a3342] border-r border-[#1f2937] sticky top-0 h-screen max-h-screen p-4 flex flex-col">
+        <div className="mb-6 text-center">
+          <Link to="/" className="text-2xl font-bold transition-colors">
+            <span className="text-white">Prof</span>
+            <span className="text-[#5f7aff]">Assistant</span>
           </Link>
         </div>
 
@@ -89,6 +91,7 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
         <nav className="space-y-2">
           {navItems.map((item) => {
             const isActive = currentBasePath === item.path;
+            const Icon = item.icon;
             return (
               <Link
                 key={item.path}
@@ -96,50 +99,50 @@ const Sidebar = forwardRef<SidebarRef, SidebarProps>(
                 onClick={(e) => handleNavClick(e, item.path)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive
-                    ? "bg-blue-50 text-blue-700 font-medium"
-                    : "text-gray-700 hover:bg-gray-100"
+                    ? "bg-[#333f51] text-white font-medium"
+                    : "text-[#cddaef] hover:text-white hover:bg-[#333f51]"
                 }`}
               >
-                <span className="text-xl">{item.icon}</span>
+                <Icon className={`w-5 h-5 ${isActive ? "" : "opacity-70"}`} />
                 <span>{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <hr className="my-6 border-gray-200" />
+        <hr className="my-6 border-[#3d4a5c]" />
 
         <div className="flex-1 overflow-hidden flex flex-col min-h-0">
           <div className="flex items-center justify-between mb-3 flex-shrink-0">
-            <h3 className="text-sm font-semibold text-gray-700 px-3">
+            <h3 className="text-sm font-semibold text-[#cddaef] px-3">
               {t("sidebar.recentConversations")}
             </h3>
             {conversations.length > 0 && (
-              <span className="text-xs text-gray-500 px-3">
+              <span className="text-xs text-[#cddaef] px-3">
                 {conversations.length}
               </span>
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto space-y-1 min-h-0">
+          <div className="flex-1 overflow-y-auto space-y-1 min-h-0 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-[#1f2937] [&::-webkit-scrollbar-thumb]:bg-[#3d4a5c] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-[#4a5568]">
             {isLoading && (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#80acff]"></div>
               </div>
             )}
 
             {error && (
-              <div className="px-3 py-2 text-sm text-red-600 bg-red-50 rounded-lg">
+              <div className="px-3 py-2 text-sm text-red-400 bg-red-900/20 rounded-lg">
                 {error}
               </div>
             )}
 
             {!isLoading && !error && conversations.length === 0 && (
               <div className="px-3 py-8 text-center">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-[#cddaef]">
                   {t("sidebar.noConversations")}
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-[#6b7890] mt-1">
                   {t("sidebar.startNewConversation")}
                 </p>
               </div>

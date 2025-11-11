@@ -12,6 +12,7 @@
   "dependencies": {
     "docx": "^9.5.1",
     "file-saver": "^2.0.5",
+    "flag-icons": "^7.5.0",
     "i18next": "^25.6.1",
     "lucide-react": "^0.546.0",
     "react": "^19.1.1",

@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import type { SavedConversation } from "../../types/conversation";
+import { FileText, BookOpen, MessageCircle } from "lucide-react";
 
 interface SavedConversationItemProps {
   conversation: SavedConversation;
@@ -54,11 +55,11 @@ export default function SavedConversationItem({
   const getIcon = () => {
     switch (conversation.conversation_type) {
       case "course_outline":
-        return "📝";
+        return FileText;
       case "lesson_plan":
-        return "📚";
+        return BookOpen;
       default:
-        return "💬";
+        return MessageCircle;
     }
   };
 
@@ -89,14 +90,27 @@ export default function SavedConversationItem({
       onClick={handleClick}
       className={`group relative px-3 py-2 rounded-lg cursor-pointer transition-colors ${
         isActive
-          ? "bg-blue-50 border-l-2 border-blue-600 pl-2.5"
-          : "hover:bg-gray-100"
+          ? "bg-[#333f51] border-l-2 border-[#80acff] pl-2.5"
+          : "hover:bg-[#333f51]"
       }`}
     >
-      <div className="flex items-start gap-2">
-        <span className="text-lg flex-shrink-0 mt-0.5">{getIcon()}</span>
+      <div className="flex items-center gap-2">
+        {(() => {
+          const Icon = getIcon();
+          return (
+            <Icon
+              className={`w-4.5 h-4.5 flex-shrink-0 ${
+                isActive
+                  ? "text-[#80acff]"
+                  : "text-[#cddaef] opacity-70 group-hover:text-white"
+              }`}
+            />
+          );
+        })()}
         <span
-          className="text-base flex-shrink-0 mt-0.5"
+          className={`text-base flex-shrink-0 ${
+            isActive ? "text-white" : "text-[#cddaef]"
+          }`}
           title={conversation.language || "Hungarian"}
         >
           {getLanguageFlag()}
@@ -105,14 +119,14 @@ export default function SavedConversationItem({
           <div className="flex items-start justify-between gap-2">
             <h4
               className={`text-sm font-medium truncate ${
-                isActive ? "text-blue-700" : "text-gray-900"
+                isActive ? "text-white" : "text-[#cddaef]"
               }`}
             >
               {conversation.title}
             </h4>
             <button
               onClick={handleDelete}
-              className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-gray-400 hover:text-red-600 transition-opacity"
+              className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-[#cddaef] hover:text-red-400 transition-opacity"
               title="Delete conversation"
             >
               <svg
@@ -130,14 +144,19 @@ export default function SavedConversationItem({
               </svg>
             </button>
           </div>
-          <p className="text-xs text-gray-500 truncate">{getSubtitle()}</p>
+          <p
+            className={`text-xs truncate mt-1 ${
+              isActive ? "text-white" : "text-[#cddaef]"
+            }`}
+          >
+            {getSubtitle()}
+          </p>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-xs text-gray-400">
-              {conversation.message_count}{" "}
-              {conversation.message_count === 1 ? "message" : "messages"}
-            </span>
-            <span className="text-xs text-gray-400">•</span>
-            <span className="text-xs text-gray-400">
+            <span
+              className={`text-xs ${
+                isActive ? "text-white" : "text-[#cddaef]"
+              }`}
+            >
               {formatDate(conversation.updated_at)}
             </span>
           </div>
