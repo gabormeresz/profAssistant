@@ -16,7 +16,10 @@ const Layout = forwardRef<SidebarRef, LayoutProps>(
       return (
         <div className="h-screen bg-gray-50 flex overflow-hidden">
           <Sidebar ref={ref} onNewConversation={onNewConversation} />
-          <main className="flex-1 overflow-y-auto relative">
+          <main
+            className="flex-1 overflow-y-auto relative"
+            style={{ backgroundColor: "#f3f4f4" }}
+          >
             {header}
             <div className="max-w-5xl mx-auto p-6 pb-24">{children}</div>
             <ScrollNavigationButtons />
@@ -26,7 +29,10 @@ const Layout = forwardRef<SidebarRef, LayoutProps>(
     }
 
     return (
-      <div className="h-screen bg-gray-50 overflow-y-auto">
+      <div
+        className="h-screen overflow-y-auto"
+        style={{ backgroundColor: "#f7f8f9" }}
+      >
         {header}
         <div className="max-w-4xl mx-auto p-6">{children}</div>
       </div>
