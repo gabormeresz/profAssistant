@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+:root {
+  --color-dark: #2a3342;
+}
+
+.text-dark {
+  color: var(--color-dark);
+}
+
+.bg-dark {
+  background-color: var(--color-dark);
+}
+
 body {
   font-family: "Poppins", sans-serif;
 }
@@ -7,23 +19,28 @@ body {
 /* Custom markdown prose styles */
 
 .markdown-content {
-  @apply text-gray-800 leading-relaxed;
+  color: var(--color-dark);
+  @apply leading-relaxed;
 }
 
 .markdown-content h1 {
-  @apply text-3xl font-bold mt-6 mb-4 text-gray-900;
+  color: var(--color-dark);
+  @apply text-3xl font-bold mt-6 mb-4;
 }
 
 .markdown-content h2 {
-  @apply text-2xl font-bold mt-5 mb-3 text-gray-900;
+  color: var(--color-dark);
+  @apply text-2xl font-bold mt-5 mb-3;
 }
 
 .markdown-content h3 {
-  @apply text-xl font-semibold mt-4 mb-2 text-gray-900;
+  color: var(--color-dark);
+  @apply text-xl font-semibold mt-4 mb-2;
 }
 
 .markdown-content h4 {
-  @apply text-lg font-semibold mt-3 mb-2 text-gray-800;
+  color: var(--color-dark);
+  @apply text-lg font-semibold mt-3 mb-2;
 }
 
 .markdown-content p {
@@ -47,7 +64,8 @@ body {
 }
 
 .markdown-content pre {
-  @apply bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto mb-4;
+  background-color: var(--color-dark);
+  @apply text-gray-100 p-4 rounded-lg overflow-x-auto mb-4;
 }
 
 .markdown-content pre code {
@@ -63,7 +81,8 @@ body {
 }
 
 .markdown-content strong {
-  @apply font-bold text-gray-900;
+  color: var(--color-dark);
+  @apply font-bold;
 }
 
 .markdown-content em {

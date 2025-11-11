@@ -44,7 +44,7 @@ export function StructuredCourseOutline({
       {/* Course Title */}
       <div className="border-b-2 border-blue-500 pb-3 mb-8">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-3xl font-bold text-gray-900 flex-1">
+          <h1 className="text-3xl font-bold text-dark flex-1">
             {outline.course_title}
           </h1>
           <button
@@ -83,7 +83,7 @@ export function StructuredCourseOutline({
               <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded">
                 {t("lessonPlanOutput.classNumber")} {courseClass.class_number}
               </span>
-              <h2 className="text-2xl font-semibold text-gray-800 flex-1">
+              <h2 className="text-2xl font-semibold text-dark flex-1">
                 {courseClass.class_title}
               </h2>
               <button

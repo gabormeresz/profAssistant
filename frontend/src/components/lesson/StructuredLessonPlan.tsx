@@ -29,7 +29,7 @@ export function StructuredLessonPlan({
           <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded">
             {t("lessonPlanOutput.classNumber")} {lessonPlan.class_number}
           </span>
-          <h1 className="text-3xl font-bold text-gray-900 flex-1">
+          <h1 className="text-3xl font-bold text-dark flex-1">
             {lessonPlan.class_title}
           </h1>
           <button
@@ -58,7 +58,7 @@ export function StructuredLessonPlan({
 
       {/* Learning Objective */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-3">
+        <h2 className="text-xl font-semibold text-dark mb-3">
           {t("lessonPlanOutput.learningObjective")}
         </h2>
         <p className="text-gray-700 bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
@@ -68,7 +68,7 @@ export function StructuredLessonPlan({
 
       {/* Key Points */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-3">
+        <h2 className="text-xl font-semibold text-dark mb-3">
           {t("lessonPlanOutput.keyPoints")}
         </h2>
         <ul className="space-y-2">
@@ -86,7 +86,7 @@ export function StructuredLessonPlan({
 
       {/* Lesson Breakdown */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-3">
+        <h2 className="text-xl font-semibold text-dark mb-3">
           {t("lessonPlanOutput.lessonBreakdown")}
         </h2>
         <div className="space-y-4">
@@ -106,7 +106,7 @@ export function StructuredLessonPlan({
 
       {/* Activities */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-3">
+        <h2 className="text-xl font-semibold text-dark mb-3">
           {t("lessonPlanOutput.activities")}
         </h2>
         <div className="space-y-4">
@@ -137,7 +137,7 @@ export function StructuredLessonPlan({
 
       {/* Homework */}
       <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-3">
+        <h2 className="text-xl font-semibold text-dark mb-3">
           {t("lessonPlanOutput.homework")}
         </h2>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
@@ -147,7 +147,7 @@ export function StructuredLessonPlan({
 
       {/* Extra Activities */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-800 mb-3">
+        <h2 className="text-xl font-semibold text-dark mb-3">
           {t("lessonPlanOutput.extraActivities")}
         </h2>
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">

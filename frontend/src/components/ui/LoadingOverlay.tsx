@@ -80,7 +80,7 @@ export function LoadingOverlay({ message, show }: LoadingOverlayProps) {
           </div>
 
           {/* Message */}
-          <h3 className="text-xl font-semibold text-gray-900 mb-2 text-center">
+          <h3 className="text-xl font-semibold text-dark mb-2 text-center">
             {displayMessage}
           </h3>
 
