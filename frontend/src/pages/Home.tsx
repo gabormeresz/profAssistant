@@ -1,13 +1,7 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LanguageSelector } from "../components";
-import {
-  FileText,
-  BookOpen,
-  Presentation,
-  ClipboardList,
-  Users
-} from "lucide-react";
+import { FileText, BookOpen, Presentation, ClipboardList } from "lucide-react";
 
 function Home() {
   const { t } = useTranslation();
@@ -51,12 +45,12 @@ function Home() {
             </button>
           </div>
           <div className="relative">
-            <div className="bg-gray-200 rounded-2xl overflow-hidden shadow-xl aspect-[4/3] flex items-center justify-center">
-              {/* Placeholder for hero image */}
-              <div className="text-center text-gray-400">
-                <Users className="w-24 h-24 mx-auto mb-4" strokeWidth={1.5} />
-                <p className="text-sm">{t("home.hero.imagePlaceholder")}</p>
-              </div>
+            <div className="bg-gray-200 rounded-2xl overflow-hidden shadow-xl aspect-[4/3]">
+              <img
+                src="/profassistant_bg.jpg"
+                alt="ProfAssistant"
+                className="w-full h-full object-cover"
+              />
             </div>
             {/* Decorative elements */}
             <div className="absolute -bottom-4 -right-4 w-32 h-32 opacity-20">
