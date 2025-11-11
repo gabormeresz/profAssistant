@@ -20,10 +20,10 @@ function Home() {
             <div className="w-40">
               <LanguageSelector variant="header" />
             </div>
-            <button className="px-4 py-2 text-gray-700 hover:text-gray-900 whitespace-nowrap h-10 flex items-center justify-center w-28">
+            <button className="px-4 py-2 text-gray-700 hover:text-gray-900 whitespace-nowrap h-10 flex items-center justify-center w-32">
               {t("home.login")}
             </button>
-            <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap h-10 flex items-center justify-center w-32">
+            <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap h-10 flex items-center justify-center w-36">
               {t("home.signup")}
             </button>
           </div>
@@ -117,7 +117,7 @@ function Home() {
             </Link>
 
             {/* Feature 3 - Placeholder */}
-            <div className="group cursor-pointer">
+            <Link to="/presentation-generator" className="group">
               <div className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-shadow">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
                   <Presentation
@@ -132,10 +132,10 @@ function Home() {
                   {t("home.features.presentation.description")}
                 </p>
               </div>
-            </div>
+            </Link>
 
             {/* Feature 4 - Placeholder */}
-            <div className="group cursor-pointer">
+            <Link to="/assessment-generator" className="group">
               <div className="bg-gray-50 rounded-xl p-6 hover:shadow-lg transition-shadow">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
                   <ClipboardList
@@ -150,7 +150,7 @@ function Home() {
                   {t("home.features.assessment.description")}
                 </p>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
