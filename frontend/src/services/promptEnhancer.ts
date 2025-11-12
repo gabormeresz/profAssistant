@@ -21,6 +21,11 @@ export async function enhancePrompt(
     );
   }
 
+  // Add language if provided
+  if (data.language) {
+    formData.append("language", data.language);
+  }
+
   const response = await fetch(API_ENDPOINTS.ENHANCE_PROMPT, {
     method: "POST",
     body: formData

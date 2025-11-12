@@ -128,6 +128,7 @@ export default function CourseOutlineInputSection({
               topic: topic,
               num_classes: numberOfClasses
             }}
+            language={language}
             onMessageChange={setUserComment}
             onLoadingChange={onEnhancerLoadingChange}
           />

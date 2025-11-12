@@ -7,16 +7,27 @@ dotenv.load_dotenv()
 
 client = AsyncOpenAI()
 
+
 # Constants
-SYSTEM_PROMPT = (
-    "You are a prompt refiner for educational content.\n"
-    "Your task is to rewrite the user’s prompt to make it clearer and more effective.\n\n"
-    "CRITICAL RULES:\n"
-    "• You will be given extra context (topic, class title, objectives, etc.) only to understand the user’s intent.\n"
-    "• You must NOT include or reference any of that context in the output unless it already appears in the user's original prompt.\n"
-    "• Do NOT infer, assume, or restate the topic, class title, objectives, key topics, or activities.\n"
-    "• Output only the refined prompt. No explanations or additional sentences.\n"
-)
+def _build_system_prompt(language: Optional[str]) -> str:
+    """Build system prompt with language instruction if provided."""
+    base_prompt = (
+        "You are a prompt refiner for educational content.\n"
+        "Your task is to rewrite the user's prompt to make it clearer and more effective.\n\n"
+        "CRITICAL RULES:\n"
+        "• You will be given extra context (topic, class title, objectives, etc.) only to understand the user's intent.\n"
+        "• You must NOT include or reference any of that context in the output unless it already appears in the user's original prompt.\n"
+        "• Do NOT infer, assume, or restate the topic, class title, objectives, key topics, or activities.\n"
+    )
+
+    if language:
+        base_prompt += f"• IMPORTANT: The refined prompt MUST instruct that the output should be in {language}.\n"
+
+    base_prompt += (
+        "• Output only the refined prompt. No explanations or additional sentences.\n"
+    )
+
+    return base_prompt
 
 
 MODEL = "gpt-4o-mini"
@@ -54,11 +65,11 @@ def _build_user_message(message: str, context_type: str) -> str:
 
 
 def _build_messages(
-    message: str, context_type: str, context_text: str
+    message: str, context_type: str, context_text: str, language: Optional[str]
 ) -> List[ChatCompletionMessageParam]:
     """Build the messages array for the API call."""
     return [
-        {"role": "system", "content": SYSTEM_PROMPT},
+        {"role": "system", "content": _build_system_prompt(language)},
         {
             "role": "system",
             "content": f"Context for understanding only (do not include in output): {context_text}",
@@ -71,6 +82,7 @@ async def prompt_enhancer(
     message: str,
     context_type: Literal["course_outline", "lesson_plan"] = "course_outline",
     additional_context: Optional[Dict[str, Any]] = None,
+    language: Optional[str] = None,
 ) -> str:
     """
     Enhance the user prompt with additional context.
@@ -82,6 +94,7 @@ async def prompt_enhancer(
             - For course_outline: topic, num_classes
             - For lesson_plan: topic (course_title), class_title, learning_objectives,
               key_topics, activities_projects
+        language: Optional language for the output (e.g., "English", "Hungarian")
 
     Returns:
         Enhanced prompt string
@@ -92,7 +105,7 @@ async def prompt_enhancer(
     additional_context = additional_context or {}
 
     context_text = _build_context_text(context_type, additional_context)
-    messages = _build_messages(message, context_type, context_text)
+    messages = _build_messages(message, context_type, context_text, language)
 
     response = await client.chat.completions.create(
         model=MODEL,

@@ -8,6 +8,7 @@ interface PromptEnhancerProps {
   message: string;
   contextType: "course_outline" | "lesson_plan";
   additionalContext?: Record<string, unknown>;
+  language?: string;
   onMessageChange: (message: string) => void;
   onLoadingChange?: (isLoading: boolean) => void;
 }
@@ -16,6 +17,7 @@ export default function PromptEnhancer({
   message,
   contextType,
   additionalContext,
+  language,
   onMessageChange,
   onLoadingChange
 }: PromptEnhancerProps) {
@@ -35,7 +37,8 @@ export default function PromptEnhancer({
       const result = await enhancePrompt({
         message,
         contextType,
-        additionalContext
+        additionalContext,
+        language
       });
 
       if (result.error) {

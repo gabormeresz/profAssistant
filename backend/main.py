@@ -35,6 +35,7 @@ async def enhance_prompt(
     message: str = Form(...),
     context_type: str = Form("course_outline"),
     additional_context: Optional[str] = Form(None),
+    language: Optional[str] = Form(None),
 ):
     """
     Enhance the user's prompt to provide better instructions for educational content generation.
@@ -45,6 +46,7 @@ async def enhance_prompt(
         additional_context: JSON string with context-specific fields:
             - For course_outline: topic, num_classes
             - For lesson_plan: topic, class_title, learning_objectives, key_topics, activities_projects
+        language: Optional language for the output (e.g., "English", "Hungarian")
     """
     try:
         if not message.strip():
@@ -79,7 +81,9 @@ async def enhance_prompt(
         validated_context_type = cast(
             Literal["course_outline", "lesson_plan"], context_type
         )
-        enhanced = await prompt_enhancer(message, validated_context_type, context_dict)
+        enhanced = await prompt_enhancer(
+            message, validated_context_type, context_dict, language
+        )
         return JSONResponse(content={"enhanced_prompt": enhanced})
 
     except Exception as e:

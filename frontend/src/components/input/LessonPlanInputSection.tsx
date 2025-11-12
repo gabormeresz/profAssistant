@@ -360,6 +360,7 @@ export function LessonPlanInputSection({
                 act.trim()
               )
             }}
+            language={language}
             onMessageChange={setUserComment}
             onLoadingChange={onEnhancerLoadingChange}
           />

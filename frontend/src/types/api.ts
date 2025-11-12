@@ -28,6 +28,7 @@ export interface EnhancePromptRequest {
   message: string;
   contextType: "course_outline" | "lesson_plan";
   additionalContext?: Record<string, unknown>;
+  language?: string;
 }
 
 export interface EnhancePromptResponse {
