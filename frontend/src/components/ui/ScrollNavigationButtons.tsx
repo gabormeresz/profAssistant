@@ -5,6 +5,7 @@ export function ScrollNavigationButtons() {
   const { t } = useTranslation();
   const [canScrollDown, setCanScrollDown] = useState(false);
   const [canScrollUp, setCanScrollUp] = useState(false);
+  const [isScrollable, setIsScrollable] = useState(false);
   const scrollContainerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -44,6 +45,7 @@ export function ScrollNavigationButtons() {
       const isNotAtBottom = scrollTop + clientHeight < scrollHeight - 100; // 100px threshold
       const isNotAtTop = scrollTop > 100; // 100px threshold
 
+      setIsScrollable(isScrollable);
       setCanScrollDown(isScrollable && isNotAtBottom);
       setCanScrollUp(isScrollable && isNotAtTop);
     };
@@ -95,6 +97,10 @@ export function ScrollNavigationButtons() {
       });
     }
   };
+
+  if (!isScrollable) {
+    return null;
+  }
 
   return (
     <div className="fixed top-1/2 -translate-y-1/2 right-4 z-40 flex flex-col gap-3">
