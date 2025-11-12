@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Upload, File as FileIcon, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { validateFiles, formatFileSize } from "../../utils";
 import { FILE_UPLOAD } from "../../utils/constants";
 
@@ -16,6 +17,7 @@ export default function FileUpload({
   disabled = false,
   compact = false
 }: FileUploadProps) {
+  const { t } = useTranslation();
   const [error, setError] = useState<string>("");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,7 +104,7 @@ export default function FileUpload({
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2">
-        Upload Reference Materials (Optional)
+        {t("fileUpload.label")}
       </label>
 
       {/* Upload area */}
@@ -110,10 +112,10 @@ export default function FileUpload({
         <div className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors text-center">
           <Upload className="mx-auto h-8 w-8 text-gray-400" />
           <p className="mt-1 text-sm text-gray-500">
-            Click to upload or drag files here
+            {t("fileUpload.clickToUpload")}
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            PDF, DOCX, TXT, MD (max {FILE_UPLOAD.MAX_SIZE_MB}MB each)
+            {t("fileUpload.formats", { maxSize: FILE_UPLOAD.MAX_SIZE_MB })}
           </p>
         </div>
         <input

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { enhancePrompt } from "../../services";
 import { PROMPT_ENHANCEMENT } from "../../utils/constants";
 
@@ -18,6 +19,7 @@ export default function PromptEnhancer({
   onMessageChange,
   onLoadingChange
 }: PromptEnhancerProps) {
+  const { t } = useTranslation();
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [error, setError] = useState("");
 
@@ -62,7 +64,9 @@ export default function PromptEnhancer({
         className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Sparkles className="h-4 w-4" />
-        {isEnhancing ? "Enhancing..." : "Enhance Prompt"}
+        {isEnhancing
+          ? t("promptEnhancer.enhancing")
+          : t("promptEnhancer.enhance")}
       </button>
       {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
     </div>
