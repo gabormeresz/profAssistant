@@ -31,8 +31,8 @@ function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid md:grid-cols-2 gap-12 items-center">
+      <section className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-20 py-16">
+        <div className="grid md:grid-cols-2 gap-24 items-center">
           <div>
             <h2 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
               {t("home.hero.title")}
@@ -45,31 +45,37 @@ function Home() {
             </button>
           </div>
           <div className="relative">
-            <div className="bg-gray-200 rounded-2xl overflow-hidden shadow-xl aspect-[4/3]">
+            <div className="bg-gray-200 rounded-3xl overflow-hidden shadow-xl aspect-[6/5]">
               <img
-                src="/profassistant_bg.jpg"
-                alt="ProfAssistant"
+                src="/professor.png"
+                alt="professor using ProfAssistant"
                 className="w-full h-full object-cover"
               />
             </div>
-            {/* Decorative elements */}
-            <div className="absolute -bottom-4 -right-4 w-32 h-32 opacity-20">
-              <svg viewBox="0 0 100 100" className="text-blue-600 fill-current">
-                <circle cx="10" cy="10" r="3" />
-                <circle cx="30" cy="10" r="3" />
-                <circle cx="50" cy="10" r="3" />
-                <circle cx="70" cy="10" r="3" />
-                <circle cx="90" cy="10" r="3" />
-                <circle cx="10" cy="30" r="3" />
-                <circle cx="30" cy="30" r="3" />
-                <circle cx="50" cy="30" r="3" />
-                <circle cx="70" cy="30" r="3" />
-                <circle cx="90" cy="30" r="3" />
-                <circle cx="10" cy="50" r="3" />
-                <circle cx="30" cy="50" r="3" />
-                <circle cx="50" cy="50" r="3" />
-                <circle cx="70" cy="50" r="3" />
-                <circle cx="90" cy="50" r="3" />
+            {/* Decorative fingerprint pattern - top left */}
+            <div className="absolute -top-12 -left-12 w-32 h-32 opacity-90 pointer-events-none">
+              <img
+                src="/fingerprint-decor.png"
+                alt=""
+                className="w-full h-full object-contain"
+              />
+            </div>
+            {/* Decorative dots - bottom right */}
+            <div className="absolute -bottom-24 -right-12 w-40 h-40 opacity-90">
+              <svg
+                viewBox="0 0 140 100"
+                className="text-[#22C55D] fill-current"
+              >
+                {Array.from({ length: 5 }).map((_, j) =>
+                  Array.from({ length: 7 }).map((_, i) => (
+                    <circle
+                      key={`${i}-${j}`}
+                      cx={10 + i * 20}
+                      cy={10 + j * 19}
+                      r="2"
+                    />
+                  ))
+                )}
               </svg>
             </div>
           </div>
@@ -78,7 +84,7 @@ function Home() {
 
       {/* Features Section */}
       <section className="bg-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-20">
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Feature 1 */}
             <Link to="/course-outline-generator" className="group">
