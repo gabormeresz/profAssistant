@@ -105,7 +105,7 @@ export function ScrollNavigationButtons() {
         className={`p-3 rounded-full shadow-lg transition-all flex items-center justify-center ${
           canScrollUp
             ? "bg-blue-600 text-white hover:bg-blue-700 hover:scale-110 cursor-pointer"
-            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            : "bg-gray-300 text-gray-500 cursor-not-allowed opacity-40"
         }`}
         aria-label={t("common.scrollToTop")}
         title={t("common.scrollToTop")}
@@ -133,7 +133,7 @@ export function ScrollNavigationButtons() {
         className={`p-3 rounded-full shadow-lg transition-all flex items-center justify-center ${
           canScrollDown
             ? "bg-blue-600 text-white hover:bg-blue-700 hover:scale-110 cursor-pointer"
-            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            : "bg-gray-300 text-gray-500 cursor-not-allowed opacity-40"
         }`}
         aria-label={t("common.scrollToBottom")}
         title={t("common.scrollToBottom")}
