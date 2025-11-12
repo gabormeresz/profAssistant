@@ -9,22 +9,26 @@ client = AsyncOpenAI()
 
 
 # Constants
-def _build_system_prompt(language: Optional[str]) -> str:
-    """Build system prompt with language instruction if provided."""
+def _build_system_prompt(language: Optional[str], context_text: str) -> str:
+    """Build system prompt with language instruction and context if provided."""
     base_prompt = (
         "You are a prompt refiner for educational content.\n"
         "Your task is to rewrite the user's prompt to make it clearer and more effective.\n\n"
         "CRITICAL RULES:\n"
-        "• You will be given extra context (topic, class title, objectives, etc.) only to understand the user's intent.\n"
+        "• You will be given extra context (topic, class title, objectives, etc.) to understand the user's intent.\n"
         "• You must NOT include or reference any of that context in the output unless it already appears in the user's original prompt.\n"
         "• Do NOT infer, assume, or restate the topic, class title, objectives, key topics, or activities.\n"
+        "• Use keywords, small phrases only, not whole sentences.\n"
+        "• Be direct and instructional - no conversational tone or politeness.\n"
+        "• You SHOULD suggest new relevant ideas based on the provided context to enrich the prompt.\n"
     )
 
     if language:
-        base_prompt += f"• IMPORTANT: The refined prompt MUST instruct that the output should be in {language}.\n"
+        base_prompt += f"• IMPORTANT: Write the refined prompt in {language}.\n"
 
     base_prompt += (
-        "• Output only the refined prompt. No explanations or additional sentences.\n"
+        "• Output only the refined prompt. No explanations or additional sentences.\n\n"
+        f"Context for understanding only (do not include in output): {context_text}\n"
     )
 
     return base_prompt
@@ -59,7 +63,7 @@ def _build_user_message(message: str, context_type: str) -> str:
     )
     return (
         f"My initial prompt is: '''{message}'''. "
-        f"Please refine it into a clearer and more effective instruction for generating a {content_type}. "
+        f"Please refine it into a clearer, richer, and more effective instruction for generating a {content_type}. "
         "Do not include any context details in your output."
     )
 
@@ -69,11 +73,7 @@ def _build_messages(
 ) -> List[ChatCompletionMessageParam]:
     """Build the messages array for the API call."""
     return [
-        {"role": "system", "content": _build_system_prompt(language)},
-        {
-            "role": "system",
-            "content": f"Context for understanding only (do not include in output): {context_text}",
-        },
+        {"role": "system", "content": _build_system_prompt(language, context_text)},
         {"role": "user", "content": _build_user_message(message, context_type)},
     ]
 
