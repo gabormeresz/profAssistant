@@ -48,26 +48,26 @@
     "login": "Bejelentkezés",
     "signup": "Regisztráció",
     "hero": {
-      "title": "Intelligens asszisztens egyetemi tanároknak",
+      "title": "Intelligens asszisztens egyetemi oktatóknak",
       "subtitle": "Ez az alkalmazás mesterséges intelligencia segítségével támogatja az egyetemi oktatókat a tananyag-előkészítés teljes folyamatában. Időt takarít meg, rendszert visz a munkába, és inspiratív ötleteket kínál minden tanórához.",
       "cta": "Regisztráció",
-      "imagePlaceholder": "Egyetemi tanárok együttműködése"
+      "imagePlaceholder": "Egyetemi oktatók együttműködése"
     },
     "features": {
       "courseOutline": {
-        "title": "Féléves tematika tervezés",
+        "title": "Féléves tematika tervezése",
         "description": "Félévente bontott tematikát generál a megadott tárgyhoz és témakörökhoz."
       },
       "lessonPlan": {
-        "title": "Óraterv készítés tematikából",
+        "title": "Óraterv készítése",
         "description": "Részletes óravázlatokat hoz létre, célokat, tanulási javaslatokat és értékelési javaslatokat ad."
       },
       "presentation": {
-        "title": "Prezentáció generálás óraterv ből",
+        "title": "Órai prezentáció összeállítása",
         "description": "Az előzetesen készített óratervből automatikusan készít előadásokat."
       },
       "assessment": {
-        "title": "Teszt / számonkérés generálás",
+        "title": "Számonkérés összeállítása",
         "description": "Az adott témához illeszkedő kérdéssorokat és feladatokat hoz létre."
       }
     },
