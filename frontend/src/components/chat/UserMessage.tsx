@@ -1,11 +1,13 @@
 import { File, User } from "lucide-react";
 import type { ConversationMessage } from "../../types";
+import { useTranslation } from "react-i18next";
 
 interface UserMessageProps {
   message: ConversationMessage;
 }
 
 export default function UserMessage({ message }: UserMessageProps) {
+  const { t } = useTranslation();
   return (
     <div className="flex gap-4 flex-row-reverse">
       {/* Avatar */}
@@ -26,7 +28,9 @@ export default function UserMessage({ message }: UserMessageProps) {
           {/* Uploaded files */}
           {message.files && message.files.length > 0 && (
             <div className="mt-3 pt-3 border-t border-blue-400">
-              <div className="mb-2 font-bold">Attached files:</div>
+              <div className="mb-2 font-bold">
+                {t("fileUpload.uploadedFiles")}
+              </div>
               <div className="space-y-1">
                 {message.files.map((file, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-xs">
