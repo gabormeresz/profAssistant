@@ -119,9 +119,7 @@ export default function FollowUpInput({
           </button>
         </div>
 
-        <p className="text-xs text-gray-500">
-          Press Enter to send, Shift+Enter for new line
-        </p>
+        <p className="text-xs text-gray-500">{t("followUp.sendHint")}</p>
       </div>
     </div>
   );

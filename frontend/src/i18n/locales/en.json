@@ -127,6 +127,7 @@
   },
   "followUp": {
     "placeholder": "Ask for modifications or refinements...",
+    "sendHint": "Press Enter to send, Shift+Enter for new line",
     "uploadFiles": "Upload files",
     "send": "Send"
   },

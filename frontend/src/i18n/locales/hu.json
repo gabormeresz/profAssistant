@@ -127,6 +127,7 @@
   },
   "followUp": {
     "placeholder": "Kérj módosításokat vagy finomításokat...",
+    "sendHint": "Nyomj Entert a küldéshez, Shift+Entert az új sorhoz",
     "uploadFiles": "Fájlok feltöltése",
     "send": "Küldés"
   },
