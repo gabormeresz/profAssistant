@@ -17,6 +17,7 @@ interface CourseOutlineInputSectionProps {
   uploadedFiles: File[];
   setUploadedFiles: (files: File[]) => void;
   onEnhancerLoadingChange?: (isLoading: boolean) => void;
+  displayFiles?: Array<{ name: string }>;
 }
 
 export default function CourseOutlineInputSection({
@@ -32,7 +33,8 @@ export default function CourseOutlineInputSection({
   threadId,
   uploadedFiles,
   setUploadedFiles,
-  onEnhancerLoadingChange
+  onEnhancerLoadingChange,
+  displayFiles
 }: CourseOutlineInputSectionProps) {
   const { t } = useTranslation();
   const isButtonDisabled =
@@ -135,7 +137,12 @@ export default function CourseOutlineInputSection({
         </div>
 
         {/* File Upload */}
-        <FileUpload files={uploadedFiles} onFilesChange={setUploadedFiles} />
+        <FileUpload
+          files={uploadedFiles}
+          onFilesChange={setUploadedFiles}
+          displayOnly={threadId !== null}
+          displayFiles={displayFiles}
+        />
       </div>
 
       {/* Submit Button */}

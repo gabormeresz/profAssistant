@@ -138,7 +138,9 @@
     "supportedFormats": "Supported formats: PDF, DOCX, TXT, MD (max {{maxSize}}MB)",
     "remove": "Remove",
     "tooLarge": "File {{filename}} is too large. Max size is {{maxSize}}MB.",
-    "unsupportedType": "File {{filename}} type not supported. Allowed: PDF, DOCX, TXT, MD"
+    "unsupportedType": "File {{filename}} type not supported. Allowed: PDF, DOCX, TXT, MD",
+    "uploadedFiles": "Uploaded files",
+    "noUploadedFiles": "No uploaded files"
   },
   "promptEnhancer": {
     "enhance": "Enhance Prompt",

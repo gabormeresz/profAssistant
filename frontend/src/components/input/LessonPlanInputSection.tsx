@@ -26,6 +26,7 @@ interface LessonPlanInputSectionProps {
   onSubmit: () => void;
   threadId: string | null;
   onEnhancerLoadingChange?: (isLoading: boolean) => void;
+  displayFiles?: Array<{ name: string }>;
 }
 
 export function LessonPlanInputSection({
@@ -49,7 +50,8 @@ export function LessonPlanInputSection({
   setLanguage,
   onSubmit,
   threadId,
-  onEnhancerLoadingChange
+  onEnhancerLoadingChange,
+  displayFiles
 }: LessonPlanInputSectionProps) {
   const { t } = useTranslation();
 
@@ -368,7 +370,12 @@ export function LessonPlanInputSection({
 
         {/* File Upload */}
         <div className="mb-6">
-          <FileUpload files={uploadedFiles} onFilesChange={setUploadedFiles} />
+          <FileUpload
+            files={uploadedFiles}
+            onFilesChange={setUploadedFiles}
+            displayOnly={threadId !== null}
+            displayFiles={displayFiles}
+          />
         </div>
       </div>
 

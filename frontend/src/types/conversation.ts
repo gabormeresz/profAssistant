@@ -3,7 +3,7 @@ export interface ConversationMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
-  files?: { name: string; size: number }[];
+  files?: { name: string }[];
 }
 
 // Saved conversation types matching backend schema

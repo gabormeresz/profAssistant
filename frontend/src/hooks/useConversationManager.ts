@@ -8,6 +8,49 @@ import {
 import type { ConversationMessage, StreamingState } from "../types";
 import { useSavedConversationsContext } from "../contexts/SavedConversationsContext";
 
+/**
+ * Parse a user message to extract file contents section
+ * Returns the user's actual message and any attached file information
+ */
+function parseUserMessage(content: string): {
+  userContent: string;
+  files: { name: string }[];
+} {
+  const files: { name: string }[] = [];
+  let userContent = content;
+
+  // Check if message contains file contents section
+  const fileMarkerStart = "<<<REFERENCE_MATERIALS_BEGIN>>>";
+  const fileMarkerEnd = "<<<REFERENCE_MATERIALS_END>>>";
+
+  const startIdx = content.indexOf(fileMarkerStart);
+  const endIdx = content.indexOf(fileMarkerEnd);
+
+  if (startIdx !== -1 && endIdx !== -1) {
+    // Extract the file contents section
+    const fileSection = content.substring(
+      startIdx + fileMarkerStart.length,
+      endIdx
+    );
+
+    // Remove file section from user content
+    userContent = content.substring(0, startIdx).trim();
+
+    // Parse individual files from the section
+    // Format: <<<FILE_BEGIN:filename>>>\ncontent\n<<<FILE_END>>>
+    const filePattern = /<<<FILE_BEGIN:(.+?)>>>/g;
+    let match;
+
+    while ((match = filePattern.exec(fileSection)) !== null) {
+      const filename = match[1].trim();
+
+      files.push({ name: filename });
+    }
+  }
+
+  return { userContent, files };
+}
+
 export interface UseConversationManagerConfig<TResult, TConversation> {
   /**
    * The route path for this generator (e.g., "/outline-generator")
@@ -184,11 +227,15 @@ export function useConversationManager<TResult, TConversation>(
 
         history.messages.forEach((msg) => {
           if (msg.role === "user") {
+            // Parse the message to separate user content from file contents
+            const { userContent, files } = parseUserMessage(msg.content);
+
             userMsgs.push({
               id: `user-${crypto.randomUUID()}`,
               role: "user",
-              content: msg.content,
-              timestamp: new Date()
+              content: userContent,
+              timestamp: new Date(),
+              files: files.length > 0 ? files : undefined
             });
           } else if (msg.role === "assistant") {
             try {

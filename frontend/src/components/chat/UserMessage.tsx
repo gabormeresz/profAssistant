@@ -31,9 +31,7 @@ export default function UserMessage({ message }: UserMessageProps) {
                 {message.files.map((file, idx) => (
                   <div key={idx} className="flex items-center gap-2 text-xs">
                     <File className="h-4 w-4" />
-                    <span>
-                      {file.name} ({(file.size / 1024).toFixed(1)} KB)
-                    </span>
+                    <span>{file.name}</span>
                   </div>
                 ))}
               </div>

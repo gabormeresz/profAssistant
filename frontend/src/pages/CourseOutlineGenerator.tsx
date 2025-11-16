@@ -38,7 +38,7 @@ function createUserMessage(
     role: "user",
     content,
     timestamp: new Date(),
-    files: files?.map((f) => ({ name: f.name, size: f.size }))
+    files: files?.map((f) => ({ name: f.name }))
   };
 }
 
@@ -150,6 +150,9 @@ function CourseOutlineGenerator() {
       language,
       files: uploadedFiles
     });
+
+    // Clear uploaded files after sending
+    setUploadedFiles([]);
   }, [
     topic,
     userComment,
@@ -239,6 +242,11 @@ function CourseOutlineGenerator() {
           uploadedFiles={uploadedFiles}
           setUploadedFiles={setUploadedFiles}
           onEnhancerLoadingChange={setIsEnhancing}
+          displayFiles={
+            hasStarted && userMessages[0]?.files
+              ? userMessages[0].files
+              : undefined
+          }
         />
       </div>
 

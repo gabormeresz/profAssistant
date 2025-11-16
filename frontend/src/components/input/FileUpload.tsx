@@ -9,13 +9,17 @@ interface FileUploadProps {
   onFilesChange: (files: File[]) => void;
   disabled?: boolean;
   compact?: boolean;
+  displayOnly?: boolean;
+  displayFiles?: Array<{ name: string }>;
 }
 
 export default function FileUpload({
   files,
   onFilesChange,
   disabled = false,
-  compact = false
+  compact = false,
+  displayOnly = false,
+  displayFiles
 }: FileUploadProps) {
   const { t } = useTranslation();
   const [error, setError] = useState<string>("");
@@ -96,6 +100,34 @@ export default function FileUpload({
             disabled={disabled}
           />
         </label>
+      </div>
+    );
+  }
+
+  // Display-only mode (for showing files when form is disabled)
+  if (displayOnly) {
+    return (
+      <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="text-sm font-medium text-gray-700 mb-2">
+          {t("fileUpload.uploadedFiles")}
+        </div>
+        {displayFiles && displayFiles.length > 0 ? (
+          <div className="space-y-1">
+            {displayFiles.map((file, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-2 text-sm text-gray-600"
+              >
+                <FileIcon className="h-4 w-4 text-gray-400" />
+                <span>{file.name}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-sm text-gray-500">
+            {t("fileUpload.noUploadedFiles")}
+          </div>
+        )}
       </div>
     );
   }

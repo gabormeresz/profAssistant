@@ -38,7 +38,7 @@ function createUserMessage(
     role: "user",
     content,
     timestamp: new Date(),
-    files: files?.map((f) => ({ name: f.name, size: f.size }))
+    files: files?.map((f) => ({ name: f.name }))
   };
 }
 
@@ -220,6 +220,9 @@ function LessonPlanGenerator() {
       language,
       files: uploadedFiles
     });
+
+    // Clear uploaded files after sending
+    setUploadedFiles([]);
   }, [
     courseTitle,
     classNumber,
@@ -325,6 +328,11 @@ function LessonPlanGenerator() {
           onSubmit={handleInitialSubmit}
           threadId={threadId}
           onEnhancerLoadingChange={setIsEnhancing}
+          displayFiles={
+            hasStarted && userMessages[0]?.files
+              ? userMessages[0].files
+              : undefined
+          }
         />
       </div>
 

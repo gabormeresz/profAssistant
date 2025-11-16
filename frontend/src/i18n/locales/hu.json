@@ -138,7 +138,9 @@
     "supportedFormats": "Támogatott formátumok: PDF, DOCX, TXT, MD (max {{maxSize}}MB)",
     "remove": "Eltávolítás",
     "tooLarge": "A(z) {{filename}} fájl túl nagy. Maximális méret {{maxSize}}MB.",
-    "unsupportedType": "A(z) {{filename}} fájltípusa nem támogatott. Engedélyezett: PDF, DOCX, TXT, MD"
+    "unsupportedType": "A(z) {{filename}} fájltípusa nem támogatott. Engedélyezett: PDF, DOCX, TXT, MD",
+    "uploadedFiles": "Feltöltött fájlok",
+    "noUploadedFiles": "Nincsenek feltöltött fájlok"
   },
   "promptEnhancer": {
     "enhance": "Utasítás Javítása",
