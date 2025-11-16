@@ -48,10 +48,10 @@ export default function FileUpload({
   if (compact) {
     // Compact version for follow-up input
     return (
-      <div>
+      <div className="space-y-3">
         {/* Uploaded files list */}
         {files.length > 0 && (
-          <div className="space-y-2 mb-3">
+          <div className="space-y-2">
             {files.map((file, index) => (
               <div
                 key={index}
@@ -80,10 +80,10 @@ export default function FileUpload({
         )}
 
         {/* Error message */}
-        {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+        {error && <p className="text-sm text-red-600">{error}</p>}
 
         {/* Upload button (compact) */}
-        <label className="cursor-pointer flex-shrink-0">
+        <label className="cursor-pointer inline-block">
           <div className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
             <Upload className="h-5 w-5 text-gray-500" />
           </div>
