@@ -6,7 +6,7 @@ import {
   fetchConversationHistory
 } from "../services/conversationService";
 import type { ConversationMessage, StreamingState } from "../types";
-import type { SidebarRef } from "../components";
+import { useSavedConversationsContext } from "../contexts/SavedConversationsContext";
 
 export interface UseConversationManagerConfig<TResult, TConversation> {
   /**
@@ -90,11 +90,6 @@ export interface UseConversationManagerReturn<TResult> {
    * Set result history
    */
   setResultHistory: React.Dispatch<React.SetStateAction<TResult[]>>;
-
-  /**
-   * Reference to sidebar for refetching
-   */
-  sidebarRef: React.MutableRefObject<SidebarRef | null>;
 }
 
 /**
@@ -127,6 +122,7 @@ export function useConversationManager<TResult, TConversation>(
   } = config;
 
   const navigate = useNavigate();
+  const { refetch: refetchConversations } = useSavedConversationsContext();
 
   // State
   const [hasStarted, setHasStarted] = useState(false);
@@ -134,7 +130,6 @@ export function useConversationManager<TResult, TConversation>(
   const [resultHistory, setResultHistory] = useState<TResult[]>([]);
 
   // Refs
-  const sidebarRef = useRef<SidebarRef | null>(null);
   const loadedThreadIdRef = useRef<string | null>(null);
   const isLoadingFromUrlRef = useRef(false);
 
@@ -145,10 +140,10 @@ export function useConversationManager<TResult, TConversation>(
 
     if (shouldUpdateUrl) {
       navigate(`${routePath}/${threadId}`, { replace: true });
-      // Trigger sidebar refetch when a new conversation is created
-      sidebarRef.current?.refetchConversations();
+      // Trigger refetch when a new conversation is created
+      refetchConversations();
     }
-  }, [threadId, urlThreadId, navigate, routePath]);
+  }, [threadId, urlThreadId, navigate, routePath, refetchConversations]);
 
   // Load conversation from URL
   useEffect(() => {
@@ -241,6 +236,9 @@ export function useConversationManager<TResult, TConversation>(
       return [...prev, result];
     });
 
+    // Trigger refetch when a conversation is continued (new result added)
+    refetchConversations();
+
     // Clear data after ensuring React has rendered the updated history
     // Use requestAnimationFrame to wait for the next paint
     const rafId = requestAnimationFrame(() => {
@@ -249,7 +247,7 @@ export function useConversationManager<TResult, TConversation>(
     });
 
     return () => cancelAnimationFrame(rafId);
-  }, [result, streamingState, clearData]);
+  }, [result, streamingState, clearData, refetchConversations]);
 
   return {
     hasStarted,
@@ -257,7 +255,6 @@ export function useConversationManager<TResult, TConversation>(
     userMessages,
     setUserMessages,
     resultHistory,
-    setResultHistory,
-    sidebarRef
+    setResultHistory
   };
 }

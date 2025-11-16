@@ -1,6 +1,5 @@
 // Layout components
 export { Header, Layout, LanguageSelector } from "./layout";
-export type { SidebarRef } from "./layout";
 
 // Chat components
 export { UserMessage } from "./chat";

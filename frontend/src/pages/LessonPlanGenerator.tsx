@@ -90,8 +90,7 @@ function LessonPlanGenerator() {
     userMessages,
     setUserMessages,
     resultHistory: lessonHistory,
-    setResultHistory: setLessonHistory,
-    sidebarRef
+    setResultHistory: setLessonHistory
   } = useConversationManager<LessonPlan, SavedLessonPlan>({
     routePath: "/lesson-plan-generator",
     urlThreadId,
@@ -298,7 +297,6 @@ function LessonPlanGenerator() {
 
   return (
     <Layout
-      ref={sidebarRef}
       showSidebar
       onNewConversation={handleNewConversation}
       header={<Header title={t("header.lessonPlanGenerator")} />}

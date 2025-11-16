@@ -87,8 +87,7 @@ function CourseOutlineGenerator() {
     userMessages,
     setUserMessages,
     resultHistory: outlineHistory,
-    setResultHistory: setOutlineHistory,
-    sidebarRef
+    setResultHistory: setOutlineHistory
   } = useConversationManager<CourseOutline, SavedCourseOutline>({
     routePath: "/course-outline-generator",
     urlThreadId,
@@ -220,7 +219,6 @@ function CourseOutlineGenerator() {
 
   return (
     <Layout
-      ref={sidebarRef}
       showSidebar
       onNewConversation={handleNewConversation}
       header={<Header title={t("header.courseOutlineGenerator")} />}
