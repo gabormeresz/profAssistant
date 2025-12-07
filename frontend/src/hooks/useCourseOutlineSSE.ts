@@ -14,7 +14,6 @@ interface UseCourseOutlineSSEReturn {
   streamingState: StreamingState;
   threadId: string | null;
   sendMessage: (data: CourseOutlineRequest) => Promise<CourseOutline | null>;
-  clearData: () => void;
   resetThread: () => void;
   setThreadId: (id: string | null) => void;
 }
@@ -31,7 +30,6 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
     streamingState,
     threadId,
     sendRequest,
-    clearData,
     resetThread,
     setThreadId
   } = useSSE<CourseOutline>();
@@ -81,7 +79,6 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
     streamingState,
     threadId,
     sendMessage,
-    clearData,
     resetThread,
     setThreadId
   };

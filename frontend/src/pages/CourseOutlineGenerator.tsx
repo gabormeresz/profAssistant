@@ -76,8 +76,7 @@ function CourseOutlineGenerator() {
     threadId,
     sendMessage,
     resetThread,
-    setThreadId,
-    clearData
+    setThreadId
   } = useCourseOutlineSSE();
 
   // Conversation management hook (handles URL sync, loading, history)
@@ -95,7 +94,6 @@ function CourseOutlineGenerator() {
     setThreadId,
     result: courseOutline,
     streamingState,
-    clearData,
     isCorrectType: (
       conversation: unknown
     ): conversation is SavedCourseOutline =>
@@ -257,27 +255,18 @@ function CourseOutlineGenerator() {
             {/* User message - skip first message as it's visible in the initial form */}
             {index > 0 && <UserMessage message={userMsg} />}
 
-            {/* Corresponding assistant response (course outline) */}
-            {outlineHistory[index] && (
+            {/* Corresponding assistant response (course outline) - either from history or current */}
+            {(outlineHistory[index] ||
+              (index === userMessages.length - 1 && courseOutline)) && (
               <div className="mt-6">
                 <StructuredCourseOutline
-                  outline={outlineHistory[index]}
+                  outline={outlineHistory[index] || courseOutline!}
                   language={language}
                 />
               </div>
             )}
           </div>
         ))}
-
-        {/* Show current outline being generated (not yet in history) */}
-        {courseOutline && (
-          <div className="mt-6">
-            <StructuredCourseOutline
-              outline={courseOutline}
-              language={language}
-            />
-          </div>
-        )}
       </div>
 
       {/* Progress indicator */}

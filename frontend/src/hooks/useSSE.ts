@@ -26,7 +26,6 @@ export interface UseSSEReturn<T> {
     formData: FormData,
     handlers?: SSEEventHandlers<T>
   ) => Promise<T | null>;
-  clearData: () => void;
   resetThread: () => void;
   setThreadId: (id: string | null) => void;
 }
@@ -241,7 +240,6 @@ export const useSSE = <T>(): UseSSEReturn<T> => {
     streamingState,
     threadId,
     sendRequest,
-    clearData,
     resetThread,
     setThreadId
   };

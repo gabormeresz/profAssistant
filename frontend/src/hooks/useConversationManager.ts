@@ -83,11 +83,6 @@ export interface UseConversationManagerConfig<TResult, TConversation> {
   streamingState: StreamingState;
 
   /**
-   * Clear data function from SSE hook
-   */
-  clearData: () => void;
-
-  /**
    * Type guard to check if conversation metadata matches expected type
    */
   isCorrectType: (conversation: unknown) => conversation is TConversation;
@@ -158,7 +153,6 @@ export function useConversationManager<TResult, TConversation>(
     setThreadId,
     result,
     streamingState,
-    clearData,
     isCorrectType,
     restoreFormState,
     parseResult
@@ -175,6 +169,8 @@ export function useConversationManager<TResult, TConversation>(
   // Refs
   const loadedThreadIdRef = useRef<string | null>(null);
   const isLoadingFromUrlRef = useRef(false);
+  // Track which result has been processed to prevent duplicate additions
+  const lastProcessedResultRef = useRef<string | null>(null);
 
   // Update URL when thread ID changes (from SSE)
   useEffect(() => {
@@ -201,9 +197,10 @@ export function useConversationManager<TResult, TConversation>(
       loadedThreadIdRef.current = urlThreadId;
       isLoadingFromUrlRef.current = true;
 
-      // Clear previous data
+      // Clear previous data and reset tracking
       setUserMessages([]);
       setResultHistory([]);
+      lastProcessedResultRef.current = null;
 
       try {
         // Fetch metadata and history
@@ -249,6 +246,13 @@ export function useConversationManager<TResult, TConversation>(
         // Update state
         setUserMessages(userMsgs);
         setResultHistory(results);
+
+        // Mark the last result as processed to prevent re-adding if SSE fires
+        if (results.length > 0) {
+          lastProcessedResultRef.current = JSON.stringify(
+            results[results.length - 1]
+          );
+        }
       } catch (error) {
         logger.error("Failed to load conversation:", error);
         navigate(routePath, { replace: true });
@@ -275,26 +279,23 @@ export function useConversationManager<TResult, TConversation>(
   useEffect(() => {
     if (!result || streamingState !== "complete") return;
 
-    setResultHistory((prev) => {
-      const isDuplicate = prev.some(
-        (item) => JSON.stringify(item) === JSON.stringify(result)
-      );
-      if (isDuplicate) return prev;
-      return [...prev, result];
-    });
+    // Create a unique key for this result based on its content
+    const resultKey = JSON.stringify(result);
+
+    // Skip if this is the same result we already processed
+    if (lastProcessedResultRef.current === resultKey) {
+      return;
+    }
+
+    // Mark this result as processed
+    lastProcessedResultRef.current = resultKey;
+
+    // Add to history
+    setResultHistory((prev) => [...prev, result]);
 
     // Trigger refetch when a conversation is continued (new result added)
     refetchConversations();
-
-    // Clear data after ensuring React has rendered the updated history
-    // Use requestAnimationFrame to wait for the next paint
-    const rafId = requestAnimationFrame(() => {
-      // Add another microtask delay to ensure render is complete
-      setTimeout(() => clearData(), 0);
-    });
-
-    return () => cancelAnimationFrame(rafId);
-  }, [result, streamingState, clearData, refetchConversations]);
+  }, [result, streamingState, refetchConversations]);
 
   return {
     hasStarted,

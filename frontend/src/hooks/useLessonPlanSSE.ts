@@ -10,7 +10,6 @@ interface UseLessonPlanSSEReturn {
   streamingState: StreamingState;
   threadId: string | null;
   sendMessage: (data: LessonPlanRequest) => Promise<LessonPlan | null>;
-  clearData: () => void;
   resetThread: () => void;
   setThreadId: (id: string | null) => void;
 }
@@ -27,7 +26,6 @@ export const useLessonPlanSSE = (): UseLessonPlanSSEReturn => {
     streamingState,
     threadId,
     sendRequest,
-    clearData,
     resetThread,
     setThreadId
   } = useSSE<LessonPlan>();
@@ -91,7 +89,6 @@ export const useLessonPlanSSE = (): UseLessonPlanSSEReturn => {
     streamingState,
     threadId,
     sendMessage,
-    clearData,
     resetThread,
     setThreadId
   };

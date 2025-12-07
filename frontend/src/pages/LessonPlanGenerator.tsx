@@ -79,8 +79,7 @@ function LessonPlanGenerator() {
     threadId,
     sendMessage,
     resetThread,
-    setThreadId,
-    clearData
+    setThreadId
   } = useLessonPlanSSE();
 
   // Conversation management hook (handles URL sync, loading, history)
@@ -98,7 +97,6 @@ function LessonPlanGenerator() {
     setThreadId,
     result: lessonPlan,
     streamingState,
-    clearData,
     isCorrectType: (conversation: unknown): conversation is SavedLessonPlan =>
       typeof conversation === "object" &&
       conversation !== null &&
@@ -343,21 +341,17 @@ function LessonPlanGenerator() {
             {/* User message - skip first message as it's visible in the initial form */}
             {index > 0 && <UserMessage message={userMsg} />}
 
-            {/* Corresponding assistant response (lesson plan) */}
-            {lessonHistory[index] && (
+            {/* Corresponding assistant response (lesson plan) - either from history or current */}
+            {(lessonHistory[index] ||
+              (index === userMessages.length - 1 && lessonPlan)) && (
               <div className="mt-6">
-                <StructuredLessonPlan lessonPlan={lessonHistory[index]} />
+                <StructuredLessonPlan
+                  lessonPlan={lessonHistory[index] || lessonPlan!}
+                />
               </div>
             )}
           </div>
         ))}
-
-        {/* Show current lesson plan being generated (not yet in history) */}
-        {lessonPlan && (
-          <div className="mt-6">
-            <StructuredLessonPlan lessonPlan={lessonPlan} />
-          </div>
-        )}
       </div>
 
       {/* Progress indicator */}
