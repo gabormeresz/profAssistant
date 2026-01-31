@@ -389,9 +389,9 @@ async def get_conversation_history(thread_id: str):
             config = {"configurable": {"thread_id": thread_id}}
 
             # Get the latest state
-            state = await checkpointer.aget(config)  # type: ignore
+            checkpoint = await checkpointer.aget(config)  # type: ignore
 
-            if not state:
+            if not checkpoint:
                 # No messages yet in this thread
                 return {
                     "thread_id": thread_id,
@@ -399,32 +399,29 @@ async def get_conversation_history(thread_id: str):
                     "metadata": conversation.model_dump(),
                 }
 
-            # Extract messages from state
-            # In LangGraph v1, the checkpoint state is a dict with 'channel_values' key
+            # Extract messages from checkpoint
+            # LangGraph checkpoint objects have channel_values attribute
             messages = []
 
-            # State is a dict, and the actual state data is in 'channel_values'
-            state_dict = state if isinstance(state, dict) else {}  # type: ignore
+            # Get channel_values from the checkpoint
+            channel_values = {}
+            if hasattr(checkpoint, "channel_values"):
+                channel_values = checkpoint.channel_values  # type: ignore
+            elif isinstance(checkpoint, dict) and "channel_values" in checkpoint:
+                channel_values = checkpoint["channel_values"]  # type: ignore
+            elif isinstance(checkpoint, dict):
+                channel_values = checkpoint  # type: ignore
 
-            # Access the actual channel values
-            if isinstance(state_dict, dict) and "channel_values" in state_dict:
-                channel_values = state_dict["channel_values"]  # type: ignore
-
-                if isinstance(channel_values, dict) and "messages" in channel_values:
-                    state_dict = (
-                        channel_values  # Use channel_values as the actual state
-                    )
-
-            if "messages" in state_dict:  # type: ignore
-                raw_messages = state_dict["messages"]  # type: ignore
+            if "messages" in channel_values:  # type: ignore
+                raw_messages = channel_values["messages"]  # type: ignore
 
                 # Handle both single message and list of messages
                 if not isinstance(raw_messages, list):
                     raw_messages = [raw_messages]
 
-                # Keep track of whether we have structured_response
-                has_structured_response = "structured_response" in state_dict  # type: ignore
-                structured_response = state_dict.get("structured_response") if has_structured_response else None  # type: ignore
+                # Keep track of whether we have final_response (structured output)
+                has_final_response = "final_response" in channel_values  # type: ignore
+                final_response = channel_values.get("final_response") if has_final_response else None  # type: ignore
 
                 for i, msg in enumerate(raw_messages):
                     # Extract message content based on structure
@@ -449,13 +446,13 @@ async def get_conversation_history(thread_id: str):
                     elif isinstance(msg, dict) and "role" in msg:  # type: ignore
                         role = str(msg["role"])  # type: ignore
 
-                    # For assistant messages, use the structured_response if available
+                    # For assistant messages, use the final_response if available
                     # For user messages, use the message content
-                    if role == "assistant" and structured_response:
-                        # Return the structured response as JSON
+                    if role == "assistant" and final_response:
+                        # Return the final response as JSON
                         import json
 
-                        content = json.dumps(structured_response.model_dump() if hasattr(structured_response, "model_dump") else structured_response)  # type: ignore
+                        content = json.dumps(final_response.model_dump() if hasattr(final_response, "model_dump") else final_response)  # type: ignore
                     else:
                         # LangChain message objects have a content attribute
                         if hasattr(msg, "content"):
