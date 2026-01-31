@@ -193,6 +193,13 @@ export function useConversationManager<TResult, TConversation>(
         return;
       }
 
+      // Skip loading if this is the thread we just created via SSE
+      // (indicated by threadId matching urlThreadId and having a result)
+      if (threadId === urlThreadId && result && streamingState === "complete") {
+        loadedThreadIdRef.current = urlThreadId;
+        return;
+      }
+
       // Mark as loaded and prevent URL updates during load
       loadedThreadIdRef.current = urlThreadId;
       isLoadingFromUrlRef.current = true;
@@ -267,6 +274,9 @@ export function useConversationManager<TResult, TConversation>(
     loadConversation();
   }, [
     urlThreadId,
+    threadId,
+    result,
+    streamingState,
     setThreadId,
     navigate,
     routePath,
