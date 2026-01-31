@@ -9,8 +9,6 @@ from services.conversation_manager import conversation_manager
 from schemas.conversation import (
     ConversationType,
     ConversationList,
-    CourseOutlineUpdate,
-    LessonPlanUpdate,
 )
 import json
 from typing import List, Optional
@@ -329,31 +327,6 @@ async def get_conversation(thread_id: str):
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
     return conversation
-
-
-@app.patch("/conversations/{thread_id}")
-async def update_conversation(thread_id: str, update: CourseOutlineUpdate):
-    """
-    Update conversation metadata.
-    Note: Currently only supports CourseOutline updates.
-    For lesson plans, use a separate endpoint or extend this with Union types.
-    """
-    existing = conversation_manager.get_conversation(thread_id)
-    if not existing:
-        raise HTTPException(status_code=404, detail="Conversation not found")
-
-    # Determine type and call appropriate update method
-    if existing.conversation_type == ConversationType.COURSE_OUTLINE:
-        updated = conversation_manager.update_course_outline(
-            thread_id=thread_id, data=update
-        )
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail="Update not supported for this conversation type via this endpoint",
-        )
-
-    return updated
 
 
 @app.delete("/conversations/{thread_id}")

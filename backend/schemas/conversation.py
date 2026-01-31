@@ -107,32 +107,6 @@ class LessonPlanCreate(BaseModel):
     user_comment: Optional[str] = None
 
 
-class CourseOutlineUpdate(BaseModel):
-    """Request model for updating course outline metadata."""
-
-    title: Optional[str] = None
-    topic: Optional[str] = None
-    number_of_classes: Optional[int] = None
-    language: Optional[str] = None
-    difficulty_level: Optional[str] = None
-    target_audience: Optional[str] = None
-    user_comment: Optional[str] = None
-
-
-class LessonPlanUpdate(BaseModel):
-    """Request model for updating lesson plan metadata."""
-
-    title: Optional[str] = None
-    course_title: Optional[str] = None
-    class_number: Optional[int] = None
-    class_title: Optional[str] = None
-    learning_objectives: Optional[List[str]] = None
-    key_topics: Optional[List[str]] = None
-    activities_projects: Optional[List[str]] = None
-    language: Optional[str] = None
-    user_comment: Optional[str] = None
-
-
 class ConversationList(BaseModel):
     """Response model for listing conversations."""
 
