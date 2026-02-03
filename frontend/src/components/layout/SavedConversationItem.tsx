@@ -129,7 +129,7 @@ export default function SavedConversationItem({
             <button
               onClick={handleDelete}
               className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-[#cddaef] hover:text-red-400 transition-opacity"
-              title="Delete conversation"
+              title={t("sidebar.deleteConversation")}
             >
               <svg
                 className="w-4 h-4"

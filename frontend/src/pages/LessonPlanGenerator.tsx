@@ -186,17 +186,15 @@ function LessonPlanGenerator() {
 
     // Validate maximum array lengths (minimum is 0, so optional)
     if (filteredObjectives.length > LESSON_PLAN.MAX_OBJECTIVES) {
-      alert(
-        `Please provide at most ${LESSON_PLAN.MAX_OBJECTIVES} learning objectives`
-      );
+      alert(t("lessonPlan.maxObjectives", { max: LESSON_PLAN.MAX_OBJECTIVES }));
       return;
     }
     if (filteredTopics.length > LESSON_PLAN.MAX_TOPICS) {
-      alert(`Please provide at most ${LESSON_PLAN.MAX_TOPICS} key topics`);
+      alert(t("lessonPlan.maxTopics", { max: LESSON_PLAN.MAX_TOPICS }));
       return;
     }
     if (filteredActivities.length > LESSON_PLAN.MAX_ACTIVITIES) {
-      alert(`Please provide at most ${LESSON_PLAN.MAX_ACTIVITIES} activities`);
+      alert(t("lessonPlan.maxActivities", { max: LESSON_PLAN.MAX_ACTIVITIES }));
       return;
     }
 
