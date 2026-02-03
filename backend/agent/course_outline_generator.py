@@ -19,7 +19,6 @@ from .course_outline import (
     CourseOutlineOutput,
     CourseOutlineState,
     build_course_outline_graph,
-    get_graph_visualization,
 )
 
 __all__ = [
@@ -28,5 +27,4 @@ __all__ = [
     "CourseOutlineOutput",
     "CourseOutlineState",
     "build_course_outline_graph",
-    "get_graph_visualization",
 ]

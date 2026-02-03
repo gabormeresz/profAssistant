@@ -13,7 +13,7 @@ Public API:
 """
 
 from .state import CourseOutlineInput, CourseOutlineOutput, CourseOutlineState
-from .graph import build_course_outline_graph, get_graph_visualization
+from .graph import build_course_outline_graph
 from .generator import run_course_outline_generator
 
 __all__ = [
@@ -22,5 +22,4 @@ __all__ = [
     "CourseOutlineOutput",
     "CourseOutlineState",
     "build_course_outline_graph",
-    "get_graph_visualization",
 ]
