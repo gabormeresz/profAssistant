@@ -71,7 +71,9 @@ def initialize_conversation(state: CourseOutlineState) -> dict:
                 number_of_classes=state["number_of_classes"],
                 language=state["language"],
                 user_comment=(
-                    state.get("message") if state.get("message", "").strip() else None
+                    state.get("message")
+                    if (state.get("message") or "").strip()
+                    else None
                 ),
             ),
         )
@@ -153,7 +155,7 @@ def build_messages(state: CourseOutlineState) -> dict:
             f"with {state['number_of_classes']} classes."
         )
 
-        user_message = state.get("message", "")
+        user_message = state.get("message") or ""
         if user_message.strip():
             user_content_parts.append(user_message)
 
@@ -173,7 +175,7 @@ def build_messages(state: CourseOutlineState) -> dict:
         # Build new user message content
         user_content_parts = []
 
-        user_message = state.get("message", "")
+        user_message = state.get("message") or ""
         if user_message.strip():
             user_content_parts.append(user_message)
 
