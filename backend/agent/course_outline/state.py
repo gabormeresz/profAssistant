@@ -75,8 +75,10 @@ class CourseOutlineOutput(TypedDict):
     Output schema for course outline generation.
 
     Defines the final structure returned by the workflow.
+    Note: final_response is a Dict (not CourseOutline) because LangGraph
+    serializes Pydantic models when returning from the graph.
     """
 
     thread_id: str
-    final_response: Optional[Dict]
+    final_response: Optional[Dict[str, Any]]  # Serialized CourseOutline
     error: Optional[str]
