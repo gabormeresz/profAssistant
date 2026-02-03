@@ -9,6 +9,7 @@ and output schemas.
 from typing import TypedDict, List, Dict, Optional, Annotated, Any
 from langgraph.graph import MessagesState
 from schemas.course_outline import CourseOutline
+from schemas.evaluation import EvaluationResult
 import operator
 
 
@@ -22,7 +23,7 @@ class CourseOutlineInput(TypedDict):
 
     topic: str
     number_of_classes: int
-    message: str
+    message: Optional[str]  # Optional user comment/instruction
     file_contents: Optional[List[Dict[str, str]]]
     language: str
     thread_id: str  # Always provided (generated before graph runs)
@@ -41,21 +42,28 @@ class CourseOutlineState(MessagesState):
     topic: str
     number_of_classes: int
     language: str
+    message: Optional[str]  # User message/instruction (for follow-ups)
     file_contents: Optional[List[Dict[str, str]]]
 
     # Session management
     thread_id: str
     is_first_call: bool
 
-    # Research results from tools (accumulated)
+    # Research results from tools (accumulated within a run)
     research_results: Annotated[List[str], operator.add]
 
     # Intermediate agent response (not saved to messages directly)
     agent_response: Optional[Any]
 
-    # Evaluation loop state
+    # Evaluation loop state with history tracking
+    # Note: evaluation_history is NOT using operator.add because we need to
+    # reset it between conversation turns. We manually manage accumulation
+    # in the evaluate_outline node.
     evaluation_count: int  # Counter for evaluation iterations (max 3)
-    evaluation_feedback: Optional[str]  # Feedback from evaluator for refinement
+    evaluation_history: List[
+        EvaluationResult
+    ]  # All evaluations for context (reset per turn)
+    current_score: Optional[float]  # Latest score for plateau detection
 
     # Output fields
     final_response: Optional[CourseOutline]

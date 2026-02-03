@@ -78,47 +78,110 @@ def get_evaluator_system_prompt(language: str) -> str:
     return f"""You are an expert educational curriculum evaluator. Your role is to critically 
 assess course outlines for quality, pedagogical soundness, and completeness.
 
-## Evaluation Criteria
+## Scoring Rubric (0.0 to 1.0 for each dimension)
 
-1. **Learning Objectives**: Are they clear, measurable, and appropriate for the course level?
-2. **Content Coverage**: Does the outline cover the topic comprehensively and logically?
-3. **Progression**: Is there a logical flow from basic to advanced concepts?
-4. **Activities**: Are the suggested activities engaging and aligned with objectives?
-5. **Balance**: Is there appropriate balance between theory and practice?
-6. **Completeness**: Does each class have sufficient detail?
+### Learning Objectives (learning_objectives)
+- **0.9-1.0**: Clear, measurable, uses action verbs (Bloom's taxonomy), appropriate level
+- **0.7-0.8**: Mostly clear but some objectives vague or not measurable
+- **0.5-0.6**: Many objectives unclear or missing measurability
+- **0.0-0.4**: Objectives missing, vague, or inappropriate
 
-## Your Task
+### Content Coverage (content_coverage)
+- **0.9-1.0**: Comprehensive, covers all essential topics, well-organized
+- **0.7-0.8**: Covers main topics but misses some important subtopics
+- **0.5-0.6**: Significant gaps in coverage or poor organization
+- **0.0-0.4**: Major topics missing or content is superficial
 
-Review the generated course outline and determine if it meets quality standards.
+### Progression (progression)
+- **0.9-1.0**: Excellent scaffolding, basic→advanced flow, clear prerequisites
+- **0.7-0.8**: Generally good flow with minor sequencing issues
+- **0.5-0.6**: Some topics out of order, unclear dependencies
+- **0.0-0.4**: Random organization, no logical progression
 
-- If the outline is well-structured, comprehensive, and pedagogically sound, mark it as APPROVED.
-- If the outline has issues that should be addressed, mark it as NEEDS_REFINEMENT and provide specific, actionable suggestions.
+### Activities (activities)
+- **0.9-1.0**: Engaging, varied, aligned with objectives, appropriate for topic
+- **0.7-0.8**: Good activities but some lack alignment or variety
+- **0.5-0.6**: Generic activities, poor alignment with objectives
+- **0.0-0.4**: Activities missing, inappropriate, or disconnected
+
+### Completeness (completeness)
+- **0.9-1.0**: Each class has detailed objectives, topics, activities, timing
+- **0.7-0.8**: Most classes complete but some lack detail
+- **0.5-0.6**: Several classes missing important elements
+- **0.0-0.4**: Many classes incomplete or underdeveloped
+
+## Scoring Guidelines
+
+1. Score each dimension independently using the rubric above
+2. Calculate overall score as weighted average (all dimensions equal weight)
+3. **APPROVED**: Overall score >= 0.8
+4. **NEEDS_REFINEMENT**: Overall score < 0.8
+5. Provide 1-3 suggestions targeting the lowest-scoring dimensions
 
 Provide your reasoning and suggestions in {language}."""
 
 
-def get_refinement_prompt(original_content: str, feedback: str, language: str) -> str:
+def get_refinement_prompt(
+    original_content: str,
+    evaluation_history: list,
+    language: str,
+) -> str:
     """
-    Get the prompt for refining the course outline based on evaluator feedback.
+    Get the prompt for refining the course outline based on evaluation history.
 
     Args:
         original_content: The original generated content.
-        feedback: The evaluator's feedback and suggestions.
+        evaluation_history: List of all previous evaluations with scores.
         language: The target language for the refined content.
 
     Returns:
         The formatted refinement prompt.
     """
-    return f"""Your previous course outline has been reviewed and needs refinement.
+    # Build evaluation history context
+    history_context = ""
+    for i, evaluation in enumerate(evaluation_history, 1):
+        history_context += f"""
+### Iteration {i} (Score: {evaluation.score:.2f})
+- Learning Objectives: {evaluation.score_breakdown.learning_objectives:.2f}
+- Content Coverage: {evaluation.score_breakdown.content_coverage:.2f}
+- Progression: {evaluation.score_breakdown.progression:.2f}
+- Activities: {evaluation.score_breakdown.activities:.2f}
+- Completeness: {evaluation.score_breakdown.completeness:.2f}
 
-## Original Content
+Feedback: {evaluation.reasoning}
+
+Suggestions:
+"""
+        for suggestion in evaluation.suggestions:
+            history_context += f"- [{suggestion.dimension}] {suggestion.text}\n"
+
+    # Get the latest evaluation for focus areas
+    latest = evaluation_history[-1] if evaluation_history else None
+    focus_areas = ""
+    if latest:
+        scores = [
+            ("learning_objectives", latest.score_breakdown.learning_objectives),
+            ("content_coverage", latest.score_breakdown.content_coverage),
+            ("progression", latest.score_breakdown.progression),
+            ("activities", latest.score_breakdown.activities),
+            ("completeness", latest.score_breakdown.completeness),
+        ]
+        lowest = sorted(scores, key=lambda x: x[1])[:2]
+        focus_areas = f"Focus especially on improving: {', '.join([f'{name} ({score:.2f})' for name, score in lowest])}"
+
+    return f"""Your course outline has been evaluated and needs refinement to achieve a higher quality score.
+
+## Current Content
 {original_content}
 
-## Evaluator Feedback
-{feedback}
+## Evaluation History
+{history_context}
 
 ## Your Task
 Generate an improved version of the course outline that addresses the feedback above.
+{focus_areas}
+
+Target: Achieve an overall score of 0.8 or higher.
 Maintain the same topic and number of classes, but enhance the quality based on the suggestions.
 
 All content must be in {language}."""

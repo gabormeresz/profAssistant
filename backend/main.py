@@ -395,7 +395,18 @@ async def get_conversation_history(thread_id: str):
                 # Keep track of whether we have a structured response
                 # Course outline generator uses 'final_response', lesson plan uses 'structured_response'
                 final_response = channel_values.get("final_response") or channel_values.get("structured_response")  # type: ignore
-                has_final_response = final_response is not None
+
+                # Count assistant messages to know which is the last one
+                assistant_indices = []
+                for i, msg in enumerate(raw_messages):
+                    if hasattr(msg, "__class__"):
+                        class_name = msg.__class__.__name__  # type: ignore
+                        if "AI" in class_name or "Assistant" in class_name:
+                            assistant_indices.append(i)
+                    elif hasattr(msg, "type") and str(getattr(msg, "type", "")) == "ai":
+                        assistant_indices.append(i)
+
+                last_assistant_idx = assistant_indices[-1] if assistant_indices else -1
 
                 for i, msg in enumerate(raw_messages):
                     # Extract message content based on structure
@@ -412,18 +423,29 @@ async def get_conversation_history(thread_id: str):
                         elif "Tool" in class_name:
                             # Skip tool messages - they are internal to the agent
                             continue
+                        elif "System" in class_name:
+                            # Skip system messages - they are internal prompts
+                            continue
                     elif hasattr(msg, "type"):
                         msg_type = str(getattr(msg, "type", ""))
                         if msg_type == "tool":
                             continue
+                        if msg_type == "system":
+                            continue
                         role = "user" if msg_type == "human" else "assistant"
                     elif isinstance(msg, dict) and "role" in msg:  # type: ignore
+                        if msg["role"] == "system":  # type: ignore
+                            continue
                         role = str(msg["role"])  # type: ignore
 
-                    # For assistant messages, use the final_response if available
-                    # For user messages, use the message content
-                    if role == "assistant" and final_response:
-                        # Return the final response as JSON
+                    # For the LAST assistant message, use final_response if available
+                    # For other messages (user or earlier assistant), use the message content
+                    if (
+                        role == "assistant"
+                        and final_response
+                        and i == last_assistant_idx
+                    ):
+                        # Return the final response as JSON for the last assistant message
                         import json
 
                         content = json.dumps(final_response.model_dump() if hasattr(final_response, "model_dump") else final_response)  # type: ignore

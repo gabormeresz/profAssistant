@@ -45,13 +45,14 @@ def initialize_conversation(state: CourseOutlineState) -> dict:
     Initialize or load conversation metadata.
 
     For first calls, creates a new conversation record.
-    For follow-ups, increments the message count and loads existing metadata.
+    For follow-ups, increments the message count, loads existing metadata,
+    and resets evaluation state for a fresh evaluation cycle.
 
     Args:
         state: The current workflow state.
 
     Returns:
-        Updated state with thread_id and is_first_call flag.
+        Updated state with thread_id, is_first_call flag, and reset evaluation state.
     """
     thread_id = state["thread_id"]
     is_first_call = state.get("is_first_call", True)
@@ -74,6 +75,13 @@ def initialize_conversation(state: CourseOutlineState) -> dict:
                 ),
             ),
         )
+        return {
+            "thread_id": thread_id,
+            "is_first_call": is_first_call,
+            "evaluation_count": 0,
+            "evaluation_history": [],
+            "current_score": None,
+        }
     else:
         # Update existing conversation
         conversation_manager.increment_message_count(thread_id)
@@ -87,20 +95,31 @@ def initialize_conversation(state: CourseOutlineState) -> dict:
                 "language": conversation.language,
                 "topic": conversation.topic,
                 "number_of_classes": conversation.number_of_classes,
+                # Reset evaluation state for fresh evaluation cycle
+                "evaluation_count": 0,
+                "evaluation_history": [],
+                "current_score": None,
             }
 
-    return {
-        "thread_id": thread_id,
-        "is_first_call": is_first_call,
-    }
+        # Fallback if conversation not found
+        return {
+            "thread_id": thread_id,
+            "is_first_call": is_first_call,
+            "evaluation_count": 0,
+            "evaluation_history": [],
+            "current_score": None,
+        }
 
 
 def build_messages(state: CourseOutlineState) -> dict:
     """
-    Build the initial messages for the agent.
+    Build messages for the agent.
 
-    Constructs the system message and user message based on the current state.
-    Handles first calls differently from follow-up messages.
+    For first calls: Creates fresh system message and user prompt.
+    For follow-ups: Preserves existing messages and appends new user message.
+
+    The messages from previous runs are automatically loaded from the
+    checkpoint by LangGraph when using a checkpointer.
 
     Args:
         state: The current workflow state.
@@ -108,45 +127,85 @@ def build_messages(state: CourseOutlineState) -> dict:
     Returns:
         Updated state with messages list.
     """
-    messages = []
+    is_first_call = state.get("is_first_call", True)
+    user_message = state.get("message", "")
 
-    # Add system message
-    system_prompt = get_system_prompt(state["language"])
-    messages.append(SystemMessage(content=system_prompt))
+    # DEBUG: Log what we're working with
+    print(
+        f"[DEBUG build_messages] is_first_call={is_first_call}, user_message='{user_message[:50] if user_message else ''}'"
+    )
+    print(
+        f"[DEBUG build_messages] existing messages count: {len(state.get('messages', []))}"
+    )
 
-    # Build user message content
-    user_content_parts = []
+    if is_first_call:
+        # For first call, create fresh messages
+        messages = []
 
-    if state.get("is_first_call", True):
+        # Add system message
+        system_prompt = get_system_prompt(state["language"])
+        messages.append(SystemMessage(content=system_prompt))
+
+        # Build user message content
+        user_content_parts = []
         user_content_parts.append(
             f"Create a course outline on '{state['topic']}' "
             f"with {state['number_of_classes']} classes."
         )
 
-    user_message = state.get("message", "")
-    if user_message.strip():
-        user_content_parts.append(user_message)
+        user_message = state.get("message", "")
+        if user_message.strip():
+            user_content_parts.append(user_message)
 
-    file_contents = state.get("file_contents")
-    if file_contents:
-        user_content_parts.append(build_file_contents_message(file_contents))
+        file_contents = state.get("file_contents")
+        if file_contents:
+            user_content_parts.append(build_file_contents_message(file_contents))
 
-    if user_content_parts:
-        messages.append(HumanMessage(content="\n\n".join(user_content_parts)))
+        if user_content_parts:
+            messages.append(HumanMessage(content="\n\n".join(user_content_parts)))
 
-    return {"messages": messages}
+        return {"messages": messages}
+    else:
+        # For follow-ups, preserve existing messages and only append new user message
+        # The existing messages are loaded from checkpoint automatically
+        new_messages = []
+
+        # Build new user message content
+        user_content_parts = []
+
+        user_message = state.get("message", "")
+        if user_message.strip():
+            user_content_parts.append(user_message)
+
+        file_contents = state.get("file_contents")
+        if file_contents:
+            user_content_parts.append(build_file_contents_message(file_contents))
+
+        # Only add if there's actual new content
+        if user_content_parts:
+            new_messages.append(HumanMessage(content="\n\n".join(user_content_parts)))
+
+        # DEBUG: Log what we're returning
+        print(f"[DEBUG build_messages] returning {len(new_messages)} new messages")
+        if new_messages:
+            print(
+                f"[DEBUG build_messages] new message content: {new_messages[0].content[:100]}"
+            )
+
+        # Return new messages to be appended (MessagesState will handle accumulation)
+        return {"messages": new_messages}
 
 
 def generate_outline(state: CourseOutlineState) -> dict:
     """
-    Generate or refine the course outline using the LLM.
+    Generate the initial course outline using the LLM.
 
     This node invokes the model and allows it to make tool calls
     if it needs additional information. The response is stored in
     agent_response (not messages) to allow for clean JSON formatting later.
 
-    If evaluation feedback is present, it incorporates the feedback
-    to refine the previous response.
+    This node is only for initial generation. Refinement is handled
+    by a separate refine_outline node.
 
     Args:
         state: The current workflow state.
@@ -157,21 +216,6 @@ def generate_outline(state: CourseOutlineState) -> dict:
     """
     messages = list(state["messages"])
 
-    # Check if we have evaluation feedback for refinement
-    evaluation_feedback = state.get("evaluation_feedback")
-    if evaluation_feedback:
-        # Get the previous response content for context
-        agent_response = state.get("agent_response")
-        original_content = ""
-        if agent_response and hasattr(agent_response, "content"):
-            original_content = str(agent_response.content)
-
-        language = state.get("language", "English")
-        refinement_prompt = get_refinement_prompt(
-            original_content, evaluation_feedback, language
-        )
-        messages.append(HumanMessage(content=refinement_prompt))
-
     response = model_with_tools.invoke(messages)
 
     # If there are tool calls, we need to add to messages for the ToolNode
@@ -180,6 +224,74 @@ def generate_outline(state: CourseOutlineState) -> dict:
 
     # Otherwise, just store in agent_response (don't pollute messages with raw response)
     return {"agent_response": response}
+
+
+def refine_outline(state: CourseOutlineState) -> dict:
+    """
+    Refine the course outline based on evaluation feedback.
+
+    This node takes the evaluation history and uses it to generate
+    an improved version of the course outline, focusing on the
+    lowest-scoring dimensions.
+
+    Args:
+        state: The current workflow state.
+
+    Returns:
+        Updated state with the refined response in agent_response.
+    """
+    messages = list(state["messages"])
+
+    # Get the previous response content for context
+    agent_response = state.get("agent_response")
+    original_content = ""
+    if agent_response and hasattr(agent_response, "content"):
+        original_content = str(agent_response.content)
+
+    # Get evaluation history for context
+    evaluation_history = state.get("evaluation_history", [])
+    language = state.get("language", "English")
+
+    refinement_prompt = get_refinement_prompt(
+        original_content, evaluation_history, language
+    )
+    refinement_message = HumanMessage(content=refinement_prompt)
+    messages.append(refinement_message)
+
+    response = model_with_tools.invoke(messages)
+
+    # If there are tool calls, we need to add both the refinement prompt and response to messages
+    if hasattr(response, "tool_calls") and response.tool_calls:
+        return {"messages": [refinement_message, response], "agent_response": response}
+
+    # Otherwise, just store in agent_response (don't pollute messages with prompts)
+    return {"agent_response": response}
+
+
+def route_after_refine(
+    state: CourseOutlineState,
+) -> Literal["tools_refine", "evaluate"]:
+    """
+    Route the workflow after refinement.
+
+    Checks if the refiner wants to use tools or if it's ready to be evaluated.
+
+    Args:
+        state: The current workflow state.
+
+    Returns:
+        "tools_refine" if tools should be called, "evaluate" otherwise.
+    """
+    agent_response = state.get("agent_response")
+
+    if not agent_response:
+        return "evaluate"
+
+    # Check if the model wants to use tools
+    if isinstance(agent_response, AIMessage) and agent_response.tool_calls:
+        return "tools_refine"
+
+    return "evaluate"
 
 
 def generate_structured_response(state: CourseOutlineState) -> dict:
@@ -260,30 +372,36 @@ def route_after_generate(state: CourseOutlineState) -> Literal["tools", "evaluat
 
 
 MAX_EVALUATION_RETRIES = 3
+APPROVAL_THRESHOLD = 0.8
+MIN_SCORE_IMPROVEMENT = 0.05  # Minimum improvement to continue refining
 
 
 def evaluate_outline(state: CourseOutlineState) -> dict:
     """
-    Evaluate the generated course outline for quality.
+    Evaluate the generated course outline for quality using scoring.
 
     This node acts as an evaluator agent that assesses the quality of
-    the generated content and decides whether it needs refinement.
-    Uses structured output for reliable parsing of evaluation results.
+    the generated content across multiple dimensions and provides
+    a numeric score. Uses structured output for reliable parsing.
+
+    Note: Since evaluation_history doesn't use operator.add, we manually
+    accumulate by getting existing history and appending to it.
 
     Args:
         state: The current workflow state.
 
     Returns:
-        Updated state with evaluation_count and potentially evaluation_feedback.
+        Updated state with evaluation_count, evaluation_history, and current_score.
     """
     # Get current evaluation count (default to 0 if not set)
     current_count = state.get("evaluation_count", 0)
+    # Get existing evaluation history (already reset by initialize_conversation for follow-ups)
+    existing_history = state.get("evaluation_history", []) or []
 
     # If we've already done MAX_EVALUATION_RETRIES, skip evaluation
     if current_count >= MAX_EVALUATION_RETRIES:
         return {
             "evaluation_count": current_count,
-            "evaluation_feedback": None,
         }
 
     # Get the agent's response to evaluate
@@ -291,7 +409,8 @@ def evaluate_outline(state: CourseOutlineState) -> dict:
     if not agent_response:
         return {
             "evaluation_count": current_count + 1,
-            "evaluation_feedback": None,
+            "current_score": 0.0,
+            "evaluation_history": existing_history,
         }
 
     # Extract content from the agent response
@@ -318,48 +437,67 @@ def evaluate_outline(state: CourseOutlineState) -> dict:
         if not isinstance(evaluation_result, EvaluationResult):
             return {
                 "evaluation_count": current_count + 1,
-                "evaluation_feedback": None,
+                "current_score": 0.0,
+                "evaluation_history": existing_history,
             }
 
-        if evaluation_result.verdict == "APPROVED":
-            return {
-                "evaluation_count": current_count + 1,
-                "evaluation_feedback": None,
-            }
-        else:
-            # Compile feedback for refinement
-            feedback = f"Evaluation Result: {evaluation_result.reasoning}\n\nSuggestions for improvement:\n"
-            for i, suggestion in enumerate(evaluation_result.suggestions, 1):
-                feedback += f"{i}. {suggestion.text}\n"
-
-            return {
-                "evaluation_count": current_count + 1,
-                "evaluation_feedback": feedback,
-            }
-
-    except Exception:
-        # If evaluation fails, assume it's approved to avoid infinite loops
+        # Add to evaluation history (manually accumulate) and update current score
+        updated_history = existing_history + [evaluation_result]
         return {
             "evaluation_count": current_count + 1,
-            "evaluation_feedback": None,
+            "evaluation_history": updated_history,
+            "current_score": evaluation_result.score,
+        }
+
+    except Exception:
+        # If evaluation fails, return low score but still increment count
+        # Don't add to history since we don't have a valid evaluation
+        return {
+            "evaluation_count": current_count + 1,
+            "current_score": 0.0,
+            "evaluation_history": existing_history,
         }
 
 
-def route_after_evaluate(state: CourseOutlineState) -> Literal["generate", "respond"]:
+def route_after_evaluate(state: CourseOutlineState) -> Literal["refine", "respond"]:
     """
-    Route the workflow after evaluation.
+    Route the workflow after evaluation with plateau detection.
+
+    Decides whether to refine based on:
+    1. Score threshold (>= 0.8 means approved)
+    2. Max retries reached
+    3. Score plateau (not improving significantly)
+    4. Empty evaluation history (evaluation failed)
 
     Args:
         state: The current workflow state.
 
     Returns:
-        "generate" if the evaluator provided feedback (for refinement), "respond" otherwise.
+        "refine" if more refinement needed, "respond" otherwise.
     """
-    evaluation_feedback = state.get("evaluation_feedback")
     evaluation_count = state.get("evaluation_count", 0)
+    current_score = state.get("current_score") or 0.0
+    evaluation_history = state.get("evaluation_history", [])
 
-    # If we have feedback and haven't exceeded max retries, go back to generator for refinement
-    if evaluation_feedback and evaluation_count < MAX_EVALUATION_RETRIES:
-        return "generate"
+    # If evaluation history is empty (evaluation failed), go to respond
+    # We can't refine without evaluation feedback
+    if not evaluation_history:
+        return "respond"
 
-    return "respond"
+    # Check if score meets approval threshold
+    if current_score >= APPROVAL_THRESHOLD:
+        return "respond"
+
+    # Check if we've exceeded max retries
+    if evaluation_count >= MAX_EVALUATION_RETRIES:
+        return "respond"
+
+    # Check for score plateau (not improving)
+    if len(evaluation_history) >= 2:
+        previous_score = evaluation_history[-2].score
+        improvement = current_score - previous_score
+        if improvement < MIN_SCORE_IMPROVEMENT:
+            # Score is not improving enough, stop refining
+            return "respond"
+
+    return "refine"
