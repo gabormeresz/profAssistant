@@ -13,9 +13,11 @@ from .state import CourseOutlineState, CourseOutlineInput, CourseOutlineOutput
 from .nodes import (
     initialize_conversation,
     build_messages,
-    call_model,
+    generate_outline,
     generate_structured_response,
-    should_continue,
+    route_after_generate,
+    evaluate_outline,
+    route_after_evaluate,
     tools,
 )
 
@@ -28,11 +30,15 @@ def build_course_outline_graph() -> StateGraph:
 
     1. initialize -> Initialize/load conversation metadata
     2. build_messages -> Construct the message history
-    3. agent -> Call the LLM with tools bound
-    4. (conditional) -> Either use tools or respond
-    5. tools -> Execute tool calls (loops back to agent)
-    6. respond -> Generate final structured output
-    7. END
+    3. generate -> Call the LLM with tools bound (also handles refinement)
+    4. (conditional) -> Either use tools or go to evaluation
+    5. tools -> Execute tool calls (loops back to generate)
+    6. evaluate -> Evaluator agent assesses quality
+    7. (conditional) -> Either go back to generate for refinement or respond
+    8. respond -> Generate final structured output
+    9. END
+
+    The evaluation loop runs a maximum of 3 times before passing through.
 
     Returns:
         The constructed (but not compiled) StateGraph.
@@ -46,27 +52,38 @@ def build_course_outline_graph() -> StateGraph:
     # Add nodes
     workflow.add_node("initialize", initialize_conversation)
     workflow.add_node("build_messages", build_messages)
-    workflow.add_node("agent", call_model)
+    workflow.add_node("generate", generate_outline)
     workflow.add_node("tools", ToolNode(tools))
+    workflow.add_node("evaluate", evaluate_outline)
     workflow.add_node("respond", generate_structured_response)
 
     # Define the workflow edges
     workflow.set_entry_point("initialize")
     workflow.add_edge("initialize", "build_messages")
-    workflow.add_edge("build_messages", "agent")
+    workflow.add_edge("build_messages", "generate")
 
-    # Conditional edge from agent: either use tools or respond
+    # Conditional edge from generate: either use tools or go to evaluation
     workflow.add_conditional_edges(
-        "agent",
-        should_continue,
+        "generate",
+        route_after_generate,
         {
             "tools": "tools",
-            "respond": "respond",
+            "evaluate": "evaluate",
         },
     )
 
-    # Tool loop: after tools, go back to agent
-    workflow.add_edge("tools", "agent")
+    # Tool loop: after tools, go back to generate
+    workflow.add_edge("tools", "generate")
+
+    # Conditional edge from evaluate: either go back to generate for refinement or respond
+    workflow.add_conditional_edges(
+        "evaluate",
+        route_after_evaluate,
+        {
+            "generate": "generate",
+            "respond": "respond",
+        },
+    )
 
     # Final response ends the graph
     workflow.add_edge("respond", END)
@@ -87,55 +104,3 @@ async def create_compiled_graph(thread_id: str | None = None):
     workflow = build_course_outline_graph()
     memory = await AsyncSqliteSaver.from_conn_string("checkpoints.db").__aenter__()
     return workflow.compile(checkpointer=memory), memory
-
-
-def get_graph_visualization() -> str:
-    """
-    Get a text representation of the graph structure.
-
-    Useful for debugging and documentation.
-
-    Returns:
-        ASCII representation of the graph.
-    """
-    return """
-    Course Outline Generation Graph
-    ================================
-    
-    ┌─────────────┐
-    │   START     │
-    └──────┬──────┘
-           │
-           ▼
-    ┌─────────────┐
-    │ initialize  │  ← Create/load conversation
-    └──────┬──────┘
-           │
-           ▼
-    ┌─────────────┐
-    │build_messages│  ← Construct prompts
-    └──────┬──────┘
-           │
-           ▼
-    ┌─────────────┐
-    │   agent     │  ← LLM with tools
-    └──────┬──────┘
-           │
-           ▼
-    ┌─────────────┐
-    │should_continue│
-    └──────┬──────┘
-           │
-     ┌─────┴─────┐
-     │           │
-     ▼           ▼
-┌─────────┐ ┌─────────┐
-│  tools  │ │ respond │
-└────┬────┘ └────┬────┘
-     │           │
-     └───►agent  │
-                 ▼
-          ┌─────────┐
-          │   END   │
-          └─────────┘
-    """

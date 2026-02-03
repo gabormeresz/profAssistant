@@ -85,6 +85,12 @@ async def run_course_outline_generator(
             # Track output for final response
             final_response = None
 
+            # Yield initial progress
+            yield {
+                "type": "progress",
+                "message_key": "overlay.initializingConversation",
+            }
+
             # Stream events for progress updates
             async for event in graph.astream_events(
                 input_state,
@@ -94,8 +100,8 @@ async def run_course_outline_generator(
                 event_type = event.get("event")
                 event_name = event.get("name", "")
 
-                # Progress: entering agent node
-                if event_type == "on_chain_start" and event_name == "agent":
+                # Progress: generating outline (main LLM call)
+                if event_type == "on_chain_start" and event_name == "generate":
                     yield {
                         "type": "progress",
                         "message_key": "overlay.generatingCourseOutline",
@@ -117,6 +123,13 @@ async def run_course_outline_generator(
                         "type": "progress",
                         "message_key": "overlay.completedTool",
                         "params": {"toolName": tool_name},
+                    }
+
+                # Progress: evaluating outline
+                elif event_type == "on_chain_start" and event_name == "evaluate":
+                    yield {
+                        "type": "progress",
+                        "message_key": "overlay.evaluatingOutline",
                     }
 
                 # Progress: generating structured response

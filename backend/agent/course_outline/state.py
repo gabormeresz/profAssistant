@@ -53,6 +53,10 @@ class CourseOutlineState(MessagesState):
     # Intermediate agent response (not saved to messages directly)
     agent_response: Optional[Any]
 
+    # Evaluation loop state
+    evaluation_count: int  # Counter for evaluation iterations (max 3)
+    evaluation_feedback: Optional[str]  # Feedback from evaluator for refinement
+
     # Output fields
     final_response: Optional[CourseOutline]
     error: Optional[str]
