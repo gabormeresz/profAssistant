@@ -16,3 +16,6 @@ wheels/
 *.db
 *.sqlite
 *.sqlite3
+
+# Chromadb persistent storage
+chroma_db/

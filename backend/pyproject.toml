@@ -10,6 +10,7 @@ dependencies = [
     "langchain>=1.0.0",
     "langchain-community>=0.4.0",
     "langchain-openai>=1.0.0",
+    "langchain-text-splitters>=0.3.0",
     "langgraph>=1.0.0",
     "langsmith>=0.4.37",
     "openai>=2.4.0",
@@ -20,6 +21,7 @@ dependencies = [
     "pypdf>=5.1.0",
     "python-docx>=1.1.2",
     "langgraph-checkpoint-sqlite>=2.0.11",
+    "chromadb>=1.0.0",
 ]
 
 [dependency-groups]
