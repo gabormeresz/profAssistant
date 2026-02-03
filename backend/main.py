@@ -392,9 +392,10 @@ async def get_conversation_history(thread_id: str):
                 if not isinstance(raw_messages, list):
                     raw_messages = [raw_messages]
 
-                # Keep track of whether we have final_response (structured output)
-                has_final_response = "final_response" in channel_values  # type: ignore
-                final_response = channel_values.get("final_response") if has_final_response else None  # type: ignore
+                # Keep track of whether we have a structured response
+                # Course outline generator uses 'final_response', lesson plan uses 'structured_response'
+                final_response = channel_values.get("final_response") or channel_values.get("structured_response")  # type: ignore
+                has_final_response = final_response is not None
 
                 for i, msg in enumerate(raw_messages):
                     # Extract message content based on structure
