@@ -18,6 +18,7 @@ from schemas.conversation import (
     CourseOutlineMetadata,
 )
 from services.conversation_manager import conversation_manager
+from services.rag_pipeline import get_rag_pipeline
 from utils.context_builders import build_file_contents_message
 
 from .state import CourseOutlineState
@@ -28,16 +29,27 @@ from .prompts import (
     get_refinement_prompt,
 )
 from agent.model import model
-from agent.tools import web_search
+from agent.tools import web_search, search_uploaded_documents
 
 
-# Setup tools
-tools = [web_search]
+# Base tools (always available)
+base_tools = [web_search]
+
+# All tools including document search
+all_tools = [web_search, search_uploaded_documents]
+
+# For ToolNode - needs all possible tools registered
+tools = all_tools
 
 # Model configurations
-model_with_tools = model.bind_tools(tools)
 model_with_structured_output = model.with_structured_output(CourseOutline)
 model_with_evaluation_output = model.with_structured_output(EvaluationResult)
+
+
+def get_model_with_tools(has_documents: bool):
+    """Get model with appropriate tools based on whether documents are uploaded."""
+    tools_to_use = all_tools if has_documents else base_tools
+    return model.bind_tools(tools_to_use)
 
 
 def initialize_conversation(state: CourseOutlineState) -> dict:
@@ -113,6 +125,59 @@ def initialize_conversation(state: CourseOutlineState) -> dict:
         }
 
 
+def ingest_documents(state: CourseOutlineState) -> dict:
+    """
+    Ingest uploaded documents into the vector database.
+
+    This node processes any uploaded file contents and stores them
+    in ChromaDB for later retrieval during generation. The thread_id
+    is used as session_id to scope queries to the current conversation.
+
+    Args:
+        state: The current workflow state.
+
+    Returns:
+        Dict with has_uploaded_documents flag.
+    """
+    file_contents = state.get("file_contents")
+    thread_id = state["thread_id"]
+
+    if not file_contents:
+        print(f"[DEBUG ingest_documents] No files to ingest for thread {thread_id}")
+        return {"has_ingested_documents": False}
+
+    try:
+        rag = get_rag_pipeline()
+
+        # Prepare documents for ingestion
+        documents = [
+            {"content": f["content"], "filename": f["filename"]}
+            for f in file_contents
+            if f.get("content", "").strip()
+        ]
+
+        if documents:
+            results = rag.ingest_documents(
+                documents=documents,
+                session_id=thread_id,
+            )
+            print(
+                f"[DEBUG ingest_documents] Ingested {len(results)} documents "
+                f"({sum(r.chunk_count for r in results)} chunks) for thread {thread_id}"
+            )
+            return {"has_ingested_documents": True}
+        else:
+            print(
+                f"[DEBUG ingest_documents] No valid content to ingest for thread {thread_id}"
+            )
+            return {"has_ingested_documents": False}
+
+    except Exception as e:
+        print(f"[ERROR ingest_documents] Failed to ingest documents: {e}")
+        # Don't fail the workflow, just log the error
+        return {"has_ingested_documents": False}
+
+
 def build_messages(state: CourseOutlineState) -> dict:
     """
     Build messages for the agent.
@@ -144,8 +209,9 @@ def build_messages(state: CourseOutlineState) -> dict:
         # For first call, create fresh messages
         messages = []
 
-        # Add system message
-        system_prompt = get_system_prompt(state["language"])
+        # Add system message with document search instruction if documents are ingested
+        has_ingested_documents = state.get("has_ingested_documents", False)
+        system_prompt = get_system_prompt(state["language"], has_ingested_documents)
         messages.append(SystemMessage(content=system_prompt))
 
         # Build user message content
@@ -218,6 +284,10 @@ def generate_outline(state: CourseOutlineState) -> dict:
     """
     messages = list(state["messages"])
 
+    # Get model with appropriate tools based on whether documents are ingested
+    has_documents = state.get("has_ingested_documents", False)
+    model_with_tools = get_model_with_tools(has_documents)
+
     response = model_with_tools.invoke(messages)
 
     # If there are tool calls, we need to add to messages for the ToolNode
@@ -259,6 +329,10 @@ def refine_outline(state: CourseOutlineState) -> dict:
     )
     refinement_message = HumanMessage(content=refinement_prompt)
     messages.append(refinement_message)
+
+    # Get model with appropriate tools based on whether documents are ingested
+    has_documents = state.get("has_ingested_documents", False)
+    model_with_tools = get_model_with_tools(has_documents)
 
     response = model_with_tools.invoke(messages)
 

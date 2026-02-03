@@ -11,6 +11,7 @@
     "generatingCourseOutline": "Tárgytematika generálása...",
     "generatingLessonPlan": "Óraterv generálása...",
     "enhancingPrompt": "Prompt javítása...",
+    "ingestingDocuments": "Feltöltött dokumentumok feldolgozása...",
     "usingTool": "Eszköz használata: {{toolName}}",
     "completedTool": "Befejezve: {{toolName}}",
     "validatingOutput": "Generált tartalom validálása...",

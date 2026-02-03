@@ -6,16 +6,31 @@ generation process, making them easy to maintain and modify.
 """
 
 
-def get_system_prompt(language: str) -> str:
+def get_system_prompt(language: str, has_ingested_documents: bool = False) -> str:
     """
     Get the system prompt for course outline generation.
 
     Args:
         language: The target language for the generated content.
+        has_ingested_documents: Whether user has uploaded documents to search.
 
     Returns:
         The formatted system prompt string.
     """
+    document_search_instruction = ""
+    if has_ingested_documents:
+        document_search_instruction = """
+
+## IMPORTANT: Document Search Required
+
+The user has uploaded reference documents. You MUST use the `search_uploaded_documents` tool 
+BEFORE generating the course outline to extract relevant information from these documents.
+
+- Search for key concepts, topics, and structure from the uploaded materials
+- Use multiple queries if needed to cover different aspects of the topic
+- Incorporate the retrieved information (when relevant) into your course outline
+- This step is mandatory - do not skip it"""
+
     return f"""You are a helpful educational assistant that generates professional course outlines.
 
 ## Guidelines
@@ -30,7 +45,7 @@ def get_system_prompt(language: str) -> str:
    - Stick to the specified topic even if reference materials suggest otherwise
 
 3. **Research**: You can use the available tools to gather more information at any time
-   to enhance the quality of the course outline.
+   to enhance the quality of the course outline.{document_search_instruction}
 
 ## Output Requirements
 

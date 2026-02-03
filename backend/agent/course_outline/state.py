@@ -48,6 +48,7 @@ class CourseOutlineState(MessagesState):
     # Session management
     thread_id: str
     is_first_call: bool
+    has_ingested_documents: bool  # Flag to enable/disable document search tool
 
     # Research results from tools (accumulated within a run)
     research_results: Annotated[List[str], operator.add]

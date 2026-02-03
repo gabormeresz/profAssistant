@@ -12,6 +12,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from .state import CourseOutlineState, CourseOutlineInput, CourseOutlineOutput
 from .nodes import (
     initialize_conversation,
+    ingest_documents,
     build_messages,
     generate_outline,
     refine_outline,
@@ -64,6 +65,7 @@ def build_course_outline_graph() -> StateGraph:
 
     # Add nodes
     workflow.add_node("initialize", initialize_conversation)
+    workflow.add_node("ingest_documents", ingest_documents)
     workflow.add_node("build_messages", build_messages)
     workflow.add_node("generate", generate_outline)
     workflow.add_node("tools", tool_node)
@@ -74,7 +76,8 @@ def build_course_outline_graph() -> StateGraph:
 
     # Define the workflow edges
     workflow.set_entry_point("initialize")
-    workflow.add_edge("initialize", "build_messages")
+    workflow.add_edge("initialize", "ingest_documents")
+    workflow.add_edge("ingest_documents", "build_messages")
     workflow.add_edge("build_messages", "generate")
 
     # Conditional edge from generate: either use tools or go to evaluation

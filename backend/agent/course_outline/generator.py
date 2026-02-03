@@ -100,8 +100,15 @@ async def run_course_outline_generator(
                 event_type = event.get("event")
                 event_name = event.get("name", "")
 
+                # Progress: ingesting documents to vector DB
+                if event_type == "on_chain_start" and event_name == "ingest_documents":
+                    yield {
+                        "type": "progress",
+                        "message_key": "overlay.ingestingDocuments",
+                    }
+
                 # Progress: generating outline (main LLM call)
-                if event_type == "on_chain_start" and event_name == "generate":
+                elif event_type == "on_chain_start" and event_name == "generate":
                     yield {
                         "type": "progress",
                         "message_key": "overlay.generatingCourseOutline",

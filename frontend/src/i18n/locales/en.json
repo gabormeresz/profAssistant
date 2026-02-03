@@ -11,6 +11,7 @@
     "generatingCourseOutline": "Generating course outline...",
     "generatingLessonPlan": "Generating lesson plan...",
     "enhancingPrompt": "Enhancing your prompt...",
+    "ingestingDocuments": "Processing uploaded documents...",
     "usingTool": "Using tool: {{toolName}}",
     "completedTool": "Completed: {{toolName}}",
     "validatingOutput": "Validating generated content...",
