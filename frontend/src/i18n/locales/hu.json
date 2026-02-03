@@ -1,15 +1,6 @@
 {
   "common": {
-    "language": "Nyelv",
-    "submit": "Küldés",
-    "cancel": "Mégse",
-    "delete": "Törlés",
-    "new": "Új",
-    "save": "Mentés",
-    "export": "Exportálás",
-    "loading": "Betöltés...",
     "processing": "Feldolgozás...",
-    "error": "Hiba",
     "scrollToBottom": "Görgetés az aljára",
     "scrollToTop": "Görgetés a tetejére"
   },
@@ -21,7 +12,14 @@
     "generatingLessonPlan": "Óraterv generálása...",
     "enhancingPrompt": "Prompt javítása...",
     "usingTool": "Eszköz használata: {{toolName}}",
-    "completedTool": "Befejezve: {{toolName}}"
+    "completedTool": "Befejezve: {{toolName}}",
+    "validatingOutput": "Generált tartalom validálása...",
+    "validationPassed": "Validálás sikeres!",
+    "validationFailed": "Validálás sikertelen, újragenerálás (próbálkozás {{attempt}}/{{maxRetries}})...",
+    "initializingConversation": "Beszélgetés inicializálása...",
+    "buildingMessages": "Üzenetek összeállítása...",
+    "evaluatingOutline": "Tematika minőségének értékelése...",
+    "structuringResponse": "Végső válasz strukturálása..."
   },
   "sidebar": {
     "courseOutlineGenerator": "Tárgytematika Készítő",
@@ -31,12 +29,8 @@
     "recentConversations": "Legutóbbi Beszélgetések",
     "noConversations": "Még nincsenek beszélgetések",
     "startNewConversation": "Indíts egy új beszélgetést, hogy itt megjelenjen",
-    "classes": "óra"
-  },
-  "languageSelector": {
-    "selectLanguage": "Nyelv Választása",
-    "english": "Angol",
-    "hungarian": "Magyar"
+    "classes": "óra",
+    "deleteConversation": "Beszélgetés törlése"
   },
   "header": {
     "courseOutlineGenerator": "Tárgytematika Készítő",
@@ -75,10 +69,6 @@
       "rights": "Merész Gábor"
     }
   },
-  "threadStatus": {
-    "threadId": "Beszélgetés azonosító",
-    "newConversation": "Új Beszélgetés"
-  },
   "courseOutline": {
     "topic": "Téma / Tantárgy",
     "topicPlaceholder": "pl. Matematika, Történelem, Természettudomány...",
@@ -87,17 +77,11 @@
     "languagePlaceholder": "Válaszd ki a kurzus nyelvét",
     "userComment": "További Utasítások",
     "userCommentPlaceholder": "Bármilyen konkrét követelmény vagy preferencia a tematikához...",
-    "enhancePrompt": "Utasítás Javítása",
-    "uploadFiles": "Támogató Fájlok Feltöltése",
     "generateOutline": "Tematika Generálása",
-    "locked": "(zárolva ehhez a beszélgetéshez)",
-    "lockedClasses": "(zárolva ehhez a beszélgetéshez, kérdezz a megjegyzésben órák hozzáadásához vagy eltávolításához)",
     "emptyTopic": "Kérlek adj meg egy témát",
-    "classTitle": "Óra Címe",
     "learningObjectives": "Tanulási Célok",
     "keyTopics": "Kulcsfontosságú Témák",
-    "activitiesProjects": "Tevékenységek/Projektek",
-    "exportAs": "Exportálás mint"
+    "activitiesProjects": "Tevékenységek/Projektek"
   },
   "lessonPlan": {
     "courseTitle": "Kurzus Címe",
@@ -118,12 +102,13 @@
     "userCommentPlaceholder": "Bármilyen konkrét követelmény vagy tanítási preferencia...",
     "language": "Nyelv",
     "languagePlaceholder": "Válaszd ki az óraterv nyelvét",
-    "uploadFiles": "Támogató Fájlok Feltöltése",
     "generateLessonPlan": "Óraterv Generálása",
-    "locked": "(zárolva ehhez a beszélgetéshez)",
     "emptyCourseTitle": "Kérlek add meg a kurzus címét",
     "emptyClassTitle": "Kérlek add meg az óra címét",
-    "invalidClassNumber": "Kérlek adj meg egy érvényes óraszámot"
+    "invalidClassNumber": "Kérlek adj meg egy érvényes óraszámot",
+    "maxObjectives": "Kérlek legfeljebb {{max}} tanulási célt adj meg",
+    "maxTopics": "Kérlek legfeljebb {{max}} témát adj meg",
+    "maxActivities": "Kérlek legfeljebb {{max}} tevékenységet adj meg"
   },
   "followUp": {
     "placeholder": "Kérj módosításokat vagy finomításokat...",
@@ -135,11 +120,6 @@
     "label": "Referenciaanyagok Feltöltése",
     "clickToUpload": "Kattints a feltöltéshez vagy húzd ide a fájlokat",
     "formats": "PDF, DOCX, TXT, MD (egyenként max {{maxSize}}MB)",
-    "dragDrop": "Húzd ide a fájlokat, vagy kattints a kiválasztáshoz",
-    "supportedFormats": "Támogatott formátumok: PDF, DOCX, TXT, MD (max {{maxSize}}MB)",
-    "remove": "Eltávolítás",
-    "tooLarge": "A(z) {{filename}} fájl túl nagy. Maximális méret {{maxSize}}MB.",
-    "unsupportedType": "A(z) {{filename}} fájltípusa nem támogatott. Engedélyezett: PDF, DOCX, TXT, MD",
     "uploadedFiles": "Feltöltött fájlok",
     "noUploadedFiles": "Nincsenek feltöltött fájlok"
   },
@@ -150,10 +130,6 @@
     "error": "Sikertelen utasítás javítás"
   },
   "export": {
-    "exportAs": "Exportálás mint",
-    "docx": "DOCX",
-    "markdown": "Markdown",
-    "json": "JSON",
     "exportToDocx": "Exportálás DOCX-ként",
     "createLessonPlanDraft": "Óraterv Vázlat Készítése"
   },
@@ -167,11 +143,5 @@
     "instructions": "Utasítások",
     "homework": "Házi Feladat",
     "extraActivities": "Extra Tevékenységek"
-  },
-  "validation": {
-    "required": "Ez a mező kötelező",
-    "tooShort": "A bemenet túl rövid",
-    "tooLong": "A bemenet túl hosszú",
-    "invalidNumber": "Kérlek adj meg egy érvényes számot"
   }
 }

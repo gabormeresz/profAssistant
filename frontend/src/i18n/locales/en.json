@@ -1,15 +1,6 @@
 {
   "common": {
-    "language": "Language",
-    "submit": "Submit",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "new": "New",
-    "save": "Save",
-    "export": "Export",
-    "loading": "Loading...",
     "processing": "Processing...",
-    "error": "Error",
     "scrollToBottom": "Scroll to Bottom",
     "scrollToTop": "Scroll to Top"
   },
@@ -21,7 +12,14 @@
     "generatingLessonPlan": "Generating lesson plan...",
     "enhancingPrompt": "Enhancing your prompt...",
     "usingTool": "Using tool: {{toolName}}",
-    "completedTool": "Completed: {{toolName}}"
+    "completedTool": "Completed: {{toolName}}",
+    "validatingOutput": "Validating generated content...",
+    "validationPassed": "Validation passed!",
+    "validationFailed": "Validation failed, regenerating (attempt {{attempt}}/{{maxRetries}})...",
+    "initializingConversation": "Initializing conversation...",
+    "buildingMessages": "Building messages...",
+    "evaluatingOutline": "Evaluating outline quality...",
+    "structuringResponse": "Structuring final response..."
   },
   "sidebar": {
     "courseOutlineGenerator": "Course Outline Generator",
@@ -31,12 +29,8 @@
     "recentConversations": "Recent Conversations",
     "noConversations": "No conversations yet",
     "startNewConversation": "Start a new conversation to see it here",
-    "classes": "classes"
-  },
-  "languageSelector": {
-    "selectLanguage": "Select Language",
-    "english": "English",
-    "hungarian": "Hungarian"
+    "classes": "classes",
+    "deleteConversation": "Delete conversation"
   },
   "header": {
     "courseOutlineGenerator": "Course Outline Generator",
@@ -75,10 +69,6 @@
       "rights": "Gábor Merész"
     }
   },
-  "threadStatus": {
-    "threadId": "Thread ID",
-    "newConversation": "New Conversation"
-  },
   "courseOutline": {
     "topic": "Topic / Subject",
     "topicPlaceholder": "e.g., Mathematics, History, Science...",
@@ -87,17 +77,11 @@
     "languagePlaceholder": "Select language for the course",
     "userComment": "Additional Instructions",
     "userCommentPlaceholder": "Any specific requirements or preferences for the course outline...",
-    "enhancePrompt": "Enhance Prompt",
-    "uploadFiles": "Upload Supporting Files",
     "generateOutline": "Generate Course Outline",
-    "locked": "(locked for this conversation)",
-    "lockedClasses": "(locked for this conversation, ask in comment to add or remove classes)",
     "emptyTopic": "Please enter a topic",
-    "classTitle": "Class Title",
     "learningObjectives": "Learning Objectives",
     "keyTopics": "Key Topics",
-    "activitiesProjects": "Activities/Projects",
-    "exportAs": "Export as"
+    "activitiesProjects": "Activities/Projects"
   },
   "lessonPlan": {
     "courseTitle": "Course Title",
@@ -118,12 +102,13 @@
     "userCommentPlaceholder": "Any specific requirements or teaching preferences...",
     "language": "Language",
     "languagePlaceholder": "Select language for the lesson plan",
-    "uploadFiles": "Upload Supporting Files",
     "generateLessonPlan": "Generate Lesson Plan",
-    "locked": "(locked for this conversation)",
     "emptyCourseTitle": "Please enter a course title",
     "emptyClassTitle": "Please enter a class title",
-    "invalidClassNumber": "Please enter a valid class number"
+    "invalidClassNumber": "Please enter a valid class number",
+    "maxObjectives": "Please provide at most {{max}} learning objectives",
+    "maxTopics": "Please provide at most {{max}} key topics",
+    "maxActivities": "Please provide at most {{max}} activities"
   },
   "followUp": {
     "placeholder": "Ask for modifications or refinements...",
@@ -135,11 +120,6 @@
     "label": "Upload Reference Materials",
     "clickToUpload": "Click to upload or drag files here",
     "formats": "PDF, DOCX, TXT, MD (max {{maxSize}}MB each)",
-    "dragDrop": "Drag and drop files here, or click to select",
-    "supportedFormats": "Supported formats: PDF, DOCX, TXT, MD (max {{maxSize}}MB)",
-    "remove": "Remove",
-    "tooLarge": "File {{filename}} is too large. Max size is {{maxSize}}MB.",
-    "unsupportedType": "File {{filename}} type not supported. Allowed: PDF, DOCX, TXT, MD",
     "uploadedFiles": "Uploaded files",
     "noUploadedFiles": "No uploaded files"
   },
@@ -150,10 +130,6 @@
     "error": "Failed to enhance prompt"
   },
   "export": {
-    "exportAs": "Export as",
-    "docx": "DOCX",
-    "markdown": "Markdown",
-    "json": "JSON",
     "exportToDocx": "Export to DOCX",
     "createLessonPlanDraft": "Create Lesson Plan Draft"
   },
@@ -167,11 +143,5 @@
     "instructions": "Instructions",
     "homework": "Homework",
     "extraActivities": "Extra Activities"
-  },
-  "validation": {
-    "required": "This field is required",
-    "tooShort": "Input is too short",
-    "tooLong": "Input is too long",
-    "invalidNumber": "Please enter a valid number"
   }
 }
