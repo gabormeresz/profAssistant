@@ -1,7 +1,7 @@
-from typing import Optional, List, Callable, Annotated
+from typing import Optional, List, Callable, Annotated, Any
 from langchain.tools import tool
-from langchain_core.tools import StructuredTool, InjectedToolArg
-from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import StructuredTool
+from langgraph.prebuilt import InjectedState
 from dotenv import load_dotenv
 from langchain_community.utilities import GoogleSerperAPIWrapper
 
@@ -23,7 +23,7 @@ def web_search(query: str) -> str:
 def search_uploaded_documents(
     query: str,
     n_results: int = 5,
-    config: Annotated[RunnableConfig, InjectedToolArg] = None,
+    state: Annotated[Optional[dict[str, Any]], InjectedState] = None,
 ) -> str:
     """
     Search through uploaded documents for relevant information.
@@ -39,10 +39,11 @@ def search_uploaded_documents(
     Returns:
         Relevant document excerpts with source information
     """
-    # Extract thread_id from config (injected by LangGraph)
+    # Extract thread_id from state (injected by LangGraph ToolNode)
     session_id = None
-    if config:
-        session_id = config.get("configurable", {}).get("thread_id")
+    if state:
+        session_id = state.get("thread_id")
+    print(f"[Tool] State thread_id: {session_id}")
 
     rag = get_rag_pipeline()
     results = rag.query(query, n_results=n_results, session_id=session_id)

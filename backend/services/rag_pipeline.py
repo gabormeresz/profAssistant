@@ -10,7 +10,7 @@ The service is independent and can be used by agents for dynamic querying.
 """
 
 import hashlib
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, cast
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -142,23 +142,26 @@ class RAGPipeline:
         if not content.strip():
             raise ValueError("Document content cannot be empty")
 
-        # Generate document ID
-        document_id = self._generate_document_id(content, filename)
+        # Generate document ID - include session_id to allow same doc in multiple sessions
+        base_document_id = self._generate_document_id(content, filename)
+        document_id = (
+            f"{base_document_id}_{session_id}" if session_id else base_document_id
+        )
 
-        # Check if document already exists (by document_id)
+        # Check if document already exists for this session
         existing = self.collection.get(
             where={"document_id": document_id},
             limit=1,
         )
 
         if existing and existing["ids"]:
-            # Document already ingested, return existing info
+            # Document already ingested for this session
             return IngestedDocument(
                 document_id=document_id,
                 filename=filename,
                 chunk_count=len(existing["ids"]),
                 total_characters=len(content),
-                ingested_at=(
+                ingested_at=str(
                     existing["metadatas"][0].get("ingested_at", "unknown")
                     if existing["metadatas"]
                     else "unknown"
@@ -260,7 +263,6 @@ class RAGPipeline:
         query_text: str,
         n_results: int = 5,
         session_id: Optional[str] = None,
-        document_ids: Optional[List[str]] = None,
     ) -> List[Dict[str, Any]]:
         """
         Query the vector store for relevant document chunks.
@@ -268,25 +270,24 @@ class RAGPipeline:
         Args:
             query_text: The query string
             n_results: Number of results to return
-            session_id: Optional session ID to filter results
-            document_ids: Optional list of document IDs to filter results
+            session_id: Session ID to filter results (required for proper isolation)
 
         Returns:
             List of relevant document chunks with metadata and scores
         """
-        # Build where filter
-        where_filter = None
-        if session_id or document_ids:
-            conditions = []
-            if session_id:
-                conditions.append({"session_id": session_id})
-            if document_ids:
-                conditions.append({"document_id": {"$in": document_ids}})
+        # Return empty results if no session_id provided
+        if not session_id:
+            print(
+                f"[RAG] Warning: No session_id provided for query '{query_text[:50]}...' - returning empty results"
+            )
+            return []
 
-            if len(conditions) == 1:
-                where_filter = conditions[0]
-            else:
-                where_filter = {"$and": conditions}
+        print(
+            f"[RAG] Querying with session_id={session_id}, query='{query_text[:50]}...'"
+        )
+
+        # Build where filter based on session_id
+        where_filter = {"session_id": session_id}
 
         # Generate query embedding
         query_embedding = self.embeddings.embed_query(query_text)
@@ -295,7 +296,7 @@ class RAGPipeline:
         results = self.collection.query(
             query_embeddings=[query_embedding],
             n_results=n_results,
-            where=where_filter,
+            where=cast(Optional[Dict[str, Any]], where_filter),
             include=["documents", "metadatas", "distances"],
         )
 
@@ -325,6 +326,9 @@ class RAGPipeline:
                     }
                 )
 
+        print(
+            f"[RAG] Query completed: found {len(formatted_results)} results for session_id={session_id}"
+        )
         return formatted_results
 
     def delete_document(self, document_id: str) -> bool:
@@ -422,7 +426,7 @@ class RAGPipeline:
         where_filter = {"session_id": session_id} if session_id else None
 
         results = self.collection.get(
-            where=where_filter,
+            where=cast(Optional[Dict[str, Any]], where_filter),
             limit=limit * 10,  # Get more chunks to dedupe
         )
 
