@@ -20,6 +20,7 @@
     "initializingConversation": "Beszélgetés inicializálása...",
     "buildingMessages": "Üzenetek összeállítása...",
     "evaluatingOutline": "Tematika minőségének értékelése...",
+    "refiningOutline": "Tematika finomítása az értékelés alapján...",
     "structuringResponse": "Végső válasz strukturálása..."
   },
   "sidebar": {

@@ -20,6 +20,7 @@
     "initializingConversation": "Initializing conversation...",
     "buildingMessages": "Building messages...",
     "evaluatingOutline": "Evaluating outline quality...",
+    "refiningOutline": "Refining outline based on evaluation...",
     "structuringResponse": "Structuring final response..."
   },
   "sidebar": {

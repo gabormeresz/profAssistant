@@ -123,13 +123,11 @@ async def run_course_outline_generator(
                         "params": {"toolName": tool_name},
                     }
 
-                # Progress: tool completed
-                elif event_type == "on_tool_end":
-                    tool_name = event.get("name", "unknown tool")
+                # Progress: refining outline based on evaluation
+                elif event_type == "on_chain_start" and event_name == "refine":
                     yield {
                         "type": "progress",
-                        "message_key": "overlay.completedTool",
-                        "params": {"toolName": tool_name},
+                        "message_key": "overlay.refiningOutline",
                     }
 
                 # Progress: evaluating outline
