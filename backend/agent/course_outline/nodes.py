@@ -229,18 +229,31 @@ def build_messages(state: CourseOutlineState) -> dict:
         system_prompt = get_system_prompt(state["language"], has_ingested_documents)
         messages.append(SystemMessage(content=system_prompt))
 
-        # Build user message content
-        user_content_parts = []
-        user_content_parts.append(
-            f"Create a course outline on '{state['topic']}' "
-            f"with {state['number_of_classes']} classes."
-        )
+        # Build user message content with clear structure
+        topic = state["topic"]
+        num_classes = state["number_of_classes"]
+
+        user_content = f"""## Course Outline Request
+
+**Topic:** {topic}
+**Number of Classes:** {num_classes}
+**Output Language:** {state['language']}
+
+Please generate a complete course outline with exactly {num_classes} classes.
+
+Requirements:
+- Each class must have clear, measurable learning objectives (using Bloom's taxonomy verbs)
+- Topics should progress logically from foundational to advanced
+- Include specific, varied activities for each class
+- Ensure comprehensive coverage of the topic"""
 
         user_message = state.get("message") or ""
         if user_message.strip():
-            user_content_parts.append(user_message)
+            user_content += (
+                f"\n\n**Additional Instructions from User:**\n{user_message}"
+            )
 
-        messages.append(HumanMessage(content="\n\n".join(user_content_parts)))
+        messages.append(HumanMessage(content=user_content))
 
         return {"messages": messages}
     else:
@@ -248,16 +261,11 @@ def build_messages(state: CourseOutlineState) -> dict:
         # The existing messages are loaded from checkpoint automatically
         new_messages = []
 
-        # Build new user message content
-        user_content_parts = []
-
         user_message = state.get("message") or ""
         if user_message.strip():
-            user_content_parts.append(user_message)
-
-        # Only add if there's actual new content
-        if user_content_parts:
-            new_messages.append(HumanMessage(content="\n\n".join(user_content_parts)))
+            # Format follow-up message clearly
+            follow_up_content = f"## Follow-up Request\n\n{user_message}"
+            new_messages.append(HumanMessage(content=follow_up_content))
 
         # DEBUG: Log what we're returning
         print(f"[DEBUG build_messages] returning {len(new_messages)} new messages")
@@ -499,13 +507,37 @@ def evaluate_outline(state: CourseOutlineState) -> dict:
     else:
         content_to_evaluate = str(agent_response)
 
-    # Build evaluation messages
+    # Build evaluation messages with clear context
     language = state.get("language", "English")
+    topic = state.get("topic", "Unknown")
+    num_classes = state.get("number_of_classes", 0)
+
+    evaluation_request = f"""## Course Outline Evaluation Request
+
+**Expected Topic:** {topic}
+**Expected Number of Classes:** {num_classes}
+
+Please evaluate the following course outline against the rubric.
+Score each dimension independently, then provide the overall weighted score.
+
+---
+
+## Course Outline to Evaluate
+
+{content_to_evaluate}
+
+---
+
+Provide your evaluation with:
+1. Score for each dimension (0.0-1.0)
+2. Overall weighted score
+3. Verdict (APPROVED if ≥ 0.8, NEEDS_REFINEMENT otherwise)
+4. Brief reasoning
+5. 1-3 specific, actionable suggestions if NEEDS_REFINEMENT"""
+
     evaluation_messages = [
         SystemMessage(content=get_evaluator_system_prompt(language)),
-        HumanMessage(
-            content=f"Please evaluate the following course outline:\n\n{content_to_evaluate}"
-        ),
+        HumanMessage(content=evaluation_request),
     ]
 
     try:
@@ -561,14 +593,39 @@ def route_after_evaluate(state: CourseOutlineState) -> Literal["refine", "respon
     # If evaluation history is empty (evaluation failed), go to respond
     # We can't refine without evaluation feedback
     if not evaluation_history:
+        print("[DEBUG route_after_evaluate] No evaluation history, going to respond")
         return "respond"
 
     # Check if score meets approval threshold
     if current_score >= EvaluationConfig.APPROVAL_THRESHOLD:
+        print(
+            f"[DEBUG route_after_evaluate] Score {current_score:.2f} >= {EvaluationConfig.APPROVAL_THRESHOLD}, APPROVED"
+        )
         return "respond"
 
     # Check if we've exceeded max retries
     if evaluation_count >= EvaluationConfig.MAX_RETRIES:
+        print(
+            f"[DEBUG route_after_evaluate] Max retries ({EvaluationConfig.MAX_RETRIES}) reached, going to respond"
+        )
         return "respond"
 
+    # Check for plateau - if we have at least 2 evaluations, compare scores
+    if len(evaluation_history) >= 2:
+        previous_score = evaluation_history[-2].score
+        improvement = current_score - previous_score
+
+        if improvement < EvaluationConfig.MIN_IMPROVEMENT_THRESHOLD:
+            print(
+                f"[DEBUG route_after_evaluate] Plateau detected: improvement {improvement:.3f} < {EvaluationConfig.MIN_IMPROVEMENT_THRESHOLD}"
+            )
+            return "respond"
+
+        print(
+            f"[DEBUG route_after_evaluate] Score improved by {improvement:.3f}, continuing refinement"
+        )
+
+    print(
+        f"[DEBUG route_after_evaluate] Score {current_score:.2f} < {EvaluationConfig.APPROVAL_THRESHOLD}, going to refine"
+    )
     return "refine"

@@ -15,7 +15,23 @@ serper = GoogleSerperAPIWrapper()
 
 @tool
 def web_search(query: str) -> str:
-    """Useful for when you need more information from an online search."""
+    """
+    Search the web for current information on a topic.
+
+    Use this tool when you need:
+    - Recent developments, news, or updates on a subject
+    - Specific facts, statistics, or data not in your training
+    - Industry best practices or current standards
+    - Real-world examples or case studies
+
+    Args:
+        query: A clear, specific search query. Use descriptive keywords.
+               Good: "Python data science curriculum 2024 best practices"
+               Bad: "python course"
+
+    Returns:
+        Search results with relevant information from the web.
+    """
     return serper.run(query)
 
 
@@ -26,18 +42,36 @@ def search_uploaded_documents(
     state: Annotated[Optional[dict[str, Any]], InjectedState] = None,
 ) -> str:
     """
-    Search through uploaded documents for relevant information.
+    Search through the user's uploaded documents for relevant content.
 
-    Use this tool when you need to find specific information from documents
-    that the user has uploaded. The search uses semantic similarity to find
-    the most relevant content.
+    Use this tool when the user has uploaded reference materials and you need to:
+    - Find specific concepts, definitions, or explanations from their documents
+    - Identify the structure or organization used in their materials
+    - Extract examples, exercises, or activities from uploaded content
+    - Understand the user's preferred terminology or approach
+
+    IMPORTANT: Make multiple searches with different queries to thoroughly
+    explore the documents. Use natural language queries relevant to your topic.
+
+    Example queries (mix broad and specific based on your needs):
+    Broad (for course structure):
+    - "main topics and themes covered"
+    - "introduction and foundational concepts of ..."
+    - "progression from beginner to advanced"
+
+    Specific (for detailed content):
+    - "photosynthesis light reactions process"
+    - "market equilibrium price determination"
+    - "Renaissance art characteristics and techniques"
 
     Args:
-        query: The search query describing what information you need
-        n_results: Number of results to return (default: 5)
+        query: A natural language search query. Be specific and descriptive.
+               Write queries as if you're asking a question or describing what you need.
+        n_results: Number of results to return (default: 5, max recommended: 10)
 
     Returns:
-        Relevant document excerpts with source information
+        Relevant excerpts from the uploaded documents with source information.
+        Returns "No relevant information found" if nothing matches.
     """
     # Extract thread_id from state (injected by LangGraph ToolNode)
     session_id = None

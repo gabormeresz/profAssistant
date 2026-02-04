@@ -83,3 +83,16 @@ class EvaluationConfig:
 
     MAX_RETRIES: int = 3
     APPROVAL_THRESHOLD: float = 0.8
+
+    # Minimum improvement required between iterations to continue refining
+    # If score improves by less than this, consider it a plateau
+    MIN_IMPROVEMENT_THRESHOLD: float = 0.05
+
+    # Dimension weights for overall score calculation
+    DIMENSION_WEIGHTS: dict = {
+        "learning_objectives": 0.25,
+        "content_coverage": 0.20,
+        "progression": 0.20,
+        "activities": 0.20,
+        "completeness": 0.15,
+    }
