@@ -6,6 +6,7 @@ from agent.lesson_plan_generator import run_structured_lesson_plan_generator
 from utils.file_processor import file_processor
 from agent.prompt_enhancer import prompt_enhancer
 from services.conversation_manager import conversation_manager
+from services.rag_pipeline import get_rag_pipeline
 from schemas.conversation import (
     ConversationType,
     ConversationList,
@@ -333,11 +334,22 @@ async def get_conversation(thread_id: str):
 async def delete_conversation(thread_id: str):
     """
     Delete a conversation and its metadata.
-    Note: This only deletes the metadata. The checkpoint data remains in checkpoints.db.
+    Also deletes associated RAG documents for this session.
+    Note: The checkpoint data remains in checkpoints.db.
     """
     deleted = conversation_manager.delete_conversation(thread_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Conversation not found")
+
+    # Delete associated RAG documents for this session
+    try:
+        rag = get_rag_pipeline()
+        chunks_deleted = rag.delete_session(thread_id)
+        if chunks_deleted > 0:
+            print(f"[RAG] Deleted {chunks_deleted} chunks for session {thread_id}")
+    except Exception as e:
+        # Log but don't fail the request if RAG cleanup fails
+        print(f"[RAG] Warning: Failed to delete RAG session {thread_id}: {e}")
 
     return {"success": True, "message": "Conversation deleted"}
 
