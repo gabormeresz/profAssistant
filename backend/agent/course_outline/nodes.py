@@ -10,6 +10,7 @@ import uuid
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
+from config import EvaluationConfig
 from schemas.course_outline import CourseOutline
 from schemas.evaluation import EvaluationResult
 from schemas.conversation import (
@@ -447,11 +448,6 @@ def route_after_generate(state: CourseOutlineState) -> Literal["tools", "evaluat
     return "evaluate"
 
 
-MAX_EVALUATION_RETRIES = 3
-APPROVAL_THRESHOLD = 0.8
-MIN_SCORE_IMPROVEMENT = 0.05  # Minimum improvement to continue refining
-
-
 def evaluate_outline(state: CourseOutlineState) -> dict:
     """
     Evaluate the generated course outline for quality using scoring.
@@ -474,8 +470,8 @@ def evaluate_outline(state: CourseOutlineState) -> dict:
     # Get existing evaluation history (already reset by initialize_conversation for follow-ups)
     existing_history = state.get("evaluation_history", []) or []
 
-    # If we've already done MAX_EVALUATION_RETRIES, skip evaluation
-    if current_count >= MAX_EVALUATION_RETRIES:
+    # If we've already done max retries, skip evaluation
+    if current_count >= EvaluationConfig.MAX_RETRIES:
         return {
             "evaluation_count": current_count,
         }
@@ -561,19 +557,11 @@ def route_after_evaluate(state: CourseOutlineState) -> Literal["refine", "respon
         return "respond"
 
     # Check if score meets approval threshold
-    if current_score >= APPROVAL_THRESHOLD:
+    if current_score >= EvaluationConfig.APPROVAL_THRESHOLD:
         return "respond"
 
     # Check if we've exceeded max retries
-    if evaluation_count >= MAX_EVALUATION_RETRIES:
+    if evaluation_count >= EvaluationConfig.MAX_RETRIES:
         return "respond"
-
-    # Check for score plateau (not improving)
-    if len(evaluation_history) >= 2:
-        previous_score = evaluation_history[-2].score
-        improvement = current_score - previous_score
-        if improvement < MIN_SCORE_IMPROVEMENT:
-            # Score is not improving enough, stop refining
-            return "respond"
 
     return "refine"

@@ -41,12 +41,9 @@ class LLMConfig:
 
     # Default models
     DEFAULT_MODEL: str = "gpt-4o-mini"
-    ADVANCED_MODEL: str = "gpt-4o"
 
     # Temperature settings
     DEFAULT_TEMPERATURE: float = 0.7
-    CREATIVE_TEMPERATURE: float = 0.9
-    PRECISE_TEMPERATURE: float = 0.3
 
 
 # =============================================================================
@@ -74,3 +71,15 @@ class DBConfig:
 
     CONVERSATIONS_DB: str = "conversations.db"
     CHECKPOINTS_DB: str = "checkpoints.db"
+
+
+# =============================================================================
+# Evaluation Agents Configuration
+# =============================================================================
+
+
+class EvaluationConfig:
+    """Configuration for the evaluation agents."""
+
+    MAX_RETRIES: int = 3
+    APPROVAL_THRESHOLD: float = 0.8
