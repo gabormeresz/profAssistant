@@ -1,6 +1,10 @@
 """
 Utility functions for building context and messages for LLM prompts.
 Includes support for file contents, RAG, and vectorstore integration.
+
+TODO: DELETE THIS FILE once lesson_plan_generator.py is migrated to use RAG.
+      Currently only used by lesson_plan_generator.py (line 75).
+      See course_outline/nodes.py for RAG implementation pattern.
 """
 
 from typing import Dict, List

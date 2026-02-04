@@ -20,7 +20,6 @@ from schemas.conversation import (
 )
 from services.conversation_manager import conversation_manager
 from services.rag_pipeline import get_rag_pipeline
-from utils.context_builders import build_file_contents_message
 
 from .state import CourseOutlineState
 from .prompts import (
@@ -242,12 +241,7 @@ def build_messages(state: CourseOutlineState) -> dict:
         if user_message.strip():
             user_content_parts.append(user_message)
 
-        file_contents = state.get("file_contents")
-        if file_contents:
-            user_content_parts.append(build_file_contents_message(file_contents))
-
-        if user_content_parts:
-            messages.append(HumanMessage(content="\n\n".join(user_content_parts)))
+        messages.append(HumanMessage(content="\n\n".join(user_content_parts)))
 
         return {"messages": messages}
     else:
@@ -261,10 +255,6 @@ def build_messages(state: CourseOutlineState) -> dict:
         user_message = state.get("message") or ""
         if user_message.strip():
             user_content_parts.append(user_message)
-
-        file_contents = state.get("file_contents")
-        if file_contents:
-            user_content_parts.append(build_file_contents_message(file_contents))
 
         # Only add if there's actual new content
         if user_content_parts:
