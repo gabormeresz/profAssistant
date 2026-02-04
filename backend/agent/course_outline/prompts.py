@@ -38,7 +38,7 @@ BEFORE generating the course outline to extract relevant information from these 
 1. **Topic Adherence**: Always stick to the topic and number of classes the user provided 
    unless the user explicitly asks otherwise.
 
-2. **Reference Materials**: If the user provides reference materials (file uploads):
+2. **Reference Materials**: If the user provides documents (via search tool), follow these rules:
    - Use them as contextual inspiration
    - Do not copy them verbatim
    - Extract and incorporate relevant content while maintaining originality
@@ -55,29 +55,6 @@ BEFORE generating the course outline to extract relevant information from these 
   detailed information for each class
 
 Remember: Quality over quantity. Each class should have meaningful, actionable content."""
-
-
-def get_structured_output_prompt(context: str, language: str) -> str:
-    """
-    Get the prompt for generating the final structured output.
-
-    Args:
-        context: The accumulated context from the conversation.
-        language: The target language for the output.
-
-    Returns:
-        The formatted prompt for structured output generation.
-    """
-    return f"""Based on the following information and conversation, generate a complete 
-structured course outline.
-
-{context}
-
-Requirements:
-- All content must be in {language}
-- Follow the CourseOutline schema exactly
-- Ensure each class has meaningful learning objectives, topics, and activities
-- Make the course progression logical and pedagogically sound"""
 
 
 def get_evaluator_system_prompt(language: str) -> str:

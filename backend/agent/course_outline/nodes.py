@@ -24,7 +24,6 @@ from services.rag_pipeline import get_rag_pipeline
 from .state import CourseOutlineState
 from .prompts import (
     get_system_prompt,
-    get_structured_output_prompt,
     get_evaluator_system_prompt,
     get_refinement_prompt,
 )
@@ -407,9 +406,11 @@ def generate_structured_response(state: CourseOutlineState) -> dict:
         if not context_content:
             return {"error": "No context available for generating response"}
 
-        # Generate structured output
-        prompt = get_structured_output_prompt(context_content, state["language"])
-        response = model_with_structured_output.invoke([HumanMessage(content=prompt)])
+        # Generate structured output - the schema enforces the structure,
+        # so we just need to pass the content for parsing
+        response = model_with_structured_output.invoke(
+            [HumanMessage(content=context_content)]
+        )
 
         # Ensure we have a CourseOutline object
         if not isinstance(response, CourseOutline):
