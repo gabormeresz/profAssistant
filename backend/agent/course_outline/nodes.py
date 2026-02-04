@@ -134,22 +134,34 @@ def ingest_documents(state: CourseOutlineState) -> dict:
     in ChromaDB for later retrieval during generation. The thread_id
     is used as session_id to scope queries to the current conversation.
 
+    For follow-up calls without new files, checks if documents were
+    previously ingested for this session.
+
     Args:
         state: The current workflow state.
 
     Returns:
-        Dict with has_uploaded_documents flag.
+        Dict with has_ingested_documents flag.
     """
     file_contents = state.get("file_contents")
     thread_id = state["thread_id"]
+    rag = get_rag_pipeline()
 
     if not file_contents:
-        print(f"[DEBUG ingest_documents] No files to ingest for thread {thread_id}")
-        return {"has_ingested_documents": False}
+        # No new files - check if documents were previously ingested for this session
+        try:
+            existing_docs = rag.list_documents(session_id=thread_id)
+            has_existing = len(existing_docs) > 0
+            print(
+                f"[DEBUG ingest_documents] No new files for thread {thread_id}, "
+                f"existing documents: {len(existing_docs)}"
+            )
+            return {"has_ingested_documents": has_existing}
+        except Exception as e:
+            print(f"[ERROR ingest_documents] Failed to check existing documents: {e}")
+            return {"has_ingested_documents": False}
 
     try:
-        rag = get_rag_pipeline()
-
         # Prepare documents for ingestion
         documents = [
             {"content": f["content"], "filename": f["filename"]}
@@ -168,10 +180,14 @@ def ingest_documents(state: CourseOutlineState) -> dict:
             )
             return {"has_ingested_documents": True}
         else:
+            # No valid new content - check for existing documents
+            existing_docs = rag.list_documents(session_id=thread_id)
+            has_existing = len(existing_docs) > 0
             print(
-                f"[DEBUG ingest_documents] No valid content to ingest for thread {thread_id}"
+                f"[DEBUG ingest_documents] No valid content to ingest for thread {thread_id}, "
+                f"existing documents: {len(existing_docs)}"
             )
-            return {"has_ingested_documents": False}
+            return {"has_ingested_documents": has_existing}
 
     except Exception as e:
         print(f"[ERROR ingest_documents] Failed to ingest documents: {e}")
