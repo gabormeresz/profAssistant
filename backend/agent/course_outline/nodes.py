@@ -261,14 +261,34 @@ Requirements:
         # The existing messages are loaded from checkpoint automatically
         new_messages = []
 
+        # Check if new documents were uploaded with this follow-up
+        has_ingested_documents = state.get("has_ingested_documents", False)
+        file_contents = state.get("file_contents")
+        has_new_documents = has_ingested_documents and file_contents
+
         user_message = state.get("message") or ""
-        if user_message.strip():
-            # Format follow-up message clearly
-            follow_up_content = f"## Follow-up Request\n\n{user_message}"
+        if user_message.strip() or has_new_documents:
+            # Build the follow-up content
+            follow_up_content = "## Follow-up Request\n\n"
+
+            # Add document search instruction if new documents were uploaded
+            if has_new_documents:
+                follow_up_content += """**IMPORTANT: New documents have been uploaded with this request.**
+
+You MUST use the `search_uploaded_documents` tool before responding to search through these new reference materials. Query with 2-3 different searches to extract relevant information, then incorporate the findings into your response.
+
+"""
+
+            if user_message.strip():
+                follow_up_content += user_message
+            else:
+                follow_up_content += "Please incorporate the information from the newly uploaded documents into your response."
+
             new_messages.append(HumanMessage(content=follow_up_content))
 
         # DEBUG: Log what we're returning
         print(f"[DEBUG build_messages] returning {len(new_messages)} new messages")
+        print(f"[DEBUG build_messages] has_new_documents={has_new_documents}")
         if new_messages:
             print(
                 f"[DEBUG build_messages] new message content: {new_messages[0].content[:100]}"
