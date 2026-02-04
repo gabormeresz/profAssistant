@@ -263,6 +263,7 @@ class RAGPipeline:
         query_text: str,
         n_results: int = 5,
         session_id: Optional[str] = None,
+        min_similarity: float = 0.3,
     ) -> List[Dict[str, Any]]:
         """
         Query the vector store for relevant document chunks.
@@ -271,6 +272,7 @@ class RAGPipeline:
             query_text: The query string
             n_results: Number of results to return
             session_id: Session ID to filter results (required for proper isolation)
+            min_similarity: Minimum similarity score threshold (0.0-1.0, default: 0.3)
 
         Returns:
             List of relevant document chunks with metadata and scores
@@ -326,8 +328,16 @@ class RAGPipeline:
                     }
                 )
 
+        # Filter by minimum similarity
+        if min_similarity > 0:
+            formatted_results = [
+                r
+                for r in formatted_results
+                if r.get("similarity_score", 0) >= min_similarity
+            ]
+
         print(
-            f"[RAG] Query completed: found {len(formatted_results)} results for session_id={session_id}"
+            f"[RAG] Query completed: found {len(formatted_results)} results for session_id={session_id} (min_similarity={min_similarity})"
         )
         return formatted_results
 
