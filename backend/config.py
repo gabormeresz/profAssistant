@@ -4,6 +4,7 @@ Central configuration for the backend application.
 All configurable constants and settings should be defined here.
 """
 
+import logging
 import os
 from dotenv import load_dotenv
 
@@ -112,3 +113,15 @@ class MCPConfig:
     )
     WIKIPEDIA_URL: str = os.getenv("MCP_WIKIPEDIA_URL", "http://localhost:8765/sse")
     WIKIPEDIA_TRANSPORT: str = "sse"
+
+
+# =============================================================================
+# Logging Configuration
+# =============================================================================
+
+
+class LoggingConfig:
+    """Configuration for application logging."""
+
+    # Log level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    LEVEL: int = getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper(), logging.INFO)

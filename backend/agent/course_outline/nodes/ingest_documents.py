@@ -37,7 +37,7 @@ def ingest_documents(state: CourseOutlineState) -> dict:
         try:
             existing_docs = rag.list_documents(session_id=thread_id)
             has_existing = len(existing_docs) > 0
-            logger.debug(
+            logger.info(
                 f"No new files for thread {thread_id}, existing documents: {len(existing_docs)}"
             )
             return {"has_ingested_documents": has_existing}
@@ -58,7 +58,7 @@ def ingest_documents(state: CourseOutlineState) -> dict:
                 documents=documents,
                 session_id=thread_id,
             )
-            logger.debug(
+            logger.info(
                 f"Ingested {len(results)} documents "
                 f"({sum(r.chunk_count for r in results)} chunks) for thread {thread_id}"
             )

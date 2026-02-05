@@ -1,3 +1,12 @@
+import logging
+from config import LoggingConfig
+
+# Configure logging
+logging.basicConfig(
+    level=LoggingConfig.LEVEL,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware

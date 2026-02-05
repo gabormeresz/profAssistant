@@ -31,7 +31,7 @@ def build_messages(state: CourseOutlineState) -> dict:
     is_first_call = state.get("is_first_call", True)
     user_message = state.get("message", "")
 
-    logger.debug(
+    logger.info(
         f"is_first_call={is_first_call}, "
         f"user_message='{user_message[:50] if user_message else ''}'"
     )
@@ -131,7 +131,7 @@ You MUST use the `search_uploaded_documents` tool before responding to search th
         new_messages.append(HumanMessage(content=follow_up_content))
 
     logger.debug(f"returning {len(new_messages)} new messages")
-    logger.debug(f"has_new_documents={has_new_documents}")
+    logger.info(f"has_new_documents={has_new_documents}")
     if new_messages:
         logger.debug(f"new message content: {new_messages[0].content[:100]}")
 

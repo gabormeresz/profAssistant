@@ -89,19 +89,19 @@ def route_after_evaluate(state: CourseOutlineState) -> Literal["refine", "respon
     # If evaluation history is empty (evaluation failed), go to respond
     # We can't refine without evaluation feedback
     if not evaluation_history:
-        logger.debug("No evaluation history, going to respond")
+        logger.info("No evaluation history, going to respond")
         return "respond"
 
     # Check if score meets approval threshold
     if current_score >= EvaluationConfig.APPROVAL_THRESHOLD:
-        logger.debug(
+        logger.info(
             f"Score {current_score:.2f} >= {EvaluationConfig.APPROVAL_THRESHOLD}, APPROVED"
         )
         return "respond"
 
     # Check if we've exceeded max retries
     if evaluation_count >= EvaluationConfig.MAX_RETRIES:
-        logger.debug(
+        logger.info(
             f"Max retries ({EvaluationConfig.MAX_RETRIES}) reached, going to respond"
         )
         return "respond"
@@ -112,15 +112,15 @@ def route_after_evaluate(state: CourseOutlineState) -> Literal["refine", "respon
         improvement = current_score - previous_score
 
         if improvement < EvaluationConfig.MIN_IMPROVEMENT_THRESHOLD:
-            logger.debug(
+            logger.info(
                 f"Plateau detected: improvement {improvement:.3f} < "
                 f"{EvaluationConfig.MIN_IMPROVEMENT_THRESHOLD}"
             )
             return "respond"
 
-        logger.debug(f"Score improved by {improvement:.3f}, continuing refinement")
+        logger.info(f"Score improved by {improvement:.3f}, continuing refinement")
 
-    logger.debug(
+    logger.info(
         f"Score {current_score:.2f} < {EvaluationConfig.APPROVAL_THRESHOLD}, "
         "going to refine"
     )
