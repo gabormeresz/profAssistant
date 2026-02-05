@@ -21,7 +21,7 @@ from .nodes import (
     route_after_refine,
     evaluate_outline,
     route_after_evaluate,
-    tools,
+    get_tools_for_toolnode,
 )
 
 
@@ -60,8 +60,10 @@ def build_course_outline_graph() -> StateGraph:
         output_schema=CourseOutlineOutput,
     )
 
-    # Create tool node instance (reused for both generate and refine)
-    tool_node = ToolNode(tools)
+    # Create tool node instance with all tools including MCP tools
+    # (reused for both generate and refine)
+    all_tools = get_tools_for_toolnode()
+    tool_node = ToolNode(all_tools)
 
     # Add nodes
     workflow.add_node("initialize", initialize_conversation)

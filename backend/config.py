@@ -96,3 +96,19 @@ class EvaluationConfig:
         "activities": 0.20,
         "completeness": 0.15,
     }
+
+
+# =============================================================================
+# MCP Configuration
+# =============================================================================
+
+
+class MCPConfig:
+    """Configuration for MCP (Model Context Protocol) servers."""
+
+    # Wikipedia MCP server settings
+    WIKIPEDIA_ENABLED: bool = (
+        os.getenv("MCP_WIKIPEDIA_ENABLED", "true").lower() == "true"
+    )
+    WIKIPEDIA_URL: str = os.getenv("MCP_WIKIPEDIA_URL", "http://localhost:8765/sse")
+    WIKIPEDIA_TRANSPORT: str = "sse"

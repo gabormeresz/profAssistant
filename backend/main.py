@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -7,6 +8,7 @@ from utils.file_processor import file_processor
 from agent.prompt_enhancer import prompt_enhancer
 from services.conversation_manager import conversation_manager
 from services.rag_pipeline import get_rag_pipeline
+from services.mcp_client import mcp_manager
 from schemas.conversation import (
     ConversationType,
     ConversationList,
@@ -14,7 +16,28 @@ from schemas.conversation import (
 import json
 from typing import List, Optional
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Lifespan handler for FastAPI application startup/shutdown.
+
+    Initializes MCP clients on startup and cleans up on shutdown.
+    """
+    # Startup
+    print("[Startup] Initializing MCP clients...")
+    await mcp_manager.initialize()
+    print("[Startup] Application ready")
+
+    yield
+
+    # Shutdown
+    print("[Shutdown] Cleaning up MCP clients...")
+    await mcp_manager.cleanup()
+    print("[Shutdown] Application stopped")
+
+
+app = FastAPI(lifespan=lifespan)
 
 # Add CORS middleware
 app.add_middleware(

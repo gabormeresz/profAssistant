@@ -5,10 +5,11 @@ This module contains all the node functions used in the LangGraph workflow.
 Each function represents a discrete step in the course outline generation process.
 """
 
-from typing import Literal
+from typing import Literal, List
 import uuid
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.tools import BaseTool
 
 from config import EvaluationConfig
 from schemas.course_outline import CourseOutline
@@ -20,6 +21,7 @@ from schemas.conversation import (
 )
 from services.conversation_manager import conversation_manager
 from services.rag_pipeline import get_rag_pipeline
+from services.mcp_client import mcp_manager
 
 from .state import CourseOutlineState
 from .prompts import (
@@ -32,13 +34,40 @@ from agent.tools import web_search, search_uploaded_documents
 
 
 # Base tools (always available)
-base_tools = [web_search]
+base_tools: List[BaseTool] = [web_search]
 
 # All tools including document search
-all_tools = [web_search, search_uploaded_documents]
+all_tools: List[BaseTool] = [web_search, search_uploaded_documents]
 
-# For ToolNode - needs all possible tools registered
-tools = all_tools
+
+def get_all_tools(has_documents: bool = False) -> List[BaseTool]:
+    """
+    Get all available tools including MCP tools.
+
+    Args:
+        has_documents: Whether the user has uploaded documents.
+
+    Returns:
+        List of tools: base tools + MCP tools, optionally with document search.
+    """
+    tools = [web_search]
+
+    # Add document search if documents are ingested
+    if has_documents:
+        tools.append(search_uploaded_documents)
+
+    # Add MCP tools (Wikipedia, etc.)
+    mcp_tools = mcp_manager.get_tools()
+    tools.extend(mcp_tools)
+
+    return tools
+
+
+# For ToolNode - needs all possible tools registered (including MCP tools)
+def get_tools_for_toolnode() -> List[BaseTool]:
+    """Get all tools for ToolNode registration, including MCP tools."""
+    return all_tools + mcp_manager.get_tools()
+
 
 # Model configurations
 model_with_structured_output = model.with_structured_output(CourseOutline)
@@ -47,7 +76,7 @@ model_with_evaluation_output = model.with_structured_output(EvaluationResult)
 
 def get_model_with_tools(has_documents: bool):
     """Get model with appropriate tools based on whether documents are uploaded."""
-    tools_to_use = all_tools if has_documents else base_tools
+    tools_to_use = get_all_tools(has_documents)
     return model.bind_tools(tools_to_use)
 
 

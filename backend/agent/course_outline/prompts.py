@@ -76,6 +76,24 @@ Each class should include activities that:
 - Vary in type (discussion, hands-on, collaborative, individual)
 - Are appropriate for the topic and student level
 - Include at least one formative assessment opportunity
+## Available Research Tools
+
+You have access to the following tools to gather information for building the course outline:
+
+1. **web_search**: Search the web for current information, news, and real-world examples.
+   - Use for: Recent developments, industry practices, case studies, current events
+
+2. **search_wikipedia**: Search Wikipedia for encyclopedic knowledge and established facts.
+   - Use for: Foundational concepts, definitions, historical context, theoretical frameworks
+   - Best for: Understanding core terminology, background information, key figures in the field
+
+3. **search_uploaded_documents** (if documents uploaded): Search user's reference materials.
+   - Use for: Aligning with user's existing curriculum, preferred terminology, specific examples
+
+**Tool Usage Strategy**:
+- Use `search_wikipedia` first to establish foundational knowledge about the topic
+- Use `web_search` for current applications, recent developments, and practical examples
+- Use `search_uploaded_documents` to incorporate user's specific materials and preferences
 {document_search_instruction}
 
 ## Output Specifications
