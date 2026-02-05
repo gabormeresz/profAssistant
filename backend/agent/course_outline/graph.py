@@ -9,6 +9,7 @@ from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
+from agent.tool_config import get_tools_for_toolnode
 from .state import CourseOutlineState, CourseOutlineInput, CourseOutlineOutput
 from .nodes import (
     initialize_conversation,
@@ -21,7 +22,6 @@ from .nodes import (
     route_after_refine,
     evaluate_outline,
     route_after_evaluate,
-    get_tools_for_toolnode,
 )
 
 
