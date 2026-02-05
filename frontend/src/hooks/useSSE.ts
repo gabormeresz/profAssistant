@@ -130,7 +130,11 @@ export const useSSE = <T>(): UseSSEReturn<T> => {
           const { done, value } = await reader.read();
 
           if (done) {
-            setStreamingState("complete");
+            // Only set to complete if not already set (e.g., if no complete event was received)
+            // The complete event handler already sets streamingState to "complete"
+            setStreamingState((current) =>
+              current === "streaming" ? "complete" : current
+            );
             setLoading(false);
             return finalData;
           }
@@ -173,9 +177,11 @@ export const useSSE = <T>(): UseSSEReturn<T> => {
                     handlers?.onProgress?.(progressData);
                   }
                 } else if (currentEvent === "complete" && parsed) {
-                  // Structured data received
+                  // Structured data received - set data and streamingState together
+                  // to ensure React batches them in the same render cycle
                   const completedData = parsed as T;
                   setData(completedData);
+                  setStreamingState("complete");
                   finalData = completedData;
                   setProgressMessage("overlay.complete");
                   handlers?.onComplete?.(completedData);
