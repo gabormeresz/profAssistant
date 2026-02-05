@@ -12,7 +12,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from agent.course_outline_generator import run_course_outline_generator
-from agent.lesson_plan_generator import run_structured_lesson_plan_generator
+from agent.lesson_plan import run_lesson_plan_generator
 from utils.file_processor import file_processor
 from agent.prompt_enhancer import prompt_enhancer
 from services.conversation_manager import conversation_manager
@@ -220,7 +220,7 @@ async def lesson_plan_event_generator(
     Yields progress updates and the final structured lesson plan.
     """
     try:
-        async for event in run_structured_lesson_plan_generator(
+        async for event in run_lesson_plan_generator(
             message,
             course_title,
             class_number,
