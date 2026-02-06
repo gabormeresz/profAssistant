@@ -32,6 +32,7 @@ class LessonPlanInput(TypedDict):
     language: str
     thread_id: str  # Always provided (generated before graph runs)
     is_first_call: bool  # Flag to distinguish new vs follow-up conversations
+    user_id: str  # Authenticated user who owns this conversation
 
 
 class LessonPlanState(MessagesState):
@@ -56,6 +57,7 @@ class LessonPlanState(MessagesState):
     # Session management
     thread_id: str
     is_first_call: bool
+    user_id: str  # Authenticated user who owns this conversation
     has_ingested_documents: bool  # Flag to enable/disable document search tool
 
     # Research results from tools (accumulated within a run)

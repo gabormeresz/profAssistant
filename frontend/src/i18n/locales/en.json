@@ -20,6 +20,7 @@
     "initializingConversation": "Initializing conversation...",
     "buildingMessages": "Building messages...",
     "evaluatingOutline": "Evaluating outline quality...",
+    "evaluatingLessonPlan": "Evaluating lesson plan quality...",
     "refiningOutline": "Refining outline based on evaluation...",
     "structuringResponse": "Structuring final response..."
   },
@@ -135,6 +136,16 @@
     "exportToDocx": "Export to DOCX",
     "createLessonPlanDraft": "Create Lesson Plan Draft"
   },
+  "errors": {
+    "title": "Something went wrong",
+    "apiKeyRequired": "API key required. Please configure your OpenAI API key in your profile settings.",
+    "invalidApiKey": "Your OpenAI API key is invalid or has been revoked. Please update it in your profile settings.",
+    "insufficientQuota": "Your OpenAI account has insufficient credits. Please check your billing at platform.openai.com.",
+    "rateLimited": "Too many requests — please wait a moment and try again.",
+    "openaiUnavailable": "OpenAI service is temporarily unavailable. Please try again later.",
+    "generationFailed": "Content generation failed. Please try again.",
+    "unknown": "An unexpected error occurred. Please try again."
+  },
   "lessonPlanOutput": {
     "classNumber": "Class",
     "learningObjective": "Learning Objective",
@@ -145,5 +156,68 @@
     "instructions": "Instructions",
     "homework": "Homework",
     "extraActivities": "Extra Activities"
+  },
+  "auth": {
+    "loginTab": "Login",
+    "signupTab": "Sign Up",
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Sign in to your account to continue",
+    "signupTitle": "Create an account",
+    "signupSubtitle": "Get started with ProfAssistant",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "passwordHint": "Must be at least 8 characters",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "loginButton": "Sign In",
+    "signupButton": "Create Account",
+    "submitting": "Please wait...",
+    "signupSuccess": "Account created successfully! You can now log in.",
+    "errors": {
+      "emptyFields": "Please fill in all fields",
+      "passwordTooShort": "Password must be at least 8 characters",
+      "passwordMismatch": "Passwords do not match",
+      "generic": "An unexpected error occurred"
+    }
+  },
+  "profile": {
+    "title": "Profile & Settings",
+    "logout": "Logout",
+    "saved": "Saved!",
+    "memberSince": "Member since {{date}}",
+    "setupBanner": {
+      "title": "API Key Required",
+      "description": "To use the AI-powered features of ProfAssistant, you need to provide your own OpenAI API key. Your key is encrypted at rest and is only used to make requests on your behalf.",
+      "steps": {
+        "step1": "Go to platform.openai.com and create an account (or log in)",
+        "step2": "Navigate to API Keys and create a new key",
+        "step3": "Paste your key below and click Save"
+      },
+      "dismiss": "I'll do this later"
+    },
+    "apiKey": {
+      "title": "OpenAI API Key",
+      "description": "Your API key is encrypted at rest and used to power the AI features. You can get one at platform.openai.com.",
+      "placeholder": "sk-...",
+      "keyStored": "API key is stored",
+      "noKey": "No API key configured",
+      "save": "Save Key",
+      "remove": "Remove"
+    },
+    "model": {
+      "title": "Preferred Model",
+      "description": "Choose the OpenAI model used for generating content.",
+      "save": "Save Model"
+    },
+    "models": {
+      "gpt4oMiniDesc": "Fast and cost-effective. Great for most tasks.",
+      "gpt4oDesc": "Most capable model. Best quality, higher cost."
+    },
+    "errors": {
+      "emptyApiKey": "Please enter an API key",
+      "saveFailed": "Failed to save settings"
+    }
   }
 }

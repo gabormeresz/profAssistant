@@ -10,13 +10,11 @@ from langchain_core.messages import AIMessage, HumanMessage
 
 from agent.model import get_structured_output_model
 from schemas.course_outline import CourseOutline
+from services.api_key_service import require_api_key
 
 from ..state import CourseOutlineState
 
 logger = logging.getLogger(__name__)
-
-# Pre-configured model for course outline structured output
-_structured_model = get_structured_output_model(CourseOutline)
 
 
 def generate_structured_response(state: CourseOutlineState) -> dict:
@@ -47,7 +45,9 @@ def generate_structured_response(state: CourseOutlineState) -> dict:
 
         # Generate structured output - the schema enforces the structure,
         # so we just need to pass the content for parsing
-        response = _structured_model.invoke([HumanMessage(content=context_content)])
+        api_key = require_api_key(state.get("user_id", ""))
+        structured_model = get_structured_output_model(CourseOutline, api_key=api_key)
+        response = structured_model.invoke([HumanMessage(content=context_content)])
 
         # Ensure we have a CourseOutline object
         if not isinstance(response, CourseOutline):

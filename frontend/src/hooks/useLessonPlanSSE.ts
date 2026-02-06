@@ -6,12 +6,14 @@ import type { LessonPlanRequest, StreamingState, LessonPlan } from "../types";
 interface UseLessonPlanSSEReturn {
   lessonPlan: LessonPlan | null;
   progressMessage: string;
+  error: string | null;
   loading: boolean;
   streamingState: StreamingState;
   threadId: string | null;
   sendMessage: (data: LessonPlanRequest) => Promise<LessonPlan | null>;
   resetThread: () => void;
   setThreadId: (id: string | null) => void;
+  clearError: () => void;
 }
 
 /**
@@ -22,12 +24,14 @@ export const useLessonPlanSSE = (): UseLessonPlanSSEReturn => {
   const {
     data: lessonPlan,
     progressMessage,
+    error,
     loading,
     streamingState,
     threadId,
     sendRequest,
     resetThread,
-    setThreadId
+    setThreadId,
+    clearError
   } = useSSE<LessonPlan>();
 
   const sendMessage = useCallback(
@@ -81,11 +85,13 @@ export const useLessonPlanSSE = (): UseLessonPlanSSEReturn => {
   return {
     lessonPlan,
     progressMessage,
+    error,
     loading,
     streamingState,
     threadId,
     sendMessage,
     resetThread,
-    setThreadId
+    setThreadId,
+    clearError
   };
 };

@@ -38,3 +38,13 @@ export type {
   ActivityPlan,
   LessonPlanStreamEvent
 } from "./lessonPlan";
+
+// Auth types
+export type {
+  UserCreate,
+  UserResponse,
+  TokenPair,
+  TokenRefreshRequest,
+  UserSettingsResponse,
+  UserSettingsUpdate
+} from "./auth";

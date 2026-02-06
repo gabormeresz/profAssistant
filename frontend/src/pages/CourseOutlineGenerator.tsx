@@ -8,7 +8,8 @@ import {
   StructuredCourseOutline,
   LoadingOverlay,
   FollowUpInput,
-  UserMessage
+  UserMessage,
+  ErrorBanner
 } from "../components";
 import { useCourseOutlineSSE, useConversationManager } from "../hooks";
 import { COURSE_OUTLINE } from "../utils/constants";
@@ -71,12 +72,14 @@ function CourseOutlineGenerator() {
   const {
     courseOutline,
     progressMessage,
+    error,
     loading,
     streamingState,
     threadId,
     sendMessage,
     resetThread,
-    setThreadId
+    setThreadId,
+    clearError
   } = useCourseOutlineSSE();
 
   // Conversation management hook (handles URL sync, loading, history)
@@ -224,6 +227,9 @@ function CourseOutlineGenerator() {
       onNewConversation={handleNewConversation}
       header={<Header title={t("header.courseOutlineGenerator")} />}
     >
+      {/* Error banner */}
+      <ErrorBanner error={error} onDismiss={clearError} />
+
       {/* Initial form - grey out after first submission */}
       <div className={hasStarted ? "opacity-50 pointer-events-none" : ""}>
         <CourseOutlineInputSection

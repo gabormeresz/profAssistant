@@ -10,12 +10,14 @@ import type {
 interface UseCourseOutlineSSEReturn {
   courseOutline: CourseOutline | null;
   progressMessage: string;
+  error: string | null;
   loading: boolean;
   streamingState: StreamingState;
   threadId: string | null;
   sendMessage: (data: CourseOutlineRequest) => Promise<CourseOutline | null>;
   resetThread: () => void;
   setThreadId: (id: string | null) => void;
+  clearError: () => void;
 }
 
 /**
@@ -26,12 +28,14 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
   const {
     data: courseOutline,
     progressMessage,
+    error,
     loading,
     streamingState,
     threadId,
     sendRequest,
     resetThread,
-    setThreadId
+    setThreadId,
+    clearError
   } = useSSE<CourseOutline>();
 
   const sendMessage = useCallback(
@@ -70,11 +74,13 @@ export const useCourseOutlineSSE = (): UseCourseOutlineSSEReturn => {
   return {
     courseOutline,
     progressMessage,
+    error,
     loading,
     streamingState,
     threadId,
     sendMessage,
     resetThread,
-    setThreadId
+    setThreadId,
+    clearError
   };
 };

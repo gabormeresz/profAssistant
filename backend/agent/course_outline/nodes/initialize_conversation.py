@@ -40,6 +40,7 @@ def initialize_conversation(state: CourseOutlineState) -> dict:
 
         conversation_manager.create_course_outline(
             thread_id=thread_id,
+            user_id=state["user_id"],
             conversation_type=ConversationType.COURSE_OUTLINE,
             data=CourseOutlineCreate(
                 title=title,

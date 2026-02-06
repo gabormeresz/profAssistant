@@ -97,6 +97,7 @@ async def prompt_enhancer(
     context_type: Literal["course_outline", "lesson_plan"] = "course_outline",
     additional_context: Optional[Dict[str, Any]] = None,
     language: Optional[str] = None,
+    user_id: Optional[str] = None,
 ) -> str:
     """
     Enhance the user prompt with additional context.
@@ -109,6 +110,7 @@ async def prompt_enhancer(
             - For lesson_plan: topic (course_title), class_title, learning_objectives,
               key_topics, activities_projects
         language: Optional language for the output (e.g., "English", "Hungarian")
+        user_id: Optional user ID. Resolves the per-user API key via api_key_service.
 
     Returns:
         Enhanced prompt string
@@ -121,7 +123,15 @@ async def prompt_enhancer(
     context_text = _build_context_text(context_type, additional_context)
     messages = _build_messages(message, context_type, context_text, language)
 
-    response = await client.chat.completions.create(
+    # Resolve per-user API key via the centralised service.
+    # require_api_key raises ValueError if a regular user has no key,
+    # preventing silent fallback to the server-side .env key.
+    from services.api_key_service import require_api_key
+
+    api_key = require_api_key(user_id) if user_id else None
+    enhancer_client = AsyncOpenAI(api_key=api_key) if api_key else client
+
+    response = await enhancer_client.chat.completions.create(
         model=MODEL,
         messages=messages,
         temperature=TEMPERATURE,

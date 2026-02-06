@@ -1,10 +1,19 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "../hooks/useAuth";
 import { LanguageSelector } from "../components";
-import { FileText, BookOpen, Presentation, ClipboardList } from "lucide-react";
+import {
+  FileText,
+  BookOpen,
+  Presentation,
+  ClipboardList,
+  User
+} from "lucide-react";
 
 function Home() {
   const { t } = useTranslation();
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -20,12 +29,43 @@ function Home() {
             <div className="w-40">
               <LanguageSelector variant="header" />
             </div>
-            <button className="px-4 py-2 text-gray-700 hover:text-gray-900 whitespace-nowrap h-10 flex items-center justify-center w-32">
-              {t("home.login")}
-            </button>
-            <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap h-10 flex items-center justify-center w-36">
-              {t("home.signup")}
-            </button>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-gray-900 whitespace-nowrap h-10"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="text-sm font-medium truncate max-w-[140px]">
+                    {user?.email}
+                  </span>
+                </Link>
+                <button
+                  onClick={async () => {
+                    await logout();
+                    navigate("/");
+                  }}
+                  className="px-4 py-2 text-red-600 hover:text-red-700 font-medium text-sm whitespace-nowrap h-10 flex items-center justify-center"
+                >
+                  {t("profile.logout")}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/auth"
+                  className="px-4 py-2 text-gray-700 hover:text-gray-900 whitespace-nowrap h-10 flex items-center justify-center w-32"
+                >
+                  {t("home.login")}
+                </Link>
+                <Link
+                  to="/auth"
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap h-10 flex items-center justify-center w-36"
+                >
+                  {t("home.signup")}
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -40,9 +80,14 @@ function Home() {
             <p className="text-lg text-gray-600 mb-8 leading-relaxed">
               {t("home.hero.subtitle")}
             </p>
-            <button className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg">
-              {t("home.hero.cta")}
-            </button>
+            {!isAuthenticated && (
+              <Link
+                to="/auth"
+                className="inline-block px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
+              >
+                {t("home.hero.cta")}
+              </Link>
+            )}
           </div>
           <div className="relative">
             <div className="bg-gray-200 rounded-3xl overflow-hidden shadow-xl aspect-[6/5]">

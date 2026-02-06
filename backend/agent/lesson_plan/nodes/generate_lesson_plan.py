@@ -5,6 +5,7 @@ Initial lesson plan generation node for the lesson plan generation workflow.
 import logging
 
 from agent.tool_config import get_model_with_tools
+from services.api_key_service import require_api_key
 
 from ..state import LessonPlanState
 
@@ -33,7 +34,8 @@ def generate_lesson_plan(state: LessonPlanState) -> dict:
 
     # Get model with appropriate tools based on whether documents are ingested
     has_documents = state.get("has_ingested_documents", False)
-    model_with_tools = get_model_with_tools(has_documents)
+    api_key = require_api_key(state.get("user_id", ""))
+    model_with_tools = get_model_with_tools(has_documents, api_key=api_key)
 
     response = model_with_tools.invoke(messages)
 

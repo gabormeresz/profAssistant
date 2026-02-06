@@ -24,6 +24,10 @@ dependencies = [
     "chromadb>=1.0.0",
     "wikipedia-mcp>=1.7.0",
     "langchain-mcp-adapters>=0.1.0",
+    "PyJWT>=2.8.0",
+    "passlib[bcrypt]>=1.7.4",
+    "cryptography>=42.0.0",
+    "bcrypt==4.0.1",
 ]
 
 [dependency-groups]

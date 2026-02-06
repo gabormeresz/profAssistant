@@ -23,6 +23,7 @@ async def run_course_outline_generator(
     thread_id: str | None = None,
     file_contents: List[Dict[str, str]] | None = None,
     language: str | None = None,
+    user_id: str = "",
 ) -> AsyncGenerator[Dict, None]:
     """
     Run the course outline generator with streaming progress updates.
@@ -71,6 +72,7 @@ async def run_course_outline_generator(
             "language": language or "English",
             "thread_id": thread_id,
             "is_first_call": is_first_call,
+            "user_id": user_id,
         }
 
         # Build and compile graph with checkpointer

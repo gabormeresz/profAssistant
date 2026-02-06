@@ -8,7 +8,7 @@ logging.basicConfig(
 )
 
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from agent.course_outline_generator import run_course_outline_generator
@@ -19,6 +19,8 @@ from agent.prompt_enhancer import prompt_enhancer
 from services.conversation_manager import conversation_manager
 from services.rag_pipeline import get_rag_pipeline
 from services.mcp_client import mcp_manager
+from routes.auth import router as auth_router
+from services.auth_service import get_current_user
 from schemas.conversation import (
     ConversationType,
     ConversationList,
@@ -34,6 +36,60 @@ if DebugConfig.USE_DUMMY_GRAPH:
     logger.warning(
         "⚠️  DUMMY GRAPH ENABLED — course outline requests use fake data (no LLM calls)"
     )
+
+
+def _resolve_api_key(user: dict) -> str:
+    """
+    Validate that the user has a usable OpenAI API key.
+
+    Delegates to ``api_key_service`` so that the logic lives in one
+    place.  The returned key is used **only** for early HTTP-level
+    validation — nodes and helpers resolve it themselves from
+    ``user_id``.
+
+    Raises HTTPException 403/500 when no key is available.
+    """
+    from services.api_key_service import require_api_key
+
+    try:
+        return require_api_key(user["user_id"])
+    except ValueError:
+        if user["role"] == "admin":
+            raise HTTPException(
+                status_code=500,
+                detail="Server-side OPENAI_API_KEY is not configured.",
+            )
+        raise HTTPException(
+            status_code=403,
+            detail="errors.apiKeyRequired",
+        )
+
+
+def _classify_error(exc: Exception) -> dict:
+    """
+    Map common OpenAI / API-key errors to frontend-translatable message keys.
+
+    Returns a dict suitable for ``json.dumps`` inside an SSE error event,
+    containing both ``message`` (raw) and ``message_key`` (i18n key).
+    """
+    import openai
+
+    raw = str(exc)
+
+    if isinstance(exc, openai.AuthenticationError):
+        return {"message": raw, "message_key": "errors.invalidApiKey"}
+    if isinstance(exc, openai.RateLimitError):
+        # OpenAI uses 429 for both rate-limit and insufficient-quota
+        lower = raw.lower()
+        if "quota" in lower or "billing" in lower or "exceeded" in lower:
+            return {"message": raw, "message_key": "errors.insufficientQuota"}
+        return {"message": raw, "message_key": "errors.rateLimited"}
+    if isinstance(exc, openai.APIStatusError) and exc.status_code >= 500:
+        return {"message": raw, "message_key": "errors.openaiUnavailable"}
+    if isinstance(exc, ValueError) and "API key" in raw:
+        return {"message": raw, "message_key": "errors.apiKeyRequired"}
+
+    return {"message": raw, "message_key": "errors.generationFailed"}
 
 
 @asynccontextmanager
@@ -70,6 +126,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Auth routes ──
+app.include_router(auth_router)
+
 
 @app.post("/enhance-prompt")
 async def enhance_prompt(
@@ -77,6 +136,7 @@ async def enhance_prompt(
     context_type: str = Form("course_outline"),
     additional_context: Optional[str] = Form(None),
     language: Optional[str] = Form(None),
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Enhance the user's prompt to provide better instructions for educational content generation.
@@ -94,6 +154,9 @@ async def enhance_prompt(
             return JSONResponse(
                 content={"error": "Message is required"}, status_code=400
             )
+
+        # Resolve per-user API key
+        _resolve_api_key(current_user)
 
         # Validate context_type
         valid_contexts = ["course_outline", "lesson_plan"]
@@ -123,10 +186,16 @@ async def enhance_prompt(
             Literal["course_outline", "lesson_plan"], context_type
         )
         enhanced = await prompt_enhancer(
-            message, validated_context_type, context_dict, language
+            message,
+            validated_context_type,
+            context_dict,
+            language,
+            user_id=current_user["user_id"],
         )
         return JSONResponse(content={"enhanced_prompt": enhanced})
 
+    except HTTPException:
+        raise  # Let FastAPI handle 403/500 from _resolve_api_key directly
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
@@ -138,6 +207,7 @@ async def course_outline_event_generator(
     language: Optional[str],
     thread_id: Optional[str],
     file_contents: List[dict],
+    user_id: str,
 ):
     """
     Generator function that yields Server-Sent Events (SSE) for structured output.
@@ -154,7 +224,13 @@ async def course_outline_event_generator(
             )
         else:
             generator = run_course_outline_generator(
-                message, topic, number_of_classes, thread_id, file_contents, language
+                message,
+                topic,
+                number_of_classes,
+                thread_id,
+                file_contents,
+                language,
+                user_id=user_id,
             )
 
         async for event in generator:
@@ -185,7 +261,9 @@ async def course_outline_event_generator(
                 # Fallback for any other data
                 yield f"data: {json.dumps({'content': str(event)})}\n\n"
     except Exception as e:
-        yield f"event: error\ndata: {json.dumps({'message': str(e)})}\n\n"
+        logger.error(f"Course outline generation error: {e}", exc_info=True)
+        error_payload = _classify_error(e)
+        yield f"event: error\ndata: {json.dumps(error_payload)}\n\n"
 
 
 @app.post("/course-outline-generator")
@@ -196,6 +274,7 @@ async def generate_course_outline(
     language: Optional[str] = Form(None),
     thread_id: Optional[str] = Form(None),
     files: Optional[List[UploadFile]] = File(None),
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Handle course outline generation with structured output and optional file uploads.
@@ -210,10 +289,19 @@ async def generate_course_outline(
     if files:
         file_contents += await file_processor(files)
 
+    # Validate that the user has an API key (fail-fast before streaming)
+    _resolve_api_key(current_user)
+
     # Return SSE stream
     return StreamingResponse(
         course_outline_event_generator(
-            message, topic, number_of_classes, language, thread_id, file_contents
+            message,
+            topic,
+            number_of_classes,
+            language,
+            thread_id,
+            file_contents,
+            user_id=current_user["user_id"],
         ),
         media_type="text/event-stream",
         headers={
@@ -235,6 +323,7 @@ async def lesson_plan_event_generator(
     language: Optional[str],
     thread_id: Optional[str],
     file_contents: List[dict],
+    user_id: str,
 ):
     """
     Generator function that yields Server-Sent Events (SSE) for lesson plan generation.
@@ -252,6 +341,7 @@ async def lesson_plan_event_generator(
             thread_id,
             file_contents,
             language,
+            user_id=user_id,
         ):
             if isinstance(event, dict):
                 event_type = event.get("type", "data")
@@ -280,7 +370,9 @@ async def lesson_plan_event_generator(
                 # Fallback for any other data
                 yield f"data: {json.dumps({'content': str(event)})}\n\n"
     except Exception as e:
-        yield f"event: error\ndata: {json.dumps({'message': str(e)})}\n\n"
+        logger.error(f"Lesson plan generation error: {e}", exc_info=True)
+        error_payload = _classify_error(e)
+        yield f"event: error\ndata: {json.dumps(error_payload)}\n\n"
 
 
 @app.post("/lesson-plan-generator")
@@ -295,6 +387,7 @@ async def generate_lesson_plan(
     language: Optional[str] = Form(None),
     thread_id: Optional[str] = Form(None),
     files: Optional[List[UploadFile]] = File(None),
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Handle lesson plan generation with structured output and optional file uploads.
@@ -323,6 +416,9 @@ async def generate_lesson_plan(
     if files:
         file_contents += await file_processor(files)
 
+    # Validate that the user has an API key (fail-fast before streaming)
+    _resolve_api_key(current_user)
+
     # Return SSE stream
     return StreamingResponse(
         lesson_plan_event_generator(
@@ -336,6 +432,7 @@ async def generate_lesson_plan(
             language,
             thread_id,
             file_contents,
+            user_id=current_user["user_id"],
         ),
         media_type="text/event-stream",
         headers={
@@ -353,17 +450,30 @@ async def generate_lesson_plan(
 
 @app.get("/conversations")
 async def list_conversations(
-    conversation_type: Optional[str] = None, limit: int = 100, offset: int = 0
+    conversation_type: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
+    current_user: dict = Depends(get_current_user),
 ):
     """
-    List all saved conversations with optional filtering by type.
+    List all saved conversations for the current user with optional filtering by type.
     """
     try:
         conv_type = ConversationType(conversation_type) if conversation_type else None
-        conversations = conversation_manager.list_conversations(
-            conversation_type=conv_type, limit=limit, offset=offset
+        # Admin sees all conversations; regular users only their own
+        effective_user_id = (
+            None if current_user["role"] == "admin" else current_user["user_id"]
         )
-        total = conversation_manager.count_conversations(conversation_type=conv_type)
+        conversations = conversation_manager.list_conversations(
+            user_id=effective_user_id,
+            conversation_type=conv_type,
+            limit=limit,
+            offset=offset,
+        )
+        total = conversation_manager.count_conversations(
+            user_id=effective_user_id,
+            conversation_type=conv_type,
+        )
 
         return ConversationList(conversations=conversations, total=total)
     except ValueError:
@@ -373,23 +483,47 @@ async def list_conversations(
 
 
 @app.get("/conversations/{thread_id}")
-async def get_conversation(thread_id: str):
+async def get_conversation(
+    thread_id: str,
+    current_user: dict = Depends(get_current_user),
+):
     """
     Get metadata for a specific conversation.
+    Non-admin users can only access their own conversations.
     """
     conversation = conversation_manager.get_conversation(thread_id)
     if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    # Ownership check: non-admin users can only access their own conversations
+    if (
+        current_user["role"] != "admin"
+        and conversation.user_id != current_user["user_id"]
+    ):
         raise HTTPException(status_code=404, detail="Conversation not found")
     return conversation
 
 
 @app.delete("/conversations/{thread_id}")
-async def delete_conversation(thread_id: str):
+async def delete_conversation(
+    thread_id: str,
+    current_user: dict = Depends(get_current_user),
+):
     """
     Delete a conversation and its metadata.
     Also deletes associated RAG documents for this session.
     Note: The checkpoint data remains in checkpoints.db.
+    Non-admin users can only delete their own conversations.
     """
+    # Ownership check before deleting
+    conversation = conversation_manager.get_conversation(thread_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    if (
+        current_user["role"] != "admin"
+        and conversation.user_id != current_user["user_id"]
+    ):
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
     deleted = conversation_manager.delete_conversation(thread_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Conversation not found")
@@ -408,7 +542,10 @@ async def delete_conversation(thread_id: str):
 
 
 @app.get("/conversations/{thread_id}/history")
-async def get_conversation_history(thread_id: str):
+async def get_conversation_history(
+    thread_id: str,
+    current_user: dict = Depends(get_current_user),
+):
     """
     Retrieve the conversation history (messages) from checkpoints.db for a given thread_id.
     Returns the messages in chronological order.
@@ -419,6 +556,12 @@ async def get_conversation_history(thread_id: str):
         # Get conversation metadata to verify it exists
         conversation = conversation_manager.get_conversation(thread_id)
         if not conversation:
+            raise HTTPException(status_code=404, detail="Conversation not found")
+        # Ownership check: non-admin users can only access their own conversations
+        if (
+            current_user["role"] != "admin"
+            and conversation.user_id != current_user["user_id"]
+        ):
             raise HTTPException(status_code=404, detail="Conversation not found")
 
         # Connect to checkpoints database and retrieve history

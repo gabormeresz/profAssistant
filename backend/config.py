@@ -75,6 +75,32 @@ class DBConfig:
 
 
 # =============================================================================
+# Authentication Configuration
+# =============================================================================
+
+
+class AuthConfig:
+    """Configuration for authentication and encryption."""
+
+    JWT_SECRET: str = os.getenv("JWT_SECRET", "")
+    ENCRYPTION_KEY: str = os.getenv("ENCRYPTION_KEY", "")
+
+    # Token expiry
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
+        os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "30")
+    )
+    REFRESH_TOKEN_EXPIRE_DAYS: int = int(
+        os.getenv("JWT_REFRESH_TOKEN_EXPIRE_DAYS", "7")
+    )
+
+    # Admin seed credentials
+    ADMIN_EMAIL: str = os.getenv("ADMIN_EMAIL", "")
+    ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "")
+
+    JWT_ALGORITHM: str = "HS256"
+
+
+# =============================================================================
 # Evaluation Agents Configuration
 # =============================================================================
 

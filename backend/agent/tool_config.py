@@ -10,11 +10,11 @@ Tool availability:
 """
 
 import logging
-from typing import List
+from typing import List, Optional
 
 from langchain_core.tools import BaseTool
 
-from .model import model
+from .model import get_model
 from .tools import web_search, search_uploaded_documents
 from services.mcp_client import mcp_manager
 
@@ -62,15 +62,16 @@ def get_tools_for_toolnode() -> List[BaseTool]:
     return get_available_tools(has_documents=True)
 
 
-def get_model_with_tools(has_documents: bool = False):
+def get_model_with_tools(has_documents: bool = False, api_key: Optional[str] = None):
     """
     Get model bound with appropriate tools.
 
     Args:
         has_documents: Whether to include document search tool.
+        api_key: Optional OpenAI API key for per-user model.
 
     Returns:
         Model with tools bound.
     """
     tools_to_use = get_available_tools(has_documents)
-    return model.bind_tools(tools_to_use)
+    return get_model(api_key).bind_tools(tools_to_use)

@@ -8,7 +8,8 @@ import {
   StructuredLessonPlan,
   LoadingOverlay,
   FollowUpInput,
-  UserMessage
+  UserMessage,
+  ErrorBanner
 } from "../components";
 import { useLessonPlanSSE, useConversationManager } from "../hooks";
 import { LESSON_PLAN } from "../utils/constants";
@@ -74,12 +75,14 @@ function LessonPlanGenerator() {
   const {
     lessonPlan,
     progressMessage,
+    error,
     loading,
     streamingState,
     threadId,
     sendMessage,
     resetThread,
-    setThreadId
+    setThreadId,
+    clearError
   } = useLessonPlanSSE();
 
   // Conversation management hook (handles URL sync, loading, history)
@@ -300,6 +303,9 @@ function LessonPlanGenerator() {
       onNewConversation={handleNewConversation}
       header={<Header title={t("header.lessonPlanGenerator")} />}
     >
+      {/* Error banner */}
+      <ErrorBanner error={error} onDismiss={clearError} />
+
       {/* Initial form - grey out after first submission */}
       <div className={hasStarted ? "opacity-50 pointer-events-none" : ""}>
         <LessonPlanInputSection

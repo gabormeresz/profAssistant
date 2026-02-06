@@ -14,10 +14,13 @@ export {
 } from "./input";
 
 // UI components
-export { LoadingOverlay, ScrollNavigationButtons } from "./ui";
+export { ErrorBanner, LoadingOverlay, ScrollNavigationButtons } from "./ui";
 
 // Course components
 export { StructuredCourseOutline } from "./course";
 
 // Lesson components
 export { StructuredLessonPlan } from "./lesson";
+
+// Auth components
+export { default as ProtectedRoute } from "./auth/ProtectedRoute";

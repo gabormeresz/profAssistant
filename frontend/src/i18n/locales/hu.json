@@ -20,6 +20,7 @@
     "initializingConversation": "Beszélgetés inicializálása...",
     "buildingMessages": "Üzenetek összeállítása...",
     "evaluatingOutline": "Tematika minőségének értékelése...",
+    "evaluatingLessonPlan": "Óraterv minőségének értékelése...",
     "refiningOutline": "Tematika finomítása az értékelés alapján...",
     "structuringResponse": "Végső válasz strukturálása..."
   },
@@ -135,6 +136,16 @@
     "exportToDocx": "Exportálás DOCX-ként",
     "createLessonPlanDraft": "Óraterv Vázlat Készítése"
   },
+  "errors": {
+    "title": "Valami hiba történt",
+    "apiKeyRequired": "API kulcs szükséges. Kérjük, állítsa be az OpenAI API kulcsát a profil beállításaiban.",
+    "invalidApiKey": "Az OpenAI API kulcsa érvénytelen vagy visszavonták. Kérjük, frissítse a profil beállításaiban.",
+    "insufficientQuota": "Az OpenAI fiókja nem rendelkezik elegendő egyenleggel. Kérjük, ellenőrizze a számlázást a platform.openai.com oldalon.",
+    "rateLimited": "Túl sok kérés — kérjük, várjon egy pillanatot és próbálja újra.",
+    "openaiUnavailable": "Az OpenAI szolgáltatás átmenetileg nem érhető el. Kérjük, próbálja újra később.",
+    "generationFailed": "A tartalom generálása sikertelen. Kérjük, próbálja újra.",
+    "unknown": "Váratlan hiba történt. Kérjük, próbálja újra."
+  },
   "lessonPlanOutput": {
     "classNumber": "Óra",
     "learningObjective": "Tanulási Cél",
@@ -145,5 +156,68 @@
     "instructions": "Utasítások",
     "homework": "Házi Feladat",
     "extraActivities": "Extra Tevékenységek"
+  },
+  "auth": {
+    "loginTab": "Bejelentkezés",
+    "signupTab": "Regisztráció",
+    "loginTitle": "Üdvözöljük újra",
+    "loginSubtitle": "Jelentkezzen be a fiókjába a folytatáshoz",
+    "signupTitle": "Fiók létrehozása",
+    "signupSubtitle": "Kezdje el a ProfAssistant használatát",
+    "email": "E-mail",
+    "emailPlaceholder": "pelda@email.hu",
+    "password": "Jelszó",
+    "passwordPlaceholder": "Adja meg a jelszavát",
+    "passwordHint": "Legalább 8 karakter szükséges",
+    "confirmPassword": "Jelszó megerősítése",
+    "confirmPasswordPlaceholder": "Adja meg újra a jelszavát",
+    "loginButton": "Bejelentkezés",
+    "signupButton": "Regisztráció",
+    "submitting": "Kérem várjon...",
+    "signupSuccess": "Fiók sikeresen létrehozva! Most már bejelentkezhet.",
+    "errors": {
+      "emptyFields": "Kérem töltse ki az összes mezőt",
+      "passwordTooShort": "A jelszónak legalább 8 karakter hosszúnak kell lennie",
+      "passwordMismatch": "A jelszavak nem egyeznek",
+      "generic": "Váratlan hiba történt"
+    }
+  },
+  "profile": {
+    "title": "Profil és Beállítások",
+    "logout": "Kijelentkezés",
+    "saved": "Mentve!",
+    "memberSince": "Tag {{date}} óta",
+    "setupBanner": {
+      "title": "API Kulcs Szükséges",
+      "description": "A ProfAssistant AI funkcióinak használatához saját OpenAI API kulcsra van szükség. A kulcsot titkosítva tároljuk, és kizárólag az Ön kéréseinek feldolgozásához használjuk.",
+      "steps": {
+        "step1": "Látogasson el a platform.openai.com oldalra és hozzon létre fiókot (vagy jelentkezzen be)",
+        "step2": "Navigáljon az API Keys menüpontba és hozzon létre egy új kulcsot",
+        "step3": "Illessze be a kulcsot alább és kattintson a Mentés gombra"
+      },
+      "dismiss": "Később megcsinálom"
+    },
+    "apiKey": {
+      "title": "OpenAI API Kulcs",
+      "description": "Az API kulcsot titkosítva tároljuk, és az AI funkciók működtetéséhez használjuk. Kulcsot a platform.openai.com oldalon szerezhet.",
+      "placeholder": "sk-...",
+      "keyStored": "API kulcs tárolva",
+      "noKey": "Nincs API kulcs beállítva",
+      "save": "Kulcs Mentése",
+      "remove": "Eltávolítás"
+    },
+    "model": {
+      "title": "Preferált Modell",
+      "description": "Válassza ki a tartalom generálásához használt OpenAI modellt.",
+      "save": "Modell Mentése"
+    },
+    "models": {
+      "gpt4oMiniDesc": "Gyors és költséghatékony. A legtöbb feladathoz ideális.",
+      "gpt4oDesc": "A legképesebb modell. Legjobb minőség, magasabb költség."
+    },
+    "errors": {
+      "emptyApiKey": "Kérem adja meg az API kulcsot",
+      "saveFailed": "A beállítások mentése sikertelen"
+    }
   }
 }

@@ -40,6 +40,7 @@ def initialize_conversation(state: LessonPlanState) -> dict:
 
         conversation_manager.create_lesson_plan(
             thread_id=thread_id,
+            user_id=state["user_id"],
             conversation_type=ConversationType.LESSON_PLAN,
             data=LessonPlanCreate(
                 title=title,

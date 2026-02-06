@@ -14,6 +14,7 @@ import {
   fetchConversations,
   deleteConversation as deleteConversationAPI
 } from "../services";
+import { useAuth } from "../hooks/useAuth";
 import { logger } from "../utils/logger";
 
 interface SavedConversationsContextValue {
@@ -42,6 +43,7 @@ interface SavedConversationsProviderProps {
 export function SavedConversationsProvider({
   children
 }: SavedConversationsProviderProps) {
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [conversations, setConversations] = useState<SavedConversation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,10 +71,17 @@ export function SavedConversationsProvider({
     }
   }, []);
 
-  // Load conversations on mount
+  // Re-fetch conversations whenever the authenticated user changes
   useEffect(() => {
-    fetchData(currentFilter);
-  }, [fetchData, currentFilter]);
+    if (isAuthLoading) return;
+    if (user) {
+      fetchData(currentFilter);
+    } else {
+      // User logged out — clear cached conversations
+      setConversations([]);
+      setIsLoading(false);
+    }
+  }, [user?.user_id, isAuthLoading, fetchData, currentFilter]);
 
   const refetch = useCallback(async () => {
     await fetchData(currentFilter);

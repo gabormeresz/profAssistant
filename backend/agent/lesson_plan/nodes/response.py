@@ -10,13 +10,11 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 from agent.model import get_structured_output_model
 from schemas.lesson_plan import LessonPlan
+from services.api_key_service import require_api_key
 
 from ..state import LessonPlanState
 
 logger = logging.getLogger(__name__)
-
-# Pre-configured model for lesson plan structured output
-_structured_model = get_structured_output_model(LessonPlan)
 
 # System prompt for structured output extraction
 EXTRACTION_SYSTEM_PROMPT = """You are a JSON extraction assistant. Your task is to extract lesson plan information from the provided content and format it as a structured JSON object.
@@ -80,8 +78,10 @@ def generate_structured_response(state: LessonPlanState) -> dict:
 
         logger.info("Invoking structured output model...")
 
-        # Generate structured output
-        response = _structured_model.invoke(messages)
+        # Generate structured output (per-request for user API key)
+        api_key = require_api_key(state.get("user_id", ""))
+        structured_model = get_structured_output_model(LessonPlan, api_key=api_key)
+        response = structured_model.invoke(messages)
 
         logger.info(f"Structured output model returned: {type(response)}")
 

@@ -4,6 +4,16 @@ export {
   fetchConversation,
   deleteConversation
 } from "./conversationService";
+export {
+  loginUser,
+  registerUser,
+  logoutUser,
+  fetchCurrentUser,
+  fetchUserSettings,
+  updateUserSettings,
+  getAccessToken,
+  clearTokens
+} from "./authService";
 
 // Re-export types for convenience
 export type {

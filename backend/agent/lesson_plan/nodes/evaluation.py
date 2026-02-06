@@ -11,14 +11,12 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from agent.model import get_structured_output_model
 from config import EvaluationConfig
 from schemas.evaluation import EvaluationResult
+from services.api_key_service import require_api_key
 
 from ..state import LessonPlanState
 from ..prompts import get_evaluator_system_prompt
 
 logger = logging.getLogger(__name__)
-
-# Pre-configured model for evaluation structured output
-_evaluation_model = get_structured_output_model(EvaluationResult)
 
 
 def evaluate_lesson_plan(state: LessonPlanState) -> dict:
@@ -100,8 +98,12 @@ Provide your evaluation with:
     ]
 
     try:
-        # Call the evaluator model with structured output
-        evaluation_result = _evaluation_model.invoke(evaluation_messages)
+        # Call the evaluator model with structured output (per-request for user API key)
+        api_key = require_api_key(state.get("user_id", ""))
+        evaluation_model = get_structured_output_model(
+            EvaluationResult, api_key=api_key
+        )
+        evaluation_result = evaluation_model.invoke(evaluation_messages)
 
         # Ensure we have an EvaluationResult object
         if not isinstance(evaluation_result, EvaluationResult):

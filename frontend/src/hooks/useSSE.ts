@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { logger } from "../utils/logger";
+import { getAccessToken } from "../services/authService";
 import type { StreamingState } from "../types";
 
 /**
@@ -18,6 +19,7 @@ export interface SSEEventHandlers<T> {
 export interface UseSSEReturn<T> {
   data: T | null;
   progressMessage: string;
+  error: string | null;
   loading: boolean;
   streamingState: StreamingState;
   threadId: string | null;
@@ -28,6 +30,7 @@ export interface UseSSEReturn<T> {
   ) => Promise<T | null>;
   resetThread: () => void;
   setThreadId: (id: string | null) => void;
+  clearError: () => void;
 }
 
 /**
@@ -57,14 +60,20 @@ export interface UseSSEReturn<T> {
 export const useSSE = <T>(): UseSSEReturn<T> => {
   const [data, setData] = useState<T | null>(null);
   const [progressMessage, setProgressMessage] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [streamingState, setStreamingState] = useState<StreamingState>("idle");
   const [threadId, setThreadId] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   const clearData = useCallback(() => {
     setData(null);
     setProgressMessage("");
+    setError(null);
     setStreamingState("idle");
   }, []);
 
@@ -81,6 +90,7 @@ export const useSSE = <T>(): UseSSEReturn<T> => {
     ): Promise<T | null> => {
       // Clear previous data and start loading
       setData(null);
+      setError(null);
       setProgressMessage("overlay.initializing");
       setLoading(true);
       setStreamingState("connecting");
@@ -103,14 +113,26 @@ export const useSSE = <T>(): UseSSEReturn<T> => {
 
       try {
         // Make SSE request
+        const token = getAccessToken();
         const response = await fetch(endpoint, {
           method: "POST",
           body: formData,
-          signal: abortController.signal
+          signal: abortController.signal,
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined
         });
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          // Try to parse a JSON error body (FastAPI returns {"detail": "..."})
+          let errorDetail = `HTTP error! status: ${response.status}`;
+          try {
+            const body = await response.json();
+            if (body.detail) {
+              errorDetail = body.detail;
+            }
+          } catch {
+            // Response body wasn't JSON — keep the generic message
+          }
+          throw new Error(errorDetail);
         }
 
         if (!response.body) {
@@ -184,10 +206,12 @@ export const useSSE = <T>(): UseSSEReturn<T> => {
                   handlers?.onComplete?.(completedData);
                 } else if (currentEvent === "error" && parsed.message) {
                   logger.error("Stream error:", parsed.message);
-                  setProgressMessage(`Error: ${parsed.message}`);
+                  const errorMsg = parsed.message_key || parsed.message;
+                  setError(errorMsg);
+                  setProgressMessage("");
                   setStreamingState("idle");
                   setLoading(false);
-                  handlers?.onError?.(parsed.message);
+                  handlers?.onError?.(errorMsg);
                 }
               } catch (e) {
                 logger.error("Failed to parse SSE data:", e);
@@ -207,12 +231,14 @@ export const useSSE = <T>(): UseSSEReturn<T> => {
             return null;
           } else {
             logger.error("Error processing request:", error);
-            setProgressMessage(`Error: ${error.message}`);
+            setError(error.message);
+            setProgressMessage("");
             handlers?.onError?.(error.message);
           }
         } else {
           logger.error("Unknown error:", error);
-          setProgressMessage("Error: An unknown error occurred");
+          setError("An unknown error occurred");
+          setProgressMessage("");
           handlers?.onError?.("An unknown error occurred");
         }
         setLoading(false);
@@ -239,11 +265,13 @@ export const useSSE = <T>(): UseSSEReturn<T> => {
   return {
     data,
     progressMessage,
+    error,
     loading,
     streamingState,
     threadId,
     sendRequest,
     resetThread,
-    setThreadId
+    setThreadId,
+    clearError
   };
 };

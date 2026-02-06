@@ -22,6 +22,7 @@ class ConversationBase(BaseModel):
     thread_id: str = Field(
         ..., description="Unique identifier for the conversation thread"
     )
+    user_id: str = Field(..., description="ID of the user who owns this conversation")
     conversation_type: ConversationType = Field(..., description="Type of conversation")
     title: str = Field(..., description="Title or summary of the conversation")
     language: str = Field(
