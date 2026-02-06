@@ -218,6 +218,10 @@ async def get_conversation_history(
                         else:
                             content = str(msg)
 
+                    # Skip assistant messages with empty content (tool-calling messages)
+                    if role == "assistant" and not content.strip():
+                        continue
+
                     messages.append({"role": role, "content": content})
 
             return {
