@@ -57,7 +57,7 @@ function authHeaders(): HeadersInit {
  * Try to refresh the access token using the stored refresh token.
  * Returns true on success (new tokens stored), false otherwise.
  */
-async function tryRefresh(): Promise<boolean> {
+export async function tryRefresh(): Promise<boolean> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) return false;
 

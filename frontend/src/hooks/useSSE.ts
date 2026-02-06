@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { logger } from "../utils/logger";
-import { getAccessToken } from "../services/authService";
+import { getAccessToken, tryRefresh } from "../services/authService";
 import type { StreamingState } from "../types";
 
 /**
@@ -113,13 +113,27 @@ export const useSSE = <T>(): UseSSEReturn<T> => {
 
       try {
         // Make SSE request
-        const token = getAccessToken();
-        const response = await fetch(endpoint, {
+        let token = getAccessToken();
+        let response = await fetch(endpoint, {
           method: "POST",
           body: formData,
           signal: abortController.signal,
           headers: token ? { Authorization: `Bearer ${token}` } : undefined
         });
+
+        // Retry once with a refreshed token on 401
+        if (response.status === 401) {
+          const refreshed = await tryRefresh();
+          if (refreshed) {
+            token = getAccessToken();
+            response = await fetch(endpoint, {
+              method: "POST",
+              body: formData,
+              signal: abortController.signal,
+              headers: token ? { Authorization: `Bearer ${token}` } : undefined
+            });
+          }
+        }
 
         if (!response.ok) {
           // Try to parse a JSON error body (FastAPI returns {"detail": "..."})

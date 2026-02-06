@@ -4,7 +4,7 @@ import type {
   SavedConversation,
   ConversationHistoryResponse
 } from "../types/conversation";
-import { getAccessToken } from "./authService";
+import { getAccessToken, tryRefresh } from "./authService";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -14,6 +14,28 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 function authHeaders(): HeadersInit {
   const token = getAccessToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+/**
+ * Authenticated fetch with automatic token refresh on 401.
+ */
+async function authFetch(url: string, init?: RequestInit): Promise<Response> {
+  let res = await fetch(url, {
+    ...init,
+    headers: { ...authHeaders(), ...(init?.headers || {}) }
+  });
+
+  if (res.status === 401) {
+    const refreshed = await tryRefresh();
+    if (refreshed) {
+      res = await fetch(url, {
+        ...init,
+        headers: { ...authHeaders(), ...(init?.headers || {}) }
+      });
+    }
+  }
+
+  return res;
 }
 
 export interface FetchConversationsParams {
@@ -44,9 +66,7 @@ export async function fetchConversations(
     queryParams.toString() ? `?${queryParams}` : ""
   }`;
 
-  const response = await fetch(url, {
-    headers: authHeaders()
-  });
+  const response = await authFetch(url);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch conversations: ${response.statusText}`);
@@ -61,9 +81,7 @@ export async function fetchConversations(
 export async function fetchConversation(
   threadId: string
 ): Promise<SavedConversation> {
-  const response = await fetch(`${API_BASE_URL}/conversations/${threadId}`, {
-    headers: authHeaders()
-  });
+  const response = await authFetch(`${API_BASE_URL}/conversations/${threadId}`);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch conversation: ${response.statusText}`);
@@ -76,10 +94,12 @@ export async function fetchConversation(
  * Delete a conversation by thread_id
  */
 export async function deleteConversation(threadId: string): Promise<void> {
-  const response = await fetch(`${API_BASE_URL}/conversations/${threadId}`, {
-    method: "DELETE",
-    headers: authHeaders()
-  });
+  const response = await authFetch(
+    `${API_BASE_URL}/conversations/${threadId}`,
+    {
+      method: "DELETE"
+    }
+  );
 
   if (!response.ok) {
     throw new Error(`Failed to delete conversation: ${response.statusText}`);
@@ -92,11 +112,8 @@ export async function deleteConversation(threadId: string): Promise<void> {
 export async function fetchConversationHistory(
   threadId: string
 ): Promise<ConversationHistoryResponse> {
-  const response = await fetch(
-    `${API_BASE_URL}/conversations/${threadId}/history`,
-    {
-      headers: authHeaders()
-    }
+  const response = await authFetch(
+    `${API_BASE_URL}/conversations/${threadId}/history`
   );
 
   if (!response.ok) {
