@@ -12,6 +12,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from agent.course_outline_generator import run_course_outline_generator
+from agent.course_outline.dummy_generator import run_dummy_course_outline_generator
 from agent.lesson_plan import run_lesson_plan_generator
 from utils.file_processor import file_processor
 from agent.prompt_enhancer import prompt_enhancer
@@ -22,8 +23,17 @@ from schemas.conversation import (
     ConversationType,
     ConversationList,
 )
+from config import DebugConfig
 import json
 from typing import List, Optional
+
+logger = logging.getLogger(__name__)
+
+# Log dummy graph status at import time
+if DebugConfig.USE_DUMMY_GRAPH:
+    logger.warning(
+        "⚠️  DUMMY GRAPH ENABLED — course outline requests use fake data (no LLM calls)"
+    )
 
 
 @asynccontextmanager
@@ -132,11 +142,22 @@ async def course_outline_event_generator(
     """
     Generator function that yields Server-Sent Events (SSE) for structured output.
     Yields progress updates and the final structured course outline.
+
+    When DebugConfig.USE_DUMMY_GRAPH is True, uses a fast dummy generator
+    that returns hardcoded data (no LLM calls).
     """
     try:
-        async for event in run_course_outline_generator(
-            message, topic, number_of_classes, thread_id, file_contents, language
-        ):
+        # Pick the generator based on debug flag
+        if DebugConfig.USE_DUMMY_GRAPH:
+            generator = run_dummy_course_outline_generator(
+                message, topic, number_of_classes, thread_id, file_contents, language
+            )
+        else:
+            generator = run_course_outline_generator(
+                message, topic, number_of_classes, thread_id, file_contents, language
+            )
+
+        async for event in generator:
             if isinstance(event, dict):
                 event_type = event.get("type", "data")
 

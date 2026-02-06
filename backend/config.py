@@ -116,6 +116,20 @@ class MCPConfig:
 
 
 # =============================================================================
+# Debug / Testing Configuration
+# =============================================================================
+
+
+class DebugConfig:
+    """Configuration for debug and testing features."""
+
+    # When True, the course outline endpoint uses a dummy generator that
+    # returns hardcoded data with realistic SSE events (no LLM calls).
+    # Toggle this to quickly reproduce SSE streaming bugs.
+    USE_DUMMY_GRAPH: bool = os.getenv("USE_DUMMY_GRAPH", "true").lower() == "true"
+
+
+# =============================================================================
 # Logging Configuration
 # =============================================================================
 
