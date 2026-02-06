@@ -73,11 +73,7 @@ export const useLessonPlanSSE = (): UseLessonPlanSSEReturn => {
       }
 
       // Send request using generic SSE hook
-      return await sendRequest(API_ENDPOINTS.LESSON_PLAN_GENERATOR, formData, {
-        onComplete: () => {
-          // Custom handler for complete event if needed
-        }
-      });
+      return await sendRequest(API_ENDPOINTS.LESSON_PLAN_GENERATOR, formData);
     },
     [sendRequest]
   );
