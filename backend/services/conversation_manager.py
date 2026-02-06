@@ -1,20 +1,18 @@
 """
-Service for managing conversation metadata and persistence.
-Uses a multi-table schema: base conversations table + type-specific tables.
-Includes user management, sessions, and settings.
+Repository for conversation metadata persistence.
 
-All database methods are async, backed by a persistent aiosqlite connection.
+Uses a multi-table schema: base ``conversations`` table joined with
+type-specific tables (``course_outlines``, ``lesson_plans``).
+
+All database methods are async, backed by the shared
+:class:`DatabaseManager` connection.
 """
 
-import asyncio
-import aiosqlite
 import json
-import uuid
 import logging
-from typing import List, Optional, Union
 from datetime import datetime
-from passlib.hash import bcrypt
-from cryptography.fernet import Fernet
+from typing import List, Optional, Union
+
 from schemas.conversation import (
     ConversationType,
     CourseOutlineMetadata,
@@ -22,7 +20,7 @@ from schemas.conversation import (
     CourseOutlineCreate,
     LessonPlanCreate,
 )
-from config import AuthConfig, LLMConfig
+from services.database import DatabaseManager
 
 logger = logging.getLogger(__name__)
 
@@ -49,207 +47,18 @@ ALLOWED_COLUMNS = {
 }
 
 
-class ConversationManager:
-    """Manages conversation metadata storage and retrieval using multi-table schema.
+class ConversationRepository:
+    """Manages conversation metadata storage and retrieval using multi-table schema."""
 
-    Uses a persistent aiosqlite connection.  Call ``await .connect()`` once
-    at application startup (e.g. in the FastAPI lifespan handler) and
-    ``await .close()`` at shutdown.
-    """
-
-    def __init__(self, db_path: str = "conversations.db"):
-        """Initialize the conversation manager (connection is NOT opened yet)."""
-        self.db_path = db_path
-        self._conn: Optional[aiosqlite.Connection] = None
-
-    # ------------------------------------------------------------------
-    #  Connection lifecycle
-    # ------------------------------------------------------------------
-
-    async def connect(self):
-        """Open the persistent database connection and initialise the schema."""
-        self._conn = await aiosqlite.connect(self.db_path)
-        self._conn.row_factory = aiosqlite.Row
-        # Enable WAL mode for better concurrent read performance
-        await self._conn.execute("PRAGMA journal_mode=WAL")
-        await self._conn.execute("PRAGMA foreign_keys = ON")
-        await self._init_db()
-
-    async def close(self):
-        """Close the persistent database connection."""
-        if self._conn:
-            await self._conn.close()
-            self._conn = None
+    def __init__(self, db: DatabaseManager):
+        self._db = db
 
     @property
-    def conn(self) -> aiosqlite.Connection:
-        """Return the active connection, raising if not connected."""
-        if self._conn is None:
-            raise RuntimeError(
-                "ConversationManager is not connected. "
-                "Call 'await conversation_manager.connect()' first."
-            )
-        return self._conn
-
-    # ------------------------------------------------------------------
-    #  Schema initialisation
-    # ------------------------------------------------------------------
-
-    async def _init_db(self):
-        """Initialize the database schema with all tables and seed admin user."""
-        conn = self.conn
-
-        # ── Users table ──
-        await conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS users (
-                user_id TEXT PRIMARY KEY,
-                email TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                role TEXT NOT NULL DEFAULT 'user',
-                is_active INTEGER DEFAULT 1,
-                is_email_verified INTEGER DEFAULT 0,
-                email_verification_token TEXT,
-                created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL
-            )
-        """
-        )
-        await conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_users_email ON users (email)"
-        )
-
-        # ── User sessions table (refresh tokens) ──
-        await conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS user_sessions (
-                session_id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                refresh_token_hash TEXT NOT NULL,
-                expires_at TEXT NOT NULL,
-                created_at TEXT NOT NULL,
-                FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
-            )
-        """
-        )
-        await conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_sessions_user_expires ON user_sessions (user_id, expires_at)"
-        )
-
-        # ── User settings table (1:1 with users) ──
-        await conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS user_settings (
-                user_id TEXT PRIMARY KEY,
-                openai_api_key_encrypted TEXT,
-                preferred_model TEXT DEFAULT 'gpt-4o-mini',
-                updated_at TEXT NOT NULL,
-                FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
-            )
-        """
-        )
-
-        # ── Base conversations table ──
-        await conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS conversations (
-                thread_id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                conversation_type TEXT NOT NULL,
-                title TEXT NOT NULL,
-                language TEXT DEFAULT 'Hungarian',
-                created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL,
-                message_count INTEGER DEFAULT 0,
-                FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
-            )
-        """
-        )
-        await conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_conversations_user ON conversations (user_id)"
-        )
-
-        # ── Course outline specific table ──
-        await conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS course_outlines (
-                thread_id TEXT PRIMARY KEY,
-                topic TEXT NOT NULL,
-                number_of_classes INTEGER NOT NULL,
-                difficulty_level TEXT,
-                target_audience TEXT,
-                user_comment TEXT,
-                FOREIGN KEY (thread_id) REFERENCES conversations (thread_id) ON DELETE CASCADE
-            )
-        """
-        )
-
-        # ── Lesson plan specific table ──
-        await conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS lesson_plans (
-                thread_id TEXT PRIMARY KEY,
-                course_title TEXT NOT NULL,
-                class_number INTEGER NOT NULL,
-                class_title TEXT NOT NULL,
-                learning_objectives TEXT,
-                key_topics TEXT,
-                activities_projects TEXT,
-                user_comment TEXT,
-                FOREIGN KEY (thread_id) REFERENCES conversations (thread_id) ON DELETE CASCADE
-            )
-        """
-        )
-
-        await conn.commit()
-
-        # ── Seed admin user ──
-        await self._seed_admin()
-
-    async def _seed_admin(self):
-        """Create the admin user from env vars if it doesn't already exist."""
-        admin_email = AuthConfig.ADMIN_EMAIL
-        admin_password = AuthConfig.ADMIN_PASSWORD
-
-        if not admin_email or not admin_password:
-            logger.warning(
-                "ADMIN_EMAIL or ADMIN_PASSWORD not set — skipping admin seed"
-            )
-            return
-
-        conn = self.conn
-        cursor = await conn.execute(
-            "SELECT user_id FROM users WHERE email = ?", (admin_email,)
-        )
-        if await cursor.fetchone():
-            return  # Admin already exists
-
-        now = datetime.now().isoformat()
-        admin_id = str(uuid.uuid4())
-        password_hash = await asyncio.to_thread(bcrypt.hash, admin_password)
-
-        await conn.execute(
-            """
-            INSERT INTO users (user_id, email, password_hash, role, is_active, is_email_verified, created_at, updated_at)
-            VALUES (?, ?, ?, 'admin', 1, 1, ?, ?)
-        """,
-            (admin_id, admin_email, password_hash, now, now),
-        )
-
-        # Auto-create settings row for admin (NULL api key — uses server-side key)
-        await conn.execute(
-            """
-            INSERT INTO user_settings (user_id, openai_api_key_encrypted, preferred_model, updated_at)
-            VALUES (?, NULL, ?, ?)
-        """,
-            (admin_id, LLMConfig.DEFAULT_MODEL, now),
-        )
-
-        await conn.commit()
-        logger.info(f"Admin user seeded: {admin_email}")
+    def conn(self):
+        return self._db.conn
 
     # =========================================================================
-    # Conversation CRUD
+    # Create
     # =========================================================================
 
     async def create_course_outline(
@@ -390,6 +199,10 @@ class ConversationManager:
             updated_at=datetime.fromisoformat(now),
             message_count=0,
         )
+
+    # =========================================================================
+    # Read
+    # =========================================================================
 
     async def get_conversation(
         self, thread_id: str
@@ -618,6 +431,10 @@ class ConversationManager:
 
         return conversations
 
+    # =========================================================================
+    # Update / Delete / Count
+    # =========================================================================
+
     async def increment_message_count(self, thread_id: str) -> bool:
         """Increment message count and update timestamp for any conversation type."""
         conn = self.conn
@@ -675,343 +492,10 @@ class ConversationManager:
         row = await cursor.fetchone()
         return row[0] if row else 0
 
-    # =========================================================================
-    # User Management
-    # =========================================================================
 
-    async def create_user(self, email: str, password: str) -> Optional[dict]:
-        """Create a new user with hashed password and default settings.
+# ---------------------------------------------------------------------------
+#  Global instance — wired to the shared ``db`` from database.py
+# ---------------------------------------------------------------------------
+from services.database import db
 
-        Returns user dict on success, None if email already exists.
-        """
-        conn = self.conn
-
-        try:
-            now = datetime.now().isoformat()
-            user_id = str(uuid.uuid4())
-            password_hash = await asyncio.to_thread(bcrypt.hash, password)
-
-            await conn.execute(
-                """
-                INSERT INTO users (user_id, email, password_hash, role, is_active, is_email_verified, created_at, updated_at)
-                VALUES (?, ?, ?, 'user', 1, 0, ?, ?)
-            """,
-                (user_id, email, password_hash, now, now),
-            )
-
-            # Auto-create settings row with NULL api key
-            await conn.execute(
-                """
-                INSERT INTO user_settings (user_id, openai_api_key_encrypted, preferred_model, updated_at)
-                VALUES (?, NULL, ?, ?)
-            """,
-                (user_id, LLMConfig.DEFAULT_MODEL, now),
-            )
-
-            await conn.commit()
-            return {
-                "user_id": user_id,
-                "email": email,
-                "role": "user",
-                "is_active": True,
-                "is_email_verified": False,
-                "created_at": now,
-                "updated_at": now,
-            }
-        except aiosqlite.IntegrityError:
-            return None  # Email already exists
-
-    async def get_user_by_email(self, email: str) -> Optional[dict]:
-        """Get a user by email address."""
-        conn = self.conn
-
-        cursor = await conn.execute(
-            """
-            SELECT user_id, email, password_hash, role, is_active, is_email_verified, created_at, updated_at
-            FROM users WHERE email = ?
-        """,
-            (email,),
-        )
-        row = await cursor.fetchone()
-        if not row:
-            return None
-
-        return {
-            "user_id": row[0],
-            "email": row[1],
-            "password_hash": row[2],
-            "role": row[3],
-            "is_active": bool(row[4]),
-            "is_email_verified": bool(row[5]),
-            "created_at": row[6],
-            "updated_at": row[7],
-        }
-
-    async def get_user_by_id(self, user_id: str) -> Optional[dict]:
-        """Get a user by user_id."""
-        conn = self.conn
-
-        cursor = await conn.execute(
-            """
-            SELECT user_id, email, password_hash, role, is_active, is_email_verified, created_at, updated_at
-            FROM users WHERE user_id = ?
-        """,
-            (user_id,),
-        )
-        row = await cursor.fetchone()
-        if not row:
-            return None
-
-        return {
-            "user_id": row[0],
-            "email": row[1],
-            "password_hash": row[2],
-            "role": row[3],
-            "is_active": bool(row[4]),
-            "is_email_verified": bool(row[5]),
-            "created_at": row[6],
-            "updated_at": row[7],
-        }
-
-    async def verify_password(self, plain_password: str, password_hash: str) -> bool:
-        """Verify a password against a bcrypt hash."""
-        return await asyncio.to_thread(bcrypt.verify, plain_password, password_hash)
-
-    # =========================================================================
-    # Session Management (Refresh Tokens)
-    # =========================================================================
-
-    async def create_session(
-        self, user_id: str, refresh_token_hash: str, expires_at: str
-    ) -> str:
-        """Create a new session with a hashed refresh token. Returns session_id."""
-        conn = self.conn
-
-        session_id = str(uuid.uuid4())
-        now = datetime.now().isoformat()
-
-        await conn.execute(
-            """
-            INSERT INTO user_sessions (session_id, user_id, refresh_token_hash, expires_at, created_at)
-            VALUES (?, ?, ?, ?, ?)
-        """,
-            (session_id, user_id, refresh_token_hash, expires_at, now),
-        )
-        await conn.commit()
-        return session_id
-
-    async def get_session(self, session_id: str) -> Optional[dict]:
-        """Get a session by session_id."""
-        conn = self.conn
-
-        cursor = await conn.execute(
-            """
-            SELECT session_id, user_id, refresh_token_hash, expires_at, created_at
-            FROM user_sessions WHERE session_id = ?
-        """,
-            (session_id,),
-        )
-        row = await cursor.fetchone()
-        if not row:
-            return None
-        return {
-            "session_id": row[0],
-            "user_id": row[1],
-            "refresh_token_hash": row[2],
-            "expires_at": row[3],
-            "created_at": row[4],
-        }
-
-    async def get_session_by_refresh_hash(
-        self, refresh_token_hash: str
-    ) -> Optional[dict]:
-        """Look up a session by the SHA-256 hash of its refresh token."""
-        conn = self.conn
-
-        cursor = await conn.execute(
-            """
-            SELECT session_id, user_id, refresh_token_hash, expires_at, created_at
-            FROM user_sessions WHERE refresh_token_hash = ?
-        """,
-            (refresh_token_hash,),
-        )
-        row = await cursor.fetchone()
-        if not row:
-            return None
-        return {
-            "session_id": row[0],
-            "user_id": row[1],
-            "refresh_token_hash": row[2],
-            "expires_at": row[3],
-            "created_at": row[4],
-        }
-
-    async def delete_session(self, session_id: str) -> bool:
-        """Delete a session (logout)."""
-        conn = self.conn
-
-        cursor = await conn.execute(
-            "DELETE FROM user_sessions WHERE session_id = ?", (session_id,)
-        )
-        deleted = cursor.rowcount > 0
-        await conn.commit()
-        return deleted
-
-    async def delete_user_sessions(self, user_id: str) -> int:
-        """Delete all sessions for a user (e.g., on password change). Returns count deleted."""
-        conn = self.conn
-
-        cursor = await conn.execute(
-            "DELETE FROM user_sessions WHERE user_id = ?", (user_id,)
-        )
-        count = cursor.rowcount
-        await conn.commit()
-        return count
-
-    async def cleanup_expired_sessions(self) -> int:
-        """Remove expired sessions. Returns count deleted."""
-        conn = self.conn
-
-        now = datetime.now().isoformat()
-        cursor = await conn.execute(
-            "DELETE FROM user_sessions WHERE expires_at < ?", (now,)
-        )
-        count = cursor.rowcount
-        await conn.commit()
-        return count
-
-    # =========================================================================
-    # User Settings (API Keys & Model Preferences)
-    # =========================================================================
-
-    def _get_fernet(self) -> Fernet:
-        """Get Fernet cipher using the server-side ENCRYPTION_KEY."""
-        key = AuthConfig.ENCRYPTION_KEY
-        if not key:
-            raise ValueError("ENCRYPTION_KEY not set in environment")
-        return Fernet(key.encode())
-
-    async def get_user_settings(self, user_id: str) -> Optional[dict]:
-        """Get user settings."""
-        conn = self.conn
-
-        cursor = await conn.execute(
-            """
-            SELECT openai_api_key_encrypted, preferred_model, updated_at
-            FROM user_settings WHERE user_id = ?
-        """,
-            (user_id,),
-        )
-        row = await cursor.fetchone()
-        if not row:
-            return None
-        return {
-            "has_api_key": row[0] is not None,
-            "preferred_model": row[1],
-            "updated_at": row[2],
-        }
-
-    async def update_user_settings(
-        self,
-        user_id: str,
-        openai_api_key: Optional[str] = None,
-        preferred_model: Optional[str] = None,
-    ) -> bool:
-        """Update user settings. Encrypts API key before storing."""
-        conn = self.conn
-
-        now = datetime.now().isoformat()
-        updates = ["updated_at = ?"]
-        params: list = [now]
-
-        if openai_api_key is not None:
-            fernet = self._get_fernet()
-            encrypted = fernet.encrypt(openai_api_key.encode()).decode()
-            updates.append("openai_api_key_encrypted = ?")
-            params.append(encrypted)
-
-        if preferred_model is not None:
-            updates.append("preferred_model = ?")
-            params.append(preferred_model)
-
-        params.append(user_id)
-
-        cursor = await conn.execute(
-            f"UPDATE user_settings SET {', '.join(updates)} WHERE user_id = ?",
-            tuple(params),
-        )
-        updated = cursor.rowcount > 0
-        await conn.commit()
-        return updated
-
-    async def get_decrypted_api_key(self, user_id: str) -> Optional[str]:
-        """Get the decrypted OpenAI API key for a user. Returns None if not set."""
-        conn = self.conn
-
-        cursor = await conn.execute(
-            "SELECT openai_api_key_encrypted FROM user_settings WHERE user_id = ?",
-            (user_id,),
-        )
-        row = await cursor.fetchone()
-        if not row or not row[0]:
-            return None
-
-        fernet = self._get_fernet()
-        return fernet.decrypt(row[0].encode()).decode()
-
-    async def user_has_api_key(self, user_id: str) -> bool:
-        """Check if a user has provided an API key."""
-        conn = self.conn
-
-        cursor = await conn.execute(
-            "SELECT openai_api_key_encrypted FROM user_settings WHERE user_id = ?",
-            (user_id,),
-        )
-        row = await cursor.fetchone()
-        return row is not None and row[0] is not None
-
-    # =========================================================================
-    # Email Verification
-    # =========================================================================
-
-    async def set_email_verification_token(self, user_id: str, token: str) -> bool:
-        """Store an email verification token for a user."""
-        conn = self.conn
-
-        cursor = await conn.execute(
-            """
-            UPDATE users SET email_verification_token = ?, updated_at = ?
-            WHERE user_id = ?
-        """,
-            (token, datetime.now().isoformat(), user_id),
-        )
-        updated = cursor.rowcount > 0
-        await conn.commit()
-        return updated
-
-    async def verify_email(self, token: str) -> bool:
-        """Verify a user's email using the one-time token. Returns True on success."""
-        conn = self.conn
-
-        cursor = await conn.execute(
-            "SELECT user_id FROM users WHERE email_verification_token = ?",
-            (token,),
-        )
-        row = await cursor.fetchone()
-        if not row:
-            return False
-
-        await conn.execute(
-            """
-            UPDATE users
-            SET is_email_verified = 1, email_verification_token = NULL, updated_at = ?
-            WHERE user_id = ?
-        """,
-            (datetime.now().isoformat(), row[0]),
-        )
-        await conn.commit()
-        return True
-
-
-# Global conversation manager instance (call .connect() in lifespan startup)
-conversation_manager = ConversationManager()
+conversation_manager = ConversationRepository(db)

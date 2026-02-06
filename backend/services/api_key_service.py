@@ -8,14 +8,15 @@ function signatures.
 Rules:
     - **Admin users** → server-side ``OPENAI_API_KEY`` from ``.env``
     - **Regular users** → encrypted key stored in the database,
-      decrypted on demand via ``conversation_manager``
+      decrypted on demand via ``user_settings_repository``
 """
 
 import os
 import logging
 from typing import Optional
 
-from services.conversation_manager import conversation_manager
+from services.user_repository import user_repository
+from services.user_settings_repository import user_settings_repository
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ async def get_api_key_for_user(user_id: str) -> Optional[str]:
         The plaintext API key, or ``None`` if the user has not
         configured one (and is not admin).
     """
-    user = await conversation_manager.get_user_by_id(user_id)
+    user = await user_repository.get_user_by_id(user_id)
     if user is None:
         return None
 
@@ -40,7 +41,7 @@ async def get_api_key_for_user(user_id: str) -> Optional[str]:
         return os.environ.get("OPENAI_API_KEY") or None
 
     # Regular users: decrypt their personal key from the database
-    return await conversation_manager.get_decrypted_api_key(user_id)
+    return await user_settings_repository.get_decrypted_api_key(user_id)
 
 
 async def require_api_key(user_id: str) -> str:

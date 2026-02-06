@@ -28,7 +28,7 @@ from services.auth_service import (
     get_current_user,
     get_current_admin,
 )
-from services.conversation_manager import conversation_manager
+from services.user_settings_repository import user_settings_repository
 
 logger = logging.getLogger(__name__)
 
@@ -153,7 +153,7 @@ async def get_settings(user: dict = Depends(get_current_user)):
     """
     Return the user's settings (masked API key flag, preferred model).
     """
-    settings = await conversation_manager.get_user_settings(user["user_id"])
+    settings = await user_settings_repository.get_user_settings(user["user_id"])
     if settings is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -182,7 +182,7 @@ async def update_settings(
     - Passing ``openai_api_key: null`` leaves the key unchanged; to *remove* the key
       send an empty string.
     """
-    updated = await conversation_manager.update_user_settings(
+    updated = await user_settings_repository.update_user_settings(
         user_id=user["user_id"],
         openai_api_key=body.openai_api_key,
         preferred_model=body.preferred_model,
@@ -194,7 +194,7 @@ async def update_settings(
         )
 
     # Return refreshed settings
-    settings = await conversation_manager.get_user_settings(user["user_id"])
+    settings = await user_settings_repository.get_user_settings(user["user_id"])
     if settings is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

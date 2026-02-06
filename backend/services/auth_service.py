@@ -16,7 +16,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from config import AuthConfig
-from services.conversation_manager import conversation_manager
+from services.user_repository import user_repository
+from services.session_repository import session_repository
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +93,7 @@ def decode_access_token(token: str) -> dict:
 
 async def register_user(email: str, password: str) -> dict:
     """Register a new user. Returns the user dict or raises 409."""
-    user = await conversation_manager.create_user(email, password)
+    user = await user_repository.create_user(email, password)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -103,8 +104,8 @@ async def register_user(email: str, password: str) -> dict:
 
 async def authenticate_user(email: str, password: str) -> dict:
     """Verify credentials. Returns user dict or raises 401."""
-    user = await conversation_manager.get_user_by_email(email)
-    if user is None or not await conversation_manager.verify_password(
+    user = await user_repository.get_user_by_email(email)
+    if user is None or not await user_repository.verify_password(
         password, user["password_hash"]
     ):
         raise HTTPException(
@@ -133,7 +134,7 @@ async def issue_token_pair(user: dict) -> dict:
         + timedelta(days=AuthConfig.REFRESH_TOKEN_EXPIRE_DAYS)
     ).isoformat()
 
-    await conversation_manager.create_session(
+    await session_repository.create_session(
         user_id=user["user_id"],
         refresh_token_hash=_hash_token(refresh_token),
         expires_at=expires_at,
@@ -153,7 +154,7 @@ async def refresh_access_token(raw_refresh_token: str) -> dict:
     """
     token_hash = _hash_token(raw_refresh_token)
 
-    session = await conversation_manager.get_session_by_refresh_hash(token_hash)
+    session = await session_repository.get_session_by_refresh_hash(token_hash)
     if session is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -166,17 +167,17 @@ async def refresh_access_token(raw_refresh_token: str) -> dict:
     if expires_at.tzinfo is None:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
     if expires_at < datetime.now(timezone.utc):
-        await conversation_manager.delete_session(session["session_id"])
+        await session_repository.delete_session(session["session_id"])
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Refresh token has expired",
         )
 
     # Delete old session (rotation)
-    await conversation_manager.delete_session(session["session_id"])
+    await session_repository.delete_session(session["session_id"])
 
     # Fetch user
-    user = await conversation_manager.get_user_by_id(session["user_id"])
+    user = await user_repository.get_user_by_id(session["user_id"])
     if user is None or not user["is_active"]:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -189,9 +190,9 @@ async def refresh_access_token(raw_refresh_token: str) -> dict:
 async def logout_session(raw_refresh_token: str) -> bool:
     """Delete the session associated with the refresh token."""
     token_hash = _hash_token(raw_refresh_token)
-    session = await conversation_manager.get_session_by_refresh_hash(token_hash)
+    session = await session_repository.get_session_by_refresh_hash(token_hash)
     if session:
-        return await conversation_manager.delete_session(session["session_id"])
+        return await session_repository.delete_session(session["session_id"])
     return False
 
 
@@ -217,7 +218,7 @@ async def get_current_user(
     payload = decode_access_token(credentials.credentials)
     user_id: str = payload.get("sub", "")
 
-    user = await conversation_manager.get_user_by_id(user_id)
+    user = await user_repository.get_user_by_id(user_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
