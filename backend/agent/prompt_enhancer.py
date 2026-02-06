@@ -1,14 +1,11 @@
-from openai import AsyncOpenAI
 from typing import Optional, Dict, Any, List, Literal
-from openai.types.chat import ChatCompletionMessageParam
-import dotenv
 
-dotenv.load_dotenv()
+from langchain_core.messages import HumanMessage, SystemMessage
 
-client = AsyncOpenAI()
+from agent.model import get_model
+from config import PromptEnhancerConfig
 
 
-# Constants
 def _build_system_prompt(language: Optional[str], context_text: str) -> str:
     """Build system prompt with language instruction and context if provided."""
     base_prompt = (
@@ -48,11 +45,6 @@ def _build_system_prompt(language: Optional[str], context_text: str) -> str:
     return base_prompt
 
 
-MODEL = "gpt-4o-mini"
-TEMPERATURE = 0.5
-MAX_TOKENS = 250
-
-
 def _build_context_text(context_type: str, additional_context: Dict[str, Any]) -> str:
     """Build context text based on context type."""
     if context_type == "lesson_plan":
@@ -84,11 +76,11 @@ def _build_user_message(message: str, context_type: str) -> str:
 
 def _build_messages(
     message: str, context_type: str, context_text: str, language: Optional[str]
-) -> List[ChatCompletionMessageParam]:
-    """Build the messages array for the API call."""
+) -> List:
+    """Build the messages array for the LLM call."""
     return [
-        {"role": "system", "content": _build_system_prompt(language, context_text)},
-        {"role": "user", "content": _build_user_message(message, context_type)},
+        SystemMessage(content=_build_system_prompt(language, context_text)),
+        HumanMessage(content=_build_user_message(message, context_type)),
     ]
 
 
@@ -129,18 +121,17 @@ async def prompt_enhancer(
     from services.api_key_service import require_api_key
 
     api_key = (await require_api_key(user_id)) if user_id else None
-    enhancer_client = AsyncOpenAI(api_key=api_key) if api_key else client
 
-    response = await enhancer_client.chat.completions.create(
-        model=MODEL,
-        messages=messages,
-        temperature=TEMPERATURE,
-        max_tokens=MAX_TOKENS,
+    model = get_model(
+        api_key=api_key,
+        temperature=PromptEnhancerConfig.TEMPERATURE,
+        max_tokens=PromptEnhancerConfig.MAX_TOKENS,
     )
+    response = await model.ainvoke(messages)
 
-    enhanced = response.choices[0].message.content
+    enhanced = response.content if hasattr(response, "content") else None
 
     if not enhanced:
         raise Exception("Failed to enhance prompt")
 
-    return enhanced.strip()
+    return str(enhanced).strip()

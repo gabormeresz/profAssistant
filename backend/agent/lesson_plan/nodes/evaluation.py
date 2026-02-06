@@ -9,6 +9,7 @@ import logging
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from agent.model import get_structured_output_model
+from agent.base.nodes.helpers import extract_content
 from config import EvaluationConfig
 from schemas.evaluation import EvaluationResult
 from services.api_key_service import require_api_key
@@ -57,7 +58,7 @@ async def evaluate_lesson_plan(state: LessonPlanState) -> dict:
         }
 
     # Extract content from the agent response
-    content_to_evaluate = _extract_content(agent_response)
+    content_to_evaluate = extract_content(agent_response)
 
     # Build evaluation messages with clear context
     language = state.get("language", "English")
@@ -130,18 +131,3 @@ Provide your evaluation with:
             "current_score": 0.0,
             "evaluation_history": existing_history,
         }
-
-
-def _extract_content(response) -> str:
-    """
-    Extract string content from an agent response.
-
-    Args:
-        response: The agent response object.
-
-    Returns:
-        String content from the response.
-    """
-    if hasattr(response, "content") and response.content:
-        return str(response.content)
-    return str(response)

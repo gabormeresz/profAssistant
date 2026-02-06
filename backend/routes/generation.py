@@ -12,7 +12,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
-from agent.course_outline_generator import run_course_outline_generator
+from agent.course_outline import run_course_outline_generator
 from agent.course_outline.dummy_generator import run_dummy_course_outline_generator
 from agent.lesson_plan import run_lesson_plan_generator
 from agent.prompt_enhancer import prompt_enhancer
@@ -20,6 +20,7 @@ from config import DebugConfig
 from services.auth_service import get_current_user
 from utils.api_helpers import resolve_api_key, classify_error
 from utils.file_processor import file_processor
+from utils.sse import format_sse_event, format_sse_error
 
 logger = logging.getLogger(__name__)
 
@@ -140,30 +141,10 @@ async def _course_outline_event_generator(
             )
 
         async for event in generator:
-            if isinstance(event, dict):
-                event_type = event.get("type", "data")
-
-                if event_type == "thread_id":
-                    yield f"event: thread_id\ndata: {json.dumps({'thread_id': event['thread_id']})}\n\n"
-                elif event_type == "progress":
-                    progress_data = {
-                        "message_key": event.get(
-                            "message_key", event.get("message", "")
-                        ),
-                    }
-                    if "params" in event:
-                        progress_data["params"] = event["params"]
-                    yield f"event: progress\ndata: {json.dumps(progress_data)}\n\n"
-                elif event_type == "complete":
-                    yield f"event: complete\ndata: {json.dumps(event['data'])}\n\n"
-                elif event_type == "error":
-                    yield f"event: error\ndata: {json.dumps({'message': event['message']})}\n\n"
-            else:
-                yield f"data: {json.dumps({'content': str(event)})}\n\n"
+            yield format_sse_event(event)
     except Exception as e:
         logger.error(f"Course outline generation error: {e}", exc_info=True)
-        error_payload = classify_error(e)
-        yield f"event: error\ndata: {json.dumps(error_payload)}\n\n"
+        yield format_sse_error(classify_error(e))
 
 
 @router.post("/course-outline-generator")
@@ -246,30 +227,10 @@ async def _lesson_plan_event_generator(
             language,
             user_id=user_id,
         ):
-            if isinstance(event, dict):
-                event_type = event.get("type", "data")
-
-                if event_type == "thread_id":
-                    yield f"event: thread_id\ndata: {json.dumps({'thread_id': event['thread_id']})}\n\n"
-                elif event_type == "progress":
-                    progress_data = {
-                        "message_key": event.get(
-                            "message_key", event.get("message", "")
-                        ),
-                    }
-                    if "params" in event:
-                        progress_data["params"] = event["params"]
-                    yield f"event: progress\ndata: {json.dumps(progress_data)}\n\n"
-                elif event_type == "complete":
-                    yield f"event: complete\ndata: {json.dumps(event['data'])}\n\n"
-                elif event_type == "error":
-                    yield f"event: error\ndata: {json.dumps({'message': event['message']})}\n\n"
-            else:
-                yield f"data: {json.dumps({'content': str(event)})}\n\n"
+            yield format_sse_event(event)
     except Exception as e:
         logger.error(f"Lesson plan generation error: {e}", exc_info=True)
-        error_payload = classify_error(e)
-        yield f"event: error\ndata: {json.dumps(error_payload)}\n\n"
+        yield format_sse_error(classify_error(e))
 
 
 @router.post("/lesson-plan-generator")

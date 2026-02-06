@@ -1,30 +1,41 @@
 """
-Lesson plan refinement node for the lesson plan generation workflow.
+Content refinement node shared across all generation workflows.
+
+Takes evaluation feedback and generates an improved version of the
+content. The domain-specific refinement prompt is injected via
+the `get_refinement_prompt` parameter (bound using functools.partial
+in each module's graph.py).
 """
 
 import logging
+from typing import Callable, List
 
 from langchain_core.messages import HumanMessage
 
 from agent.tool_config import get_model_with_tools
+from schemas.evaluation import EvaluationResult
 from services.api_key_service import require_api_key
 
-from ..state import LessonPlanState
-from ..prompts import get_refinement_prompt
+from ..state import BaseGenerationState
 
 logger = logging.getLogger(__name__)
 
 
-async def refine_lesson_plan(state: LessonPlanState) -> dict:
+async def refine_content(
+    state: BaseGenerationState,
+    *,
+    get_refinement_prompt: Callable[[str, List[EvaluationResult], str], str],
+) -> dict:
     """
-    Refine the lesson plan based on evaluation feedback.
+    Refine generated content based on evaluation feedback.
 
-    This node takes the evaluation history and uses it to generate
-    an improved version of the lesson plan, focusing on the
-    lowest-scoring dimensions.
+    Uses the evaluation history to generate an improved version,
+    focusing on the lowest-scoring dimensions.
 
     Args:
         state: The current workflow state.
+        get_refinement_prompt: Domain-specific function that builds the
+            refinement prompt from (original_content, evaluation_history, language).
 
     Returns:
         Updated state with the refined response in agent_response.

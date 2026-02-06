@@ -1,5 +1,9 @@
 """
-Initial lesson plan generation node for the lesson plan generation workflow.
+Content generation node shared across all generation workflows.
+
+Invokes the LLM with tool access for initial content generation.
+The logic is identical for all content types — domain-specific
+behavior comes from the system prompt set up in build_messages.
 """
 
 import logging
@@ -7,21 +11,18 @@ import logging
 from agent.tool_config import get_model_with_tools
 from services.api_key_service import require_api_key
 
-from ..state import LessonPlanState
+from ..state import BaseGenerationState
 
 logger = logging.getLogger(__name__)
 
 
-async def generate_lesson_plan(state: LessonPlanState) -> dict:
+async def generate_content(state: BaseGenerationState) -> dict:
     """
-    Generate the initial lesson plan using the LLM.
+    Generate content using the LLM with tool access.
 
-    This node invokes the model and allows it to make tool calls
-    if it needs additional information. The response is stored in
-    agent_response (not messages) to allow for clean JSON formatting later.
-
-    This node is only for initial generation. Refinement is handled
-    by a separate refine_lesson_plan node.
+    Invokes the model and allows it to make tool calls if it needs
+    additional information. The response is stored in agent_response
+    (not messages) to allow for clean JSON formatting later.
 
     Args:
         state: The current workflow state.

@@ -9,6 +9,7 @@ import logging
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 from agent.model import get_structured_output_model
+from agent.base.nodes.helpers import extract_content
 from schemas.lesson_plan import LessonPlan
 from services.api_key_service import require_api_key
 
@@ -54,19 +55,11 @@ async def generate_structured_response(state: LessonPlanState) -> dict:
             return {"error": "No agent response available for generating output"}
 
         # Extract content from the agent response
-        context_content = _extract_content(agent_response)
+        context_content = extract_content(agent_response)
         logger.info(f"Extracted content length: {len(context_content)} characters")
 
         if not context_content:
             logger.error("Extracted content is empty")
-            return {"error": "No context available for generating response"}
-
-        # Truncate if content is too long (>30k chars can cause issues)
-        if len(context_content) > 30000:
-            logger.warning(
-                f"Content too long ({len(context_content)} chars), truncating to 30000"
-            )
-            context_content = context_content[:30000]
 
         # Build messages with clear extraction instructions
         messages = [
@@ -105,18 +98,3 @@ async def generate_structured_response(state: LessonPlanState) -> dict:
     except Exception as e:
         logger.error(f"Failed to generate structured output: {e}", exc_info=True)
         return {"error": f"Failed to generate structured output: {str(e)}"}
-
-
-def _extract_content(response) -> str:
-    """
-    Extract string content from an agent response.
-
-    Args:
-        response: The agent response object.
-
-    Returns:
-        String content from the response.
-    """
-    if hasattr(response, "content") and response.content:
-        return str(response.content)
-    return str(response)

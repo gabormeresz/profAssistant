@@ -1,22 +1,23 @@
 """
-Routing functions for the lesson plan generation workflow.
+Routing functions shared across all generation workflows.
 
 Contains conditional edge functions for graph navigation.
+These are identical for all content types since they only
+inspect shared state fields (agent_response, evaluation_count, etc.).
 """
 
 import logging
 from typing import Literal
 
-from langchain_core.messages import AIMessage
-
 from config import EvaluationConfig
 
-from ..state import LessonPlanState
+from .helpers import has_tool_calls
+from ..state import BaseGenerationState
 
 logger = logging.getLogger(__name__)
 
 
-def route_after_generate(state: LessonPlanState) -> Literal["tools", "evaluate"]:
+def route_after_generate(state: BaseGenerationState) -> Literal["tools", "evaluate"]:
     """
     Route the workflow after generation.
 
@@ -33,15 +34,14 @@ def route_after_generate(state: LessonPlanState) -> Literal["tools", "evaluate"]
     if not agent_response:
         return "evaluate"
 
-    # Check if the model wants to use tools (only AIMessage has tool_calls)
-    if _has_tool_calls(agent_response):
+    if has_tool_calls(agent_response):
         return "tools"
 
     return "evaluate"
 
 
 def route_after_refine(
-    state: LessonPlanState,
+    state: BaseGenerationState,
 ) -> Literal["tools_refine", "evaluate"]:
     """
     Route the workflow after refinement.
@@ -59,14 +59,13 @@ def route_after_refine(
     if not agent_response:
         return "evaluate"
 
-    # Check if the model wants to use tools
-    if _has_tool_calls(agent_response):
+    if has_tool_calls(agent_response):
         return "tools_refine"
 
     return "evaluate"
 
 
-def route_after_evaluate(state: LessonPlanState) -> Literal["refine", "respond"]:
+def route_after_evaluate(state: BaseGenerationState) -> Literal["refine", "respond"]:
     """
     Route the workflow after evaluation with plateau detection.
 
@@ -125,16 +124,3 @@ def route_after_evaluate(state: LessonPlanState) -> Literal["refine", "respond"]
         "going to refine"
     )
     return "refine"
-
-
-def _has_tool_calls(response) -> bool:
-    """
-    Check if an agent response has pending tool calls.
-
-    Args:
-        response: The agent response to check.
-
-    Returns:
-        True if the response has tool calls, False otherwise.
-    """
-    return isinstance(response, AIMessage) and bool(response.tool_calls)

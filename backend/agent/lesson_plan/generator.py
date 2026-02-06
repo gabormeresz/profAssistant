@@ -11,6 +11,7 @@ from typing import Any, Dict, List, AsyncGenerator
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
+from config import DBConfig
 from .graph import build_lesson_plan_graph
 from .state import LessonPlanInput
 from schemas.lesson_plan import LessonPlan
@@ -98,7 +99,7 @@ async def run_lesson_plan_generator(
         # Build and compile graph with checkpointer
         workflow = build_lesson_plan_graph()
 
-        async with AsyncSqliteSaver.from_conn_string("checkpoints.db") as memory:
+        async with AsyncSqliteSaver.from_conn_string(DBConfig.CHECKPOINTS_DB) as memory:
             graph = workflow.compile(checkpointer=memory)
 
             # Configuration for the graph execution - use the actual thread_id

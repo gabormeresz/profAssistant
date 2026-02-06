@@ -5,24 +5,31 @@ This module defines the LangGraph StateGraph structure with nodes,
 edges, and conditional routing for the course outline generation process.
 """
 
+from functools import partial
+
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
+from agent.base.nodes import (
+    ingest_documents,
+    generate_content,
+    refine_content,
+    route_after_generate,
+    route_after_refine,
+    route_after_evaluate,
+)
 from agent.tool_config import get_tools_for_toolnode
+from config import DBConfig
+
 from .state import CourseOutlineState, CourseOutlineInput, CourseOutlineOutput
 from .nodes import (
     initialize_conversation,
-    ingest_documents,
     build_messages,
-    generate_outline,
-    refine_outline,
-    generate_structured_response,
-    route_after_generate,
-    route_after_refine,
     evaluate_outline,
-    route_after_evaluate,
+    generate_structured_response,
 )
+from .prompts import get_refinement_prompt
 
 
 def build_course_outline_graph() -> StateGraph:
@@ -69,10 +76,13 @@ def build_course_outline_graph() -> StateGraph:
     workflow.add_node("initialize", initialize_conversation)
     workflow.add_node("ingest_documents", ingest_documents)
     workflow.add_node("build_messages", build_messages)
-    workflow.add_node("generate", generate_outline)
+    workflow.add_node("generate", generate_content)
     workflow.add_node("tools", tool_node)
     workflow.add_node("evaluate", evaluate_outline)
-    workflow.add_node("refine", refine_outline)
+    workflow.add_node(
+        "refine",
+        partial(refine_content, get_refinement_prompt=get_refinement_prompt),
+    )
     workflow.add_node("tools_refine", tool_node)  # Same ToolNode, different graph entry
     workflow.add_node("respond", generate_structured_response)
 
@@ -135,5 +145,7 @@ async def create_compiled_graph(thread_id: str | None = None):
         A context manager that yields the compiled graph.
     """
     workflow = build_course_outline_graph()
-    memory = await AsyncSqliteSaver.from_conn_string("checkpoints.db").__aenter__()
+    memory = await AsyncSqliteSaver.from_conn_string(
+        DBConfig.CHECKPOINTS_DB
+    ).__aenter__()
     return workflow.compile(checkpointer=memory), memory

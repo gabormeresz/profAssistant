@@ -9,6 +9,7 @@ import logging
 from langchain_core.messages import AIMessage, HumanMessage
 
 from agent.model import get_structured_output_model
+from agent.base.nodes.helpers import extract_content
 from schemas.course_outline import CourseOutline
 from services.api_key_service import require_api_key
 
@@ -38,7 +39,7 @@ async def generate_structured_response(state: CourseOutlineState) -> dict:
             return {"error": "No agent response available for generating output"}
 
         # Extract content from the agent response
-        context_content = _extract_content(agent_response)
+        context_content = extract_content(agent_response)
 
         if not context_content:
             return {"error": "No context available for generating response"}
@@ -68,18 +69,3 @@ async def generate_structured_response(state: CourseOutlineState) -> dict:
     except Exception as e:
         logger.error(f"Failed to generate structured output: {e}")
         return {"error": f"Failed to generate structured output: {str(e)}"}
-
-
-def _extract_content(response) -> str:
-    """
-    Extract string content from an agent response.
-
-    Args:
-        response: The agent response object.
-
-    Returns:
-        String content from the response.
-    """
-    if hasattr(response, "content") and response.content:
-        return str(response.content)
-    return str(response)
