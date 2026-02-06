@@ -16,7 +16,7 @@ from ..state import CourseOutlineState
 logger = logging.getLogger(__name__)
 
 
-def initialize_conversation(state: CourseOutlineState) -> dict:
+async def initialize_conversation(state: CourseOutlineState) -> dict:
     """
     Initialize or load conversation metadata.
 
@@ -38,7 +38,7 @@ def initialize_conversation(state: CourseOutlineState) -> dict:
         topic = state["topic"]
         title = f"{topic[:50]}..." if len(topic) > 50 else topic
 
-        conversation_manager.create_course_outline(
+        await conversation_manager.create_course_outline(
             thread_id=thread_id,
             user_id=state["user_id"],
             conversation_type=ConversationType.COURSE_OUTLINE,
@@ -63,10 +63,10 @@ def initialize_conversation(state: CourseOutlineState) -> dict:
         }
     else:
         # Update existing conversation
-        conversation_manager.increment_message_count(thread_id)
+        await conversation_manager.increment_message_count(thread_id)
 
         # Load parameters from saved conversation for follow-ups
-        conversation = conversation_manager.get_conversation(thread_id)
+        conversation = await conversation_manager.get_conversation(thread_id)
         if conversation and isinstance(conversation, CourseOutlineMetadata):
             return {
                 "thread_id": thread_id,

@@ -54,7 +54,7 @@ async def register(body: UserCreate):
     - A ``user_settings`` row is auto-created (no API key by default).
     - Email verification is *not* enforced yet (``is_email_verified=False``).
     """
-    user = register_user(body.email, body.password)
+    user = await register_user(body.email, body.password)
     return UserResponse(
         user_id=user["user_id"],
         email=user["email"],
@@ -79,8 +79,8 @@ async def login(body: UserCreate):
     **refresh token** (opaque UUID, 7 days).  The refresh token is stored
     as a SHA-256 hash in ``user_sessions``.
     """
-    user = authenticate_user(body.email, body.password)
-    tokens = issue_token_pair(user)
+    user = await authenticate_user(body.email, body.password)
+    tokens = await issue_token_pair(user)
     return TokenPair(**tokens)
 
 
@@ -96,7 +96,7 @@ async def refresh(body: TokenRefreshRequest):
     Implements **token rotation**: the old session is deleted and a new one
     is created, so each refresh token can only be used once.
     """
-    tokens = refresh_access_token(body.refresh_token)
+    tokens = await refresh_access_token(body.refresh_token)
     return TokenPair(**tokens)
 
 
@@ -112,7 +112,7 @@ async def logout(body: TokenRefreshRequest):
     The access token will remain valid until it expires (stateless JWT),
     but the client should discard it.
     """
-    logout_session(body.refresh_token)
+    await logout_session(body.refresh_token)
     return None
 
 
@@ -153,7 +153,7 @@ async def get_settings(user: dict = Depends(get_current_user)):
     """
     Return the user's settings (masked API key flag, preferred model).
     """
-    settings = conversation_manager.get_user_settings(user["user_id"])
+    settings = await conversation_manager.get_user_settings(user["user_id"])
     if settings is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -182,7 +182,7 @@ async def update_settings(
     - Passing ``openai_api_key: null`` leaves the key unchanged; to *remove* the key
       send an empty string.
     """
-    updated = conversation_manager.update_user_settings(
+    updated = await conversation_manager.update_user_settings(
         user_id=user["user_id"],
         openai_api_key=body.openai_api_key,
         preferred_model=body.preferred_model,
@@ -194,7 +194,7 @@ async def update_settings(
         )
 
     # Return refreshed settings
-    settings = conversation_manager.get_user_settings(user["user_id"])
+    settings = await conversation_manager.get_user_settings(user["user_id"])
     if settings is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

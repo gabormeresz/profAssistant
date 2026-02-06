@@ -1,6 +1,8 @@
 """
 Authentication service: JWT token management, password verification,
 and FastAPI dependencies for protected routes.
+
+All functions that touch the database are async.
 """
 
 import hashlib
@@ -88,9 +90,9 @@ def decode_access_token(token: str) -> dict:
 # --------------------------------------------------------------------------- #
 
 
-def register_user(email: str, password: str) -> dict:
+async def register_user(email: str, password: str) -> dict:
     """Register a new user. Returns the user dict or raises 409."""
-    user = conversation_manager.create_user(email, password)
+    user = await conversation_manager.create_user(email, password)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -99,10 +101,10 @@ def register_user(email: str, password: str) -> dict:
     return user
 
 
-def authenticate_user(email: str, password: str) -> dict:
+async def authenticate_user(email: str, password: str) -> dict:
     """Verify credentials. Returns user dict or raises 401."""
-    user = conversation_manager.get_user_by_email(email)
-    if user is None or not conversation_manager.verify_password(
+    user = await conversation_manager.get_user_by_email(email)
+    if user is None or not await conversation_manager.verify_password(
         password, user["password_hash"]
     ):
         raise HTTPException(
@@ -117,7 +119,7 @@ def authenticate_user(email: str, password: str) -> dict:
     return user
 
 
-def issue_token_pair(user: dict) -> dict:
+async def issue_token_pair(user: dict) -> dict:
     """Create access + refresh tokens and persist the session.
 
     Returns ``{"access_token", "refresh_token", "token_type"}``.
@@ -131,7 +133,7 @@ def issue_token_pair(user: dict) -> dict:
         + timedelta(days=AuthConfig.REFRESH_TOKEN_EXPIRE_DAYS)
     ).isoformat()
 
-    conversation_manager.create_session(
+    await conversation_manager.create_session(
         user_id=user["user_id"],
         refresh_token_hash=_hash_token(refresh_token),
         expires_at=expires_at,
@@ -144,14 +146,14 @@ def issue_token_pair(user: dict) -> dict:
     }
 
 
-def refresh_access_token(raw_refresh_token: str) -> dict:
+async def refresh_access_token(raw_refresh_token: str) -> dict:
     """Validate a refresh token and issue a new token pair.
 
     The old session is deleted (token rotation).
     """
     token_hash = _hash_token(raw_refresh_token)
 
-    session = conversation_manager.get_session_by_refresh_hash(token_hash)
+    session = await conversation_manager.get_session_by_refresh_hash(token_hash)
     if session is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -164,32 +166,32 @@ def refresh_access_token(raw_refresh_token: str) -> dict:
     if expires_at.tzinfo is None:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
     if expires_at < datetime.now(timezone.utc):
-        conversation_manager.delete_session(session["session_id"])
+        await conversation_manager.delete_session(session["session_id"])
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Refresh token has expired",
         )
 
     # Delete old session (rotation)
-    conversation_manager.delete_session(session["session_id"])
+    await conversation_manager.delete_session(session["session_id"])
 
     # Fetch user
-    user = conversation_manager.get_user_by_id(session["user_id"])
+    user = await conversation_manager.get_user_by_id(session["user_id"])
     if user is None or not user["is_active"]:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found or deactivated",
         )
 
-    return issue_token_pair(user)
+    return await issue_token_pair(user)
 
 
-def logout_session(raw_refresh_token: str) -> bool:
+async def logout_session(raw_refresh_token: str) -> bool:
     """Delete the session associated with the refresh token."""
     token_hash = _hash_token(raw_refresh_token)
-    session = conversation_manager.get_session_by_refresh_hash(token_hash)
+    session = await conversation_manager.get_session_by_refresh_hash(token_hash)
     if session:
-        return conversation_manager.delete_session(session["session_id"])
+        return await conversation_manager.delete_session(session["session_id"])
     return False
 
 
@@ -215,7 +217,7 @@ async def get_current_user(
     payload = decode_access_token(credentials.credentials)
     user_id: str = payload.get("sub", "")
 
-    user = conversation_manager.get_user_by_id(user_id)
+    user = await conversation_manager.get_user_by_id(user_id)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

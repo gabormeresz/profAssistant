@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional, List, Callable, Annotated, Any
 from langchain.tools import tool
 from langchain_core.tools import StructuredTool
@@ -14,7 +15,7 @@ serper = GoogleSerperAPIWrapper()
 
 
 @tool
-def web_search(query: str) -> str:
+async def web_search(query: str) -> str:
     """
     Search the web for current information on a topic.
 
@@ -32,11 +33,11 @@ def web_search(query: str) -> str:
     Returns:
         Search results with relevant information from the web.
     """
-    return serper.run(query)
+    return await asyncio.to_thread(serper.run, query)
 
 
 @tool
-def search_uploaded_documents(
+async def search_uploaded_documents(
     query: str,
     n_results: int = 5,
     state: Annotated[Optional[dict[str, Any]], InjectedState] = None,
@@ -80,7 +81,7 @@ def search_uploaded_documents(
     print(f"[Tool] State thread_id: {session_id}")
 
     rag = get_rag_pipeline()
-    results = rag.query(query, n_results=n_results, session_id=session_id)
+    results = await rag.query(query, n_results=n_results, session_id=session_id)
 
     if not results:
         return "No relevant information found in the uploaded documents."

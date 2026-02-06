@@ -128,7 +128,7 @@ async def prompt_enhancer(
     # preventing silent fallback to the server-side .env key.
     from services.api_key_service import require_api_key
 
-    api_key = require_api_key(user_id) if user_id else None
+    api_key = (await require_api_key(user_id)) if user_id else None
     enhancer_client = AsyncOpenAI(api_key=api_key) if api_key else client
 
     response = await enhancer_client.chat.completions.create(

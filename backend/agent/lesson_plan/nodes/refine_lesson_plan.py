@@ -15,7 +15,7 @@ from ..prompts import get_refinement_prompt
 logger = logging.getLogger(__name__)
 
 
-def refine_lesson_plan(state: LessonPlanState) -> dict:
+async def refine_lesson_plan(state: LessonPlanState) -> dict:
     """
     Refine the lesson plan based on evaluation feedback.
 
@@ -49,10 +49,10 @@ def refine_lesson_plan(state: LessonPlanState) -> dict:
 
     # Get model with appropriate tools based on whether documents are ingested
     has_documents = state.get("has_ingested_documents", False)
-    api_key = require_api_key(state.get("user_id", ""))
+    api_key = await require_api_key(state.get("user_id", ""))
     model_with_tools = get_model_with_tools(has_documents, api_key=api_key)
 
-    response = model_with_tools.invoke(messages)
+    response = await model_with_tools.ainvoke(messages)
 
     # If there are tool calls, we need to add both the refinement prompt and response to messages
     if hasattr(response, "tool_calls") and response.tool_calls:

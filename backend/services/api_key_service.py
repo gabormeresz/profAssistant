@@ -20,7 +20,7 @@ from services.conversation_manager import conversation_manager
 logger = logging.getLogger(__name__)
 
 
-def get_api_key_for_user(user_id: str) -> Optional[str]:
+async def get_api_key_for_user(user_id: str) -> Optional[str]:
     """
     Resolve the OpenAI API key for a given user.
 
@@ -31,7 +31,7 @@ def get_api_key_for_user(user_id: str) -> Optional[str]:
         The plaintext API key, or ``None`` if the user has not
         configured one (and is not admin).
     """
-    user = conversation_manager.get_user_by_id(user_id)
+    user = await conversation_manager.get_user_by_id(user_id)
     if user is None:
         return None
 
@@ -40,10 +40,10 @@ def get_api_key_for_user(user_id: str) -> Optional[str]:
         return os.environ.get("OPENAI_API_KEY") or None
 
     # Regular users: decrypt their personal key from the database
-    return conversation_manager.get_decrypted_api_key(user_id)
+    return await conversation_manager.get_decrypted_api_key(user_id)
 
 
-def require_api_key(user_id: str) -> str:
+async def require_api_key(user_id: str) -> str:
     """
     Same as :func:`get_api_key_for_user` but raises if no key is
     available.  Useful in request handlers that must fail early.
@@ -51,7 +51,7 @@ def require_api_key(user_id: str) -> str:
     Raises:
         ValueError: If no API key could be resolved.
     """
-    key = get_api_key_for_user(user_id)
+    key = await get_api_key_for_user(user_id)
     if not key:
         raise ValueError(
             "No OpenAI API key available. "

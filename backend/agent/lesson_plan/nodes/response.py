@@ -32,7 +32,7 @@ Extract the following fields:
 Be concise and extract only the essential information. If some information is missing, provide reasonable defaults based on the content."""
 
 
-def generate_structured_response(state: LessonPlanState) -> dict:
+async def generate_structured_response(state: LessonPlanState) -> dict:
     """
     Generate the final structured lesson plan.
 
@@ -79,9 +79,9 @@ def generate_structured_response(state: LessonPlanState) -> dict:
         logger.info("Invoking structured output model...")
 
         # Generate structured output (per-request for user API key)
-        api_key = require_api_key(state.get("user_id", ""))
+        api_key = await require_api_key(state.get("user_id", ""))
         structured_model = get_structured_output_model(LessonPlan, api_key=api_key)
-        response = structured_model.invoke(messages)
+        response = await structured_model.ainvoke(messages)
 
         logger.info(f"Structured output model returned: {type(response)}")
 

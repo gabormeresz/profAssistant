@@ -11,7 +11,7 @@ from ..state import CourseOutlineState
 logger = logging.getLogger(__name__)
 
 
-def ingest_documents(state: CourseOutlineState) -> dict:
+async def ingest_documents(state: CourseOutlineState) -> dict:
     """
     Ingest uploaded documents into the vector database.
 
@@ -35,7 +35,7 @@ def ingest_documents(state: CourseOutlineState) -> dict:
     if not file_contents:
         # No new files - check if documents were previously ingested for this session
         try:
-            existing_docs = rag.list_documents(session_id=thread_id)
+            existing_docs = await rag.list_documents(session_id=thread_id)
             has_existing = len(existing_docs) > 0
             logger.info(
                 f"No new files for thread {thread_id}, existing documents: {len(existing_docs)}"
@@ -54,7 +54,7 @@ def ingest_documents(state: CourseOutlineState) -> dict:
         ]
 
         if documents:
-            results = rag.ingest_documents(
+            results = await rag.ingest_documents(
                 documents=documents,
                 session_id=thread_id,
             )
@@ -65,7 +65,7 @@ def ingest_documents(state: CourseOutlineState) -> dict:
             return {"has_ingested_documents": True}
         else:
             # No valid new content - check for existing documents
-            existing_docs = rag.list_documents(session_id=thread_id)
+            existing_docs = await rag.list_documents(session_id=thread_id)
             has_existing = len(existing_docs) > 0
             logger.debug(
                 f"No valid content to ingest for thread {thread_id}, "

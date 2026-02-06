@@ -16,7 +16,7 @@ from ..state import LessonPlanState
 logger = logging.getLogger(__name__)
 
 
-def initialize_conversation(state: LessonPlanState) -> dict:
+async def initialize_conversation(state: LessonPlanState) -> dict:
     """
     Initialize or load conversation metadata.
 
@@ -38,7 +38,7 @@ def initialize_conversation(state: LessonPlanState) -> dict:
         class_title = state["class_title"]
         title = f"{class_title[:50]}..." if len(class_title) > 50 else class_title
 
-        conversation_manager.create_lesson_plan(
+        await conversation_manager.create_lesson_plan(
             thread_id=thread_id,
             user_id=state["user_id"],
             conversation_type=ConversationType.LESSON_PLAN,
@@ -67,10 +67,10 @@ def initialize_conversation(state: LessonPlanState) -> dict:
         }
     else:
         # Update existing conversation
-        conversation_manager.increment_message_count(thread_id)
+        await conversation_manager.increment_message_count(thread_id)
 
         # Load parameters from saved conversation for follow-ups
-        conversation = conversation_manager.get_conversation(thread_id)
+        conversation = await conversation_manager.get_conversation(thread_id)
         if conversation and isinstance(conversation, LessonPlanMetadata):
             return {
                 "thread_id": thread_id,

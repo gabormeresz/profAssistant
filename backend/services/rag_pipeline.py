@@ -7,8 +7,12 @@ This service handles:
 - Document retrieval for RAG queries
 
 The service is independent and can be used by agents for dynamic querying.
+
+All public methods are async.  ChromaDB has no native async API in embedded
+mode, so every blocking call is wrapped with ``asyncio.to_thread``.
 """
 
+import asyncio
 import hashlib
 from typing import List, Optional, Dict, Any, cast
 from dataclasses import dataclass
@@ -60,15 +64,6 @@ class RAGPipeline:
         chunk_size: int = RAGConfig.CHUNK_SIZE,
         chunk_overlap: int = RAGConfig.CHUNK_OVERLAP,
     ):
-        """
-        Initialize the RAG pipeline.
-
-        Args:
-            persist_directory: Directory for ChromaDB persistence
-            collection_name: Name of the ChromaDB collection
-            chunk_size: Size of text chunks in characters
-            chunk_overlap: Overlap between chunks in characters
-        """
         self.persist_directory = persist_directory
         self.collection_name = collection_name
         self.chunk_size = chunk_size
@@ -99,6 +94,10 @@ class RAGPipeline:
             metadata={"hnsw:space": "cosine"},  # Use cosine similarity
         )
 
+    # ------------------------------------------------------------------
+    #  Private helpers (sync — only called inside to_thread)
+    # ------------------------------------------------------------------
+
     def _generate_document_id(self, content: str, filename: str) -> str:
         """Generate a unique document ID based on content hash and filename."""
         content_hash = hashlib.md5(content.encode()).hexdigest()[:8]
@@ -109,40 +108,20 @@ class RAGPipeline:
         return f"{document_id}_chunk_{chunk_index}"
 
     def _chunk_text(self, text: str) -> List[str]:
-        """
-        Split text into chunks using recursive character text splitter.
-
-        Args:
-            text: The text content to split
-
-        Returns:
-            List of text chunks
-        """
+        """Split text into chunks using recursive character text splitter."""
         return self.text_splitter.split_text(text)
 
-    def ingest_document(
+    def _ingest_document_sync(
         self,
         content: str,
         filename: str,
         session_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> IngestedDocument:
-        """
-        Ingest a single document into the vector store.
-
-        Args:
-            content: The text content of the document
-            filename: Name of the file
-            session_id: Optional session ID for grouping documents
-            metadata: Optional additional metadata
-
-        Returns:
-            IngestedDocument with ingestion details
-        """
+        """Synchronous core of ingest_document (runs inside to_thread)."""
         if not content.strip():
             raise ValueError("Document content cannot be empty")
 
-        # Generate document ID - include session_id to allow same doc in multiple sessions
         base_document_id = self._generate_document_id(content, filename)
         document_id = (
             f"{base_document_id}_{session_id}" if session_id else base_document_id
@@ -155,7 +134,6 @@ class RAGPipeline:
         )
 
         if existing and existing["ids"]:
-            # Document already ingested for this session
             return IngestedDocument(
                 document_id=document_id,
                 filename=filename,
@@ -188,7 +166,7 @@ class RAGPipeline:
         if metadata:
             base_metadata.update(metadata)
 
-        # Generate embeddings for all chunks
+        # Generate embeddings for all chunks (sync OpenAI call)
         chunk_embeddings = self.embeddings.embed_documents(chunks)
 
         # Prepare data for ChromaDB
@@ -225,59 +203,14 @@ class RAGPipeline:
             ingested_at=base_metadata["ingested_at"],
         )
 
-    def ingest_documents(
-        self,
-        documents: List[Dict[str, str]],
-        session_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
-    ) -> List[IngestedDocument]:
-        """
-        Ingest multiple documents into the vector store.
-
-        Args:
-            documents: List of dicts with 'content' and 'filename' keys
-            session_id: Optional session ID for grouping documents
-            metadata: Optional additional metadata to apply to all documents
-
-        Returns:
-            List of IngestedDocument objects
-        """
-        results = []
-        for doc in documents:
-            try:
-                result = self.ingest_document(
-                    content=doc["content"],
-                    filename=doc["filename"],
-                    session_id=session_id,
-                    metadata=metadata,
-                )
-                results.append(result)
-            except Exception as e:
-                # Log error but continue with other documents
-                print(f"Error ingesting document {doc.get('filename', 'unknown')}: {e}")
-
-        return results
-
-    def query(
+    def _query_sync(
         self,
         query_text: str,
         n_results: int = 5,
         session_id: Optional[str] = None,
         min_similarity: float = 0.3,
     ) -> List[Dict[str, Any]]:
-        """
-        Query the vector store for relevant document chunks.
-
-        Args:
-            query_text: The query string
-            n_results: Number of results to return
-            session_id: Session ID to filter results (required for proper isolation)
-            min_similarity: Minimum similarity score threshold (0.0-1.0, default: 0.3)
-
-        Returns:
-            List of relevant document chunks with metadata and scores
-        """
-        # Return empty results if no session_id provided
+        """Synchronous core of query (runs inside to_thread)."""
         if not session_id:
             print(
                 f"[RAG] Warning: No session_id provided for query '{query_text[:50]}...' - returning empty results"
@@ -288,13 +221,9 @@ class RAGPipeline:
             f"[RAG] Querying with session_id={session_id}, query='{query_text[:50]}...'"
         )
 
-        # Build where filter based on session_id
         where_filter = {"session_id": session_id}
-
-        # Generate query embedding
         query_embedding = self.embeddings.embed_query(query_text)
 
-        # Query the collection
         results = self.collection.query(
             query_embeddings=[query_embedding],
             n_results=n_results,
@@ -302,7 +231,6 @@ class RAGPipeline:
             include=["documents", "metadatas", "distances"],
         )
 
-        # Format results
         formatted_results = []
         if results and results["ids"] and results["ids"][0]:
             for idx, chunk_id in enumerate(results["ids"][0]):
@@ -328,7 +256,6 @@ class RAGPipeline:
                     }
                 )
 
-        # Filter by minimum similarity
         if min_similarity > 0:
             formatted_results = [
                 r
@@ -341,106 +268,48 @@ class RAGPipeline:
         )
         return formatted_results
 
-    def delete_document(self, document_id: str) -> bool:
-        """
-        Delete a document and all its chunks from the vector store.
-
-        Args:
-            document_id: The ID of the document to delete
-
-        Returns:
-            True if deletion was successful
-        """
+    def _delete_document_sync(self, document_id: str) -> bool:
+        """Synchronous core of delete_document."""
         try:
-            # Get all chunks for this document
             existing = self.collection.get(
                 where={"document_id": document_id},
             )
-
             if existing and existing["ids"]:
                 self.collection.delete(ids=existing["ids"])
                 return True
-
             return False
         except Exception as e:
             print(f"Error deleting document {document_id}: {e}")
             return False
 
-    def delete_session(self, session_id: str) -> int:
-        """
-        Delete all documents from a session.
-
-        Args:
-            session_id: The session ID
-
-        Returns:
-            Number of chunks deleted
-        """
+    def _delete_session_sync(self, session_id: str) -> int:
+        """Synchronous core of delete_session."""
         try:
             existing = self.collection.get(
                 where={"session_id": session_id},
             )
-
             if existing and existing["ids"]:
                 count = len(existing["ids"])
                 self.collection.delete(ids=existing["ids"])
                 return count
-
             return 0
         except Exception as e:
             print(f"Error deleting session {session_id}: {e}")
             return 0
 
-    def get_document_info(self, document_id: str) -> Optional[Dict[str, Any]]:
-        """
-        Get information about an ingested document.
-
-        Args:
-            document_id: The document ID
-
-        Returns:
-            Document information or None if not found
-        """
-        existing = self.collection.get(
-            where={"document_id": document_id},
-            limit=1,
-        )
-
-        if existing and existing["ids"]:
-            metadata = existing["metadatas"][0] if existing["metadatas"] else {}
-            return {
-                "document_id": document_id,
-                "filename": metadata.get("filename", "unknown"),
-                "chunk_count": metadata.get("total_chunks", len(existing["ids"])),
-                "ingested_at": metadata.get("ingested_at", "unknown"),
-                "session_id": metadata.get("session_id"),
-            }
-
-        return None
-
-    def list_documents(
+    def _list_documents_sync(
         self,
         session_id: Optional[str] = None,
         limit: int = 100,
     ) -> List[Dict[str, Any]]:
-        """
-        List all ingested documents.
-
-        Args:
-            session_id: Optional session ID to filter
-            limit: Maximum number of documents to return
-
-        Returns:
-            List of document information
-        """
+        """Synchronous core of list_documents."""
         where_filter = {"session_id": session_id} if session_id else None
 
         results = self.collection.get(
             where=cast(Optional[Dict[str, Any]], where_filter),
-            limit=limit * 10,  # Get more chunks to dedupe
+            limit=limit * 10,
         )
 
-        # Deduplicate by document_id
         documents = {}
         if results and results["metadatas"]:
             for metadata in results["metadatas"]:
@@ -456,15 +325,10 @@ class RAGPipeline:
 
         return list(documents.values())[:limit]
 
-    def get_collection_stats(self) -> Dict[str, Any]:
-        """
-        Get statistics about the collection.
-
-        Returns:
-            Collection statistics
-        """
+    def _get_collection_stats_sync(self) -> Dict[str, Any]:
+        """Synchronous core of get_collection_stats."""
         count = self.collection.count()
-        documents = self.list_documents()
+        documents = self._list_documents_sync()
 
         return {
             "total_chunks": count,
@@ -474,15 +338,9 @@ class RAGPipeline:
             "chunk_overlap": self.chunk_overlap,
         }
 
-    def clear_collection(self) -> bool:
-        """
-        Clear all documents from the collection.
-
-        Returns:
-            True if successful
-        """
+    def _clear_collection_sync(self) -> bool:
+        """Synchronous core of clear_collection."""
         try:
-            # Delete and recreate collection
             self.client.delete_collection(self.collection_name)
             self.collection = self.client.create_collection(
                 name=self.collection_name,
@@ -492,6 +350,101 @@ class RAGPipeline:
         except Exception as e:
             print(f"Error clearing collection: {e}")
             return False
+
+    def _get_document_info_sync(self, document_id: str) -> Optional[Dict[str, Any]]:
+        """Synchronous core of get_document_info."""
+        existing = self.collection.get(
+            where={"document_id": document_id},
+            limit=1,
+        )
+
+        if existing and existing["ids"]:
+            metadata = existing["metadatas"][0] if existing["metadatas"] else {}
+            return {
+                "document_id": document_id,
+                "filename": metadata.get("filename", "unknown"),
+                "chunk_count": metadata.get("total_chunks", len(existing["ids"])),
+                "ingested_at": metadata.get("ingested_at", "unknown"),
+                "session_id": metadata.get("session_id"),
+            }
+        return None
+
+    # ------------------------------------------------------------------
+    #  Public async API
+    # ------------------------------------------------------------------
+
+    async def ingest_document(
+        self,
+        content: str,
+        filename: str,
+        session_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> IngestedDocument:
+        """Ingest a single document into the vector store (async)."""
+        return await asyncio.to_thread(
+            self._ingest_document_sync, content, filename, session_id, metadata
+        )
+
+    async def ingest_documents(
+        self,
+        documents: List[Dict[str, str]],
+        session_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> List[IngestedDocument]:
+        """Ingest multiple documents into the vector store (async)."""
+        results = []
+        for doc in documents:
+            try:
+                result = await self.ingest_document(
+                    content=doc["content"],
+                    filename=doc["filename"],
+                    session_id=session_id,
+                    metadata=metadata,
+                )
+                results.append(result)
+            except Exception as e:
+                print(f"Error ingesting document {doc.get('filename', 'unknown')}: {e}")
+        return results
+
+    async def query(
+        self,
+        query_text: str,
+        n_results: int = 5,
+        session_id: Optional[str] = None,
+        min_similarity: float = 0.3,
+    ) -> List[Dict[str, Any]]:
+        """Query the vector store for relevant document chunks (async)."""
+        return await asyncio.to_thread(
+            self._query_sync, query_text, n_results, session_id, min_similarity
+        )
+
+    async def delete_document(self, document_id: str) -> bool:
+        """Delete a document and all its chunks from the vector store (async)."""
+        return await asyncio.to_thread(self._delete_document_sync, document_id)
+
+    async def delete_session(self, session_id: str) -> int:
+        """Delete all documents from a session (async)."""
+        return await asyncio.to_thread(self._delete_session_sync, session_id)
+
+    async def get_document_info(self, document_id: str) -> Optional[Dict[str, Any]]:
+        """Get information about an ingested document (async)."""
+        return await asyncio.to_thread(self._get_document_info_sync, document_id)
+
+    async def list_documents(
+        self,
+        session_id: Optional[str] = None,
+        limit: int = 100,
+    ) -> List[Dict[str, Any]]:
+        """List all ingested documents (async)."""
+        return await asyncio.to_thread(self._list_documents_sync, session_id, limit)
+
+    async def get_collection_stats(self) -> Dict[str, Any]:
+        """Get statistics about the collection (async)."""
+        return await asyncio.to_thread(self._get_collection_stats_sync)
+
+    async def clear_collection(self) -> bool:
+        """Clear all documents from the collection (async)."""
+        return await asyncio.to_thread(self._clear_collection_sync)
 
 
 # Lazy singleton instance
@@ -509,15 +462,6 @@ def get_rag_pipeline(
 
     This function provides lazy initialization of the RAG pipeline,
     which is useful when the OpenAI API key may not be available at import time.
-
-    Args:
-        persist_directory: Directory for ChromaDB persistence
-        collection_name: Name of the ChromaDB collection
-        chunk_size: Size of text chunks in characters
-        chunk_overlap: Overlap between chunks in characters
-
-    Returns:
-        RAGPipeline instance
     """
     global _rag_pipeline_instance
 

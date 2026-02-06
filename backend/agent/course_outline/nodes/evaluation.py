@@ -19,7 +19,7 @@ from ..prompts import get_evaluator_system_prompt
 logger = logging.getLogger(__name__)
 
 
-def evaluate_outline(state: CourseOutlineState) -> dict:
+async def evaluate_outline(state: CourseOutlineState) -> dict:
     """
     Evaluate the generated course outline for quality using scoring.
 
@@ -94,11 +94,11 @@ Provide your evaluation with:
 
     try:
         # Call the evaluator model with structured output (per-request for user API key)
-        api_key = require_api_key(state.get("user_id", ""))
+        api_key = await require_api_key(state.get("user_id", ""))
         evaluation_model = get_structured_output_model(
             EvaluationResult, api_key=api_key
         )
-        evaluation_result = evaluation_model.invoke(evaluation_messages)
+        evaluation_result = await evaluation_model.ainvoke(evaluation_messages)
 
         # Ensure we have an EvaluationResult object
         if not isinstance(evaluation_result, EvaluationResult):

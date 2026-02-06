@@ -12,7 +12,7 @@ from ..state import CourseOutlineState
 logger = logging.getLogger(__name__)
 
 
-def generate_outline(state: CourseOutlineState) -> dict:
+async def generate_outline(state: CourseOutlineState) -> dict:
     """
     Generate the initial course outline using the LLM.
 
@@ -34,10 +34,10 @@ def generate_outline(state: CourseOutlineState) -> dict:
 
     # Get model with appropriate tools based on whether documents are ingested
     has_documents = state.get("has_ingested_documents", False)
-    api_key = require_api_key(state.get("user_id", ""))
+    api_key = await require_api_key(state.get("user_id", ""))
     model_with_tools = get_model_with_tools(has_documents, api_key=api_key)
 
-    response = model_with_tools.invoke(messages)
+    response = await model_with_tools.ainvoke(messages)
 
     # If there are tool calls, we need to add to messages for the ToolNode
     if hasattr(response, "tool_calls") and response.tool_calls:

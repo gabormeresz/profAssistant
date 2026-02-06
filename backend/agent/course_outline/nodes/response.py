@@ -17,7 +17,7 @@ from ..state import CourseOutlineState
 logger = logging.getLogger(__name__)
 
 
-def generate_structured_response(state: CourseOutlineState) -> dict:
+async def generate_structured_response(state: CourseOutlineState) -> dict:
     """
     Generate the final structured course outline.
 
@@ -45,9 +45,11 @@ def generate_structured_response(state: CourseOutlineState) -> dict:
 
         # Generate structured output - the schema enforces the structure,
         # so we just need to pass the content for parsing
-        api_key = require_api_key(state.get("user_id", ""))
+        api_key = await require_api_key(state.get("user_id", ""))
         structured_model = get_structured_output_model(CourseOutline, api_key=api_key)
-        response = structured_model.invoke([HumanMessage(content=context_content)])
+        response = await structured_model.ainvoke(
+            [HumanMessage(content=context_content)]
+        )
 
         # Ensure we have a CourseOutline object
         if not isinstance(response, CourseOutline):

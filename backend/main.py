@@ -38,7 +38,7 @@ if DebugConfig.USE_DUMMY_GRAPH:
     )
 
 
-def _resolve_api_key(user: dict) -> str:
+async def _resolve_api_key(user: dict) -> str:
     """
     Validate that the user has a usable OpenAI API key.
 
@@ -52,7 +52,7 @@ def _resolve_api_key(user: dict) -> str:
     from services.api_key_service import require_api_key
 
     try:
-        return require_api_key(user["user_id"])
+        return await require_api_key(user["user_id"])
     except ValueError:
         if user["role"] == "admin":
             raise HTTPException(
@@ -97,9 +97,12 @@ async def lifespan(app: FastAPI):
     """
     Lifespan handler for FastAPI application startup/shutdown.
 
-    Initializes MCP clients on startup and cleans up on shutdown.
+    Initializes MCP clients and database connections on startup,
+    and cleans up on shutdown.
     """
     # Startup
+    print("[Startup] Connecting to database...")
+    await conversation_manager.connect()
     print("[Startup] Initializing MCP clients...")
     await mcp_manager.initialize()
     print("[Startup] Application ready")
@@ -109,6 +112,8 @@ async def lifespan(app: FastAPI):
     # Shutdown
     print("[Shutdown] Cleaning up MCP clients...")
     await mcp_manager.cleanup()
+    print("[Shutdown] Closing database connection...")
+    await conversation_manager.close()
     print("[Shutdown] Application stopped")
 
 
@@ -156,7 +161,7 @@ async def enhance_prompt(
             )
 
         # Resolve per-user API key
-        _resolve_api_key(current_user)
+        await _resolve_api_key(current_user)
 
         # Validate context_type
         valid_contexts = ["course_outline", "lesson_plan"]
@@ -290,7 +295,7 @@ async def generate_course_outline(
         file_contents += await file_processor(files)
 
     # Validate that the user has an API key (fail-fast before streaming)
-    _resolve_api_key(current_user)
+    await _resolve_api_key(current_user)
 
     # Return SSE stream
     return StreamingResponse(
@@ -417,7 +422,7 @@ async def generate_lesson_plan(
         file_contents += await file_processor(files)
 
     # Validate that the user has an API key (fail-fast before streaming)
-    _resolve_api_key(current_user)
+    await _resolve_api_key(current_user)
 
     # Return SSE stream
     return StreamingResponse(
@@ -464,13 +469,13 @@ async def list_conversations(
         effective_user_id = (
             None if current_user["role"] == "admin" else current_user["user_id"]
         )
-        conversations = conversation_manager.list_conversations(
+        conversations = await conversation_manager.list_conversations(
             user_id=effective_user_id,
             conversation_type=conv_type,
             limit=limit,
             offset=offset,
         )
-        total = conversation_manager.count_conversations(
+        total = await conversation_manager.count_conversations(
             user_id=effective_user_id,
             conversation_type=conv_type,
         )
@@ -491,7 +496,7 @@ async def get_conversation(
     Get metadata for a specific conversation.
     Non-admin users can only access their own conversations.
     """
-    conversation = conversation_manager.get_conversation(thread_id)
+    conversation = await conversation_manager.get_conversation(thread_id)
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
     # Ownership check: non-admin users can only access their own conversations
@@ -515,7 +520,7 @@ async def delete_conversation(
     Non-admin users can only delete their own conversations.
     """
     # Ownership check before deleting
-    conversation = conversation_manager.get_conversation(thread_id)
+    conversation = await conversation_manager.get_conversation(thread_id)
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
     if (
@@ -524,14 +529,14 @@ async def delete_conversation(
     ):
         raise HTTPException(status_code=404, detail="Conversation not found")
 
-    deleted = conversation_manager.delete_conversation(thread_id)
+    deleted = await conversation_manager.delete_conversation(thread_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
     # Delete associated RAG documents for this session
     try:
         rag = get_rag_pipeline()
-        chunks_deleted = rag.delete_session(thread_id)
+        chunks_deleted = await rag.delete_session(thread_id)
         if chunks_deleted > 0:
             print(f"[RAG] Deleted {chunks_deleted} chunks for session {thread_id}")
     except Exception as e:
@@ -554,7 +559,7 @@ async def get_conversation_history(
         from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
         # Get conversation metadata to verify it exists
-        conversation = conversation_manager.get_conversation(thread_id)
+        conversation = await conversation_manager.get_conversation(thread_id)
         if not conversation:
             raise HTTPException(status_code=404, detail="Conversation not found")
         # Ownership check: non-admin users can only access their own conversations
