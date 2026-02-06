@@ -172,6 +172,16 @@ export function useConversationManager<TResult, TConversation>(
   // Track which result has been processed to prevent duplicate additions
   const lastProcessedResultRef = useRef<string | null>(null);
 
+  // Stabilize callback references using refs so they don't cause
+  // the URL-loading effect to re-trigger on every render.
+  // (These are typically inline arrow functions from the page component.)
+  const isCorrectTypeRef = useRef(isCorrectType);
+  isCorrectTypeRef.current = isCorrectType;
+  const restoreFormStateRef = useRef(restoreFormState);
+  restoreFormStateRef.current = restoreFormState;
+  const parseResultRef = useRef(parseResult);
+  parseResultRef.current = parseResult;
+
   // Update URL when thread ID changes (from SSE)
   useEffect(() => {
     const shouldUpdateUrl =
@@ -190,6 +200,15 @@ export function useConversationManager<TResult, TConversation>(
       // Exit early if no thread ID or already loaded
       if (!urlThreadId || loadedThreadIdRef.current === urlThreadId) {
         if (!urlThreadId) loadedThreadIdRef.current = null;
+        return;
+      }
+
+      // CRITICAL: Do NOT attempt to load from API while an SSE stream is
+      // active. The URL gets its threadId from the thread_id SSE event
+      // (BEFORE the stream completes). If we try to load now, the
+      // conversation likely doesn't exist in the DB yet, causing a 404
+      // that clears resultHistory and creates an infinite retry loop.
+      if (streamingState === "streaming" || streamingState === "connecting") {
         return;
       }
 
@@ -220,8 +239,8 @@ export function useConversationManager<TResult, TConversation>(
         setThreadId(urlThreadId);
 
         // Restore form state if correct type
-        if (isCorrectType(conversation)) {
-          restoreFormState(conversation);
+        if (isCorrectTypeRef.current(conversation)) {
+          restoreFormStateRef.current(conversation);
         }
         setHasStarted(true);
 
@@ -243,7 +262,7 @@ export function useConversationManager<TResult, TConversation>(
             });
           } else if (msg.role === "assistant") {
             try {
-              results.push(parseResult(msg.content));
+              results.push(parseResultRef.current(msg.content));
             } catch (e) {
               logger.error("Failed to parse result:", e);
             }
@@ -262,7 +281,11 @@ export function useConversationManager<TResult, TConversation>(
         }
       } catch (error) {
         logger.error("Failed to load conversation:", error);
-        navigate(routePath, { replace: true });
+        // Only navigate away if we're genuinely trying to load a saved
+        // conversation (not one we just created via SSE)
+        if (threadId !== urlThreadId) {
+          navigate(routePath, { replace: true });
+        }
       } finally {
         // Reset loading flag after render cycle
         setTimeout(() => {
@@ -279,10 +302,10 @@ export function useConversationManager<TResult, TConversation>(
     streamingState,
     setThreadId,
     navigate,
-    routePath,
-    isCorrectType,
-    restoreFormState,
-    parseResult
+    routePath
+    // NOTE: isCorrectType, restoreFormState, parseResult are accessed via
+    // refs to avoid re-triggering this effect when their references change
+    // (they are inline arrow functions recreated on every render).
   ]);
 
   // Auto-add completed results to history
