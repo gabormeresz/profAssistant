@@ -5,7 +5,8 @@ export const API_ENDPOINTS = {
   LESSON_PLAN_GENERATOR: `${API_BASE_URL}/lesson-plan-generator`,
   PRESENTATION_GENERATOR: `${API_BASE_URL}/presentation-generator`,
   ASSESSMENT_GENERATOR: `${API_BASE_URL}/assessment-generator`,
-  ENHANCE_PROMPT: `${API_BASE_URL}/enhance-prompt`
+  ENHANCE_PROMPT: `${API_BASE_URL}/enhance-prompt`,
+  EXPORT_PRESENTATION_PPTX: `${API_BASE_URL}/export-presentation-pptx`
 } as const;
 
 // File Upload Configuration
@@ -53,6 +54,13 @@ export const LESSON_PLAN = {
   MAX_TOPICS: 7,
   MIN_ACTIVITIES: 0, // Optional - can be empty
   MAX_ACTIVITIES: 5
+} as const;
+
+// Presentation Configuration
+export const PRESENTATION = {
+  MIN_CLASS_NUMBER: 1,
+  MAX_CLASS_NUMBER: 100,
+  MAX_KEY_POINTS: 10
 } as const;
 
 // UI Messages

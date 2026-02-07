@@ -1,4 +1,4 @@
-import type { LessonPlan, CourseOutline } from "../types";
+import type { LessonPlan, CourseOutline, Presentation } from "../types";
 
 /**
  * Convert a lesson plan to markdown format
@@ -85,6 +85,42 @@ export function courseOutlineToMarkdown(outline: CourseOutline): string {
       sections.push(`- ${activity}`);
     });
     sections.push("");
+  });
+
+  return sections.join("\n");
+}
+
+/**
+ * Convert a presentation to markdown format
+ */
+export function presentationToMarkdown(presentation: Presentation): string {
+  const sections: string[] = [];
+
+  // Title
+  sections.push(`# ${presentation.course_title}\n`);
+  sections.push(
+    `## Class ${presentation.class_number}: ${presentation.lesson_title}\n`
+  );
+
+  // Slides
+  presentation.slides.forEach((slide) => {
+    sections.push(`### Slide ${slide.slide_number}: ${slide.title}\n`);
+
+    // Bullet points
+    slide.bullet_points.forEach((point) => {
+      sections.push(`- ${point}`);
+    });
+    sections.push("");
+
+    // Speaker notes
+    if (slide.speaker_notes) {
+      sections.push(`**Speaker Notes:** ${slide.speaker_notes}\n`);
+    }
+
+    // Visual suggestion
+    if (slide.visual_suggestion) {
+      sections.push(`**Visual Suggestion:** ${slide.visual_suggestion}\n`);
+    }
   });
 
   return sections.join("\n");

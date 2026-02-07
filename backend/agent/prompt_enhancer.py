@@ -55,6 +55,13 @@ def _build_context_text(context_type: str, additional_context: Dict[str, Any]) -
             f"Key Topics: {additional_context.get('key_topics', [])}, "
             f"Activities/Projects: {additional_context.get('activities_projects', [])}"
         )
+    elif context_type == "presentation":
+        return (
+            f"Course Title: {additional_context.get('course_title', 'N/A')}, "
+            f"Class Title: {additional_context.get('class_title', 'N/A')}, "
+            f"Learning Objective: {additional_context.get('learning_objective', 'N/A')}, "
+            f"Key Points: {additional_context.get('key_points', [])}"
+        )
     else:  # course_outline
         return (
             f"Topic: {additional_context.get('topic', 'N/A')}, "
@@ -64,9 +71,12 @@ def _build_context_text(context_type: str, additional_context: Dict[str, Any]) -
 
 def _build_user_message(message: str, context_type: str) -> str:
     """Build the user message for prompt enhancement."""
-    content_type = (
-        "detailed lesson plan" if context_type == "lesson_plan" else "course outline"
-    )
+    type_map = {
+        "lesson_plan": "detailed lesson plan",
+        "presentation": "educational presentation",
+        "course_outline": "course outline",
+    }
+    content_type = type_map.get(context_type, "course outline")
     return (
         f"My initial prompt is: '''{message}'''. "
         f"Please refine it into a clearer, richer, and more effective instruction for generating a {content_type}. "
@@ -86,7 +96,9 @@ def _build_messages(
 
 async def prompt_enhancer(
     message: str,
-    context_type: Literal["course_outline", "lesson_plan"] = "course_outline",
+    context_type: Literal[
+        "course_outline", "lesson_plan", "presentation"
+    ] = "course_outline",
     additional_context: Optional[Dict[str, Any]] = None,
     language: Optional[str] = None,
     user_id: Optional[str] = None,

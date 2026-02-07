@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { SavedConversation } from "../../types/conversation";
-import { FileText, BookOpen, MessageCircle } from "lucide-react";
+import { FileText, BookOpen, Presentation, MessageCircle } from "lucide-react";
 
 interface SavedConversationItemProps {
   conversation: SavedConversation;
@@ -21,7 +21,8 @@ export default function SavedConversationItem({
     // Navigate to the appropriate page based on conversation type using URL params
     const routes: Record<string, string> = {
       course_outline: `/course-outline-generator/${conversation.thread_id}`,
-      lesson_plan: `/lesson-plan-generator/${conversation.thread_id}`
+      lesson_plan: `/lesson-plan-generator/${conversation.thread_id}`,
+      presentation: `/presentation-generator/${conversation.thread_id}`
     };
 
     const route = routes[conversation.conversation_type];
@@ -60,6 +61,8 @@ export default function SavedConversationItem({
         return FileText;
       case "lesson_plan":
         return BookOpen;
+      case "presentation":
+        return Presentation;
       default:
         return MessageCircle;
     }
@@ -80,9 +83,15 @@ export default function SavedConversationItem({
     } else if (conversation.conversation_type === "lesson_plan") {
       const lesson = conversation as Extract<
         SavedConversation,
-        { course_title: string }
+        { conversation_type: "lesson_plan" }
       >;
       return lesson.course_title;
+    } else if (conversation.conversation_type === "presentation") {
+      const pres = conversation as Extract<
+        SavedConversation,
+        { conversation_type: "presentation" }
+      >;
+      return pres.course_title;
     }
     return "";
   };

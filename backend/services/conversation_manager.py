@@ -17,8 +17,10 @@ from schemas.conversation import (
     ConversationType,
     CourseOutlineMetadata,
     LessonPlanMetadata,
+    PresentationMetadata,
     CourseOutlineCreate,
     LessonPlanCreate,
+    PresentationCreate,
 )
 from services.database import DatabaseManager
 
@@ -42,6 +44,18 @@ ALLOWED_COLUMNS = {
         "learning_objectives",
         "key_topics",
         "activities_projects",
+        "user_comment",
+    },
+    "presentations": {
+        "course_title",
+        "class_number",
+        "class_title",
+        "learning_objective",
+        "key_points",
+        "lesson_breakdown",
+        "activities",
+        "homework",
+        "extra_activities",
         "user_comment",
     },
 }
@@ -200,13 +214,94 @@ class ConversationRepository:
             message_count=0,
         )
 
+    async def create_presentation(
+        self,
+        thread_id: str,
+        user_id: str,
+        conversation_type: ConversationType,
+        data: PresentationCreate,
+    ) -> PresentationMetadata:
+        """Create a new presentation conversation."""
+        now = datetime.now().isoformat()
+        conn = self.conn
+
+        # Insert into base table
+        await conn.execute(
+            """
+            INSERT INTO conversations 
+            (thread_id, user_id, conversation_type, title, language, created_at, updated_at, message_count)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            (
+                thread_id,
+                user_id,
+                conversation_type.value,
+                data.title,
+                data.language,
+                now,
+                now,
+                0,
+            ),
+        )
+
+        # Serialize list to JSON string for storage
+        key_points_json = json.dumps(data.key_points)
+
+        # Insert into presentations table
+        await conn.execute(
+            """
+            INSERT INTO presentations
+            (thread_id, course_title, class_number, class_title, learning_objective,
+             key_points, lesson_breakdown, activities, homework, extra_activities, user_comment)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            (
+                thread_id,
+                data.course_title,
+                data.class_number,
+                data.class_title,
+                data.learning_objective,
+                key_points_json,
+                data.lesson_breakdown,
+                data.activities,
+                data.homework,
+                data.extra_activities,
+                data.user_comment,
+            ),
+        )
+
+        await conn.commit()
+
+        return PresentationMetadata(
+            thread_id=thread_id,
+            user_id=user_id,
+            conversation_type=ConversationType.PRESENTATION,
+            title=data.title,
+            language=data.language,
+            course_title=data.course_title,
+            class_number=data.class_number,
+            class_title=data.class_title,
+            learning_objective=data.learning_objective,
+            key_points=data.key_points,
+            lesson_breakdown=data.lesson_breakdown,
+            activities=data.activities,
+            homework=data.homework,
+            extra_activities=data.extra_activities,
+            user_comment=data.user_comment,
+            created_at=datetime.fromisoformat(now),
+            updated_at=datetime.fromisoformat(now),
+            message_count=0,
+        )
+
     # =========================================================================
     # Read
     # =========================================================================
 
     async def get_conversation(
         self, thread_id: str
-    ) -> Optional[Union[CourseOutlineMetadata, LessonPlanMetadata]]:
+    ) -> Optional[
+        Union[CourseOutlineMetadata, LessonPlanMetadata, PresentationMetadata]
+    ]:
         """Get a conversation by thread_id with type-specific data."""
         conn = self.conn
 
@@ -305,6 +400,44 @@ class ConversationRepository:
                 message_count=message_count,
             )
 
+        elif conversation_type == ConversationType.PRESENTATION:
+            cursor = await conn.execute(
+                """
+                SELECT course_title, class_number, class_title, learning_objective,
+                       key_points, lesson_breakdown, activities, homework, extra_activities, user_comment
+                FROM presentations
+                WHERE thread_id = ?
+            """,
+                (thread_id,),
+            )
+
+            pres_row = await cursor.fetchone()
+            if not pres_row:
+                return None
+
+            key_points = json.loads(pres_row[4]) if pres_row[4] else []
+
+            return PresentationMetadata(
+                thread_id=thread_id,
+                user_id=user_id,
+                conversation_type=conversation_type,
+                title=title,
+                language=language or "Hungarian",
+                course_title=pres_row[0],
+                class_number=pres_row[1],
+                class_title=pres_row[2],
+                learning_objective=pres_row[3],
+                key_points=key_points,
+                lesson_breakdown=pres_row[5],
+                activities=pres_row[6],
+                homework=pres_row[7],
+                extra_activities=pres_row[8],
+                user_comment=pres_row[9],
+                created_at=datetime.fromisoformat(created_at),
+                updated_at=datetime.fromisoformat(updated_at),
+                message_count=message_count,
+            )
+
         return None
 
     async def list_conversations(
@@ -313,7 +446,7 @@ class ConversationRepository:
         conversation_type: Optional[ConversationType] = None,
         limit: int = 100,
         offset: int = 0,
-    ) -> List[Union[CourseOutlineMetadata, LessonPlanMetadata]]:
+    ) -> List[Union[CourseOutlineMetadata, LessonPlanMetadata, PresentationMetadata]]:
         """List conversations with type-specific data."""
         conn = self.conn
 
@@ -423,6 +556,44 @@ class ConversationRepository:
                             key_topics=key_topics,
                             activities_projects=activities_projects,
                             user_comment=lesson_row[6],
+                            created_at=datetime.fromisoformat(created_at),
+                            updated_at=datetime.fromisoformat(updated_at),
+                            message_count=message_count,
+                        )
+                    )
+
+            elif ct == ConversationType.PRESENTATION:
+                cursor2 = await conn.execute(
+                    """
+                    SELECT course_title, class_number, class_title, learning_objective,
+                           key_points, lesson_breakdown, activities, homework, extra_activities, user_comment
+                    FROM presentations
+                    WHERE thread_id = ?
+                """,
+                    (thread_id,),
+                )
+
+                pres_row = await cursor2.fetchone()
+                if pres_row:
+                    key_points = json.loads(pres_row[4]) if pres_row[4] else []
+
+                    conversations.append(
+                        PresentationMetadata(
+                            thread_id=thread_id,
+                            user_id=row_user_id,
+                            conversation_type=ct,
+                            title=title,
+                            language=language or "Hungarian",
+                            course_title=pres_row[0],
+                            class_number=pres_row[1],
+                            class_title=pres_row[2],
+                            learning_objective=pres_row[3],
+                            key_points=key_points,
+                            lesson_breakdown=pres_row[5],
+                            activities=pres_row[6],
+                            homework=pres_row[7],
+                            extra_activities=pres_row[8],
+                            user_comment=pres_row[9],
                             created_at=datetime.fromisoformat(created_at),
                             updated_at=datetime.fromisoformat(updated_at),
                             message_count=message_count,

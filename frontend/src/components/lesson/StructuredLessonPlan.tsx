@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { LessonPlan } from "../../types";
 import { useExport } from "../../hooks";
@@ -5,11 +6,16 @@ import { lessonPlanToMarkdown } from "../../utils";
 
 interface StructuredLessonPlanProps {
   lessonPlan: LessonPlan;
+  courseTitle?: string;
+  language?: string;
 }
 
 export function StructuredLessonPlan({
-  lessonPlan
+  lessonPlan,
+  courseTitle,
+  language
 }: StructuredLessonPlanProps) {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { exportToDocx } = useExport();
 
@@ -19,6 +25,23 @@ export function StructuredLessonPlan({
       .replace(/\s+/g, "_")
       .toLowerCase()}.docx`;
     await exportToDocx(markdown, { filename });
+  };
+
+  const handleCreatePresentation = () => {
+    navigate("/presentation-generator", {
+      state: {
+        courseTitle,
+        classNumber: lessonPlan.class_number,
+        classTitle: lessonPlan.class_title,
+        learningObjective: lessonPlan.learning_objective,
+        keyPoints: lessonPlan.key_points,
+        lessonBreakdown: lessonPlan.lesson_breakdown,
+        activities: lessonPlan.activities,
+        homework: lessonPlan.homework,
+        extraActivities: lessonPlan.extra_activities,
+        language
+      }
+    });
   };
 
   return (
@@ -52,6 +75,27 @@ export function StructuredLessonPlan({
               />
             </svg>
             {t("export.exportToDocx")}
+          </button>
+          <button
+            onClick={handleCreatePresentation}
+            className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors flex items-center gap-2"
+            title={t("export.createPresentationDraft")}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+              />
+            </svg>
+            {t("export.createPresentationDraft")}
           </button>
         </div>
       </div>

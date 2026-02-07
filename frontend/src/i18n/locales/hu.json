@@ -10,6 +10,7 @@
     "complete": "Kész!",
     "generatingCourseOutline": "Tárgytematika generálása...",
     "generatingLessonPlan": "Óraterv generálása...",
+    "generatingPresentation": "Prezentáció generálása...",
     "enhancingPrompt": "Prompt javítása...",
     "ingestingDocuments": "Feltöltött dokumentumok feldolgozása...",
     "usingTool": "Eszköz használata: {{toolName}}",
@@ -21,7 +22,10 @@
     "buildingMessages": "Üzenetek összeállítása...",
     "evaluatingOutline": "Tematika minőségének értékelése...",
     "evaluatingLessonPlan": "Óraterv minőségének értékelése...",
+    "evaluatingPresentation": "Prezentáció minőségének értékelése...",
     "refiningOutline": "Tematika finomítása az értékelés alapján...",
+    "refiningLessonPlan": "Óraterv finomítása az értékelés alapján...",
+    "refiningPresentation": "Prezentáció finomítása az értékelés alapján...",
     "structuringResponse": "Végső válasz strukturálása..."
   },
   "sidebar": {
@@ -113,6 +117,40 @@
     "maxTopics": "Kérlek legfeljebb {{max}} témát adj meg",
     "maxActivities": "Kérlek legfeljebb {{max}} tevékenységet adj meg"
   },
+  "presentation": {
+    "courseTitle": "Kurzus Címe",
+    "courseTitlePlaceholder": "pl. Bevezetés a Programozásba",
+    "classNumber": "Óra Száma",
+    "classTitle": "Óra Címe",
+    "classTitlePlaceholder": "pl. Változók és Adattípusok",
+    "learningObjective": "Tanulási Cél",
+    "learningObjectivePlaceholder": "A lecke fő tanulási célja...",
+    "keyPoints": "Kulcspontok",
+    "keyPointsPlaceholder": "Lényeges fogalom vagy téma...",
+    "addKeyPoint": "Kulcspont Hozzáadása",
+    "lessonBreakdown": "Óra Lebontása",
+    "lessonBreakdownPlaceholder": "Írd le az óra menetét (pl. Bevezetés, Új anyag, Gyakorlás, Összefoglalás)...",
+    "activities": "Tevékenységek",
+    "activitiesPlaceholder": "Írd le a gyakorlati feladatokat, gyakorlatokat vagy projekteket...",
+    "homework": "Házi Feladat",
+    "homeworkPlaceholder": "Házi feladat vagy utólagos munka...",
+    "extraActivities": "Extra Tevékenységek",
+    "extraActivitiesPlaceholder": "Opcionális gazdagító tevékenységek...",
+    "language": "Nyelv",
+    "userComment": "További Utasítások",
+    "userCommentPlaceholder": "Bármilyen konkrét követelmény a prezentációhoz...",
+    "generatePresentation": "Prezentáció Generálása",
+    "emptyCourseTitle": "Kérlek add meg a kurzus címét",
+    "emptyClassTitle": "Kérlek add meg az óra címét",
+    "invalidClassNumber": "Kérlek adj meg egy érvényes óraszámot",
+    "comingSoon": "A prezentáció generálás hamarosan elérhető!"
+  },
+  "presentationOutput": {
+    "classNumber": "Óra",
+    "slides": "dia",
+    "speakerNotes": "Előadói Jegyzet",
+    "visualSuggestion": "Vizuális Javaslat"
+  },
   "followUp": {
     "placeholder": "Kérj módosításokat vagy finomításokat...",
     "sendHint": "Nyomj Entert a küldéshez, Shift+Entert az új sorhoz",
@@ -134,7 +172,10 @@
   },
   "export": {
     "exportToDocx": "Exportálás DOCX-ként",
-    "createLessonPlanDraft": "Óraterv Vázlat Készítése"
+    "exportToPptx": "PPTX Letöltése",
+    "generatingPptx": "PowerPoint prezentáció generálása...",
+    "createLessonPlanDraft": "Óraterv Vázlat Készítése",
+    "createPresentationDraft": "Prezentáció Vázlat Készítése"
   },
   "errors": {
     "title": "Valami hiba történt",

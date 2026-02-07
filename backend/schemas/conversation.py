@@ -14,6 +14,7 @@ class ConversationType(str, Enum):
 
     COURSE_OUTLINE = "course_outline"
     LESSON_PLAN = "lesson_plan"
+    PRESENTATION = "presentation"
 
 
 class ConversationBase(BaseModel):
@@ -78,8 +79,41 @@ class LessonPlanMetadata(ConversationBase):
     )
 
 
+class PresentationMetadata(ConversationBase):
+    """Metadata specific to presentation conversations."""
+
+    course_title: str = Field(..., description="Title of the course")
+    class_number: int = Field(
+        ..., description="The class number in the course sequence"
+    )
+    class_title: str = Field(..., description="Title of the class")
+    learning_objective: Optional[str] = Field(
+        None, description="Main learning goal of this lesson"
+    )
+    key_points: List[str] = Field(
+        default_factory=list, description="Essential concepts or topics covered"
+    )
+    lesson_breakdown: Optional[str] = Field(
+        None, description="Step-by-step flow of the lesson"
+    )
+    activities: Optional[str] = Field(
+        None, description="Hands-on tasks, exercises, or projects"
+    )
+    homework: Optional[str] = Field(
+        None, description="Homework or follow-up work assigned"
+    )
+    extra_activities: Optional[str] = Field(
+        None, description="Optional enrichment or bonus activities"
+    )
+    user_comment: Optional[str] = Field(
+        None, description="The user's original comment/instruction"
+    )
+
+
 # Union type for all conversation metadata types
-ConversationMetadata = Union[CourseOutlineMetadata, LessonPlanMetadata]
+ConversationMetadata = Union[
+    CourseOutlineMetadata, LessonPlanMetadata, PresentationMetadata
+]
 
 
 class CourseOutlineCreate(BaseModel):
@@ -108,8 +142,27 @@ class LessonPlanCreate(BaseModel):
     user_comment: Optional[str] = None
 
 
+class PresentationCreate(BaseModel):
+    """Request model for creating a presentation conversation."""
+
+    title: str
+    course_title: str
+    class_number: int
+    class_title: str
+    learning_objective: Optional[str] = None
+    key_points: List[str] = []
+    lesson_breakdown: Optional[str] = None
+    activities: Optional[str] = None
+    homework: Optional[str] = None
+    extra_activities: Optional[str] = None
+    language: str = "Hungarian"
+    user_comment: Optional[str] = None
+
+
 class ConversationList(BaseModel):
     """Response model for listing conversations."""
 
-    conversations: list[Union[CourseOutlineMetadata, LessonPlanMetadata]]
+    conversations: list[
+        Union[CourseOutlineMetadata, LessonPlanMetadata, PresentationMetadata]
+    ]
     total: int

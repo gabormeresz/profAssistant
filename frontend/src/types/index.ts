@@ -9,6 +9,7 @@ export type {
   SavedConversation,
   SavedCourseOutline,
   SavedLessonPlan,
+  SavedPresentation,
   ConversationType,
   ConversationListResponse
 } from "./conversation";
@@ -17,6 +18,7 @@ export type {
 export type {
   CourseOutlineRequest,
   LessonPlanRequest,
+  PresentationRequest,
   EnhancePromptRequest,
   EnhancePromptResponse
 } from "./api";
@@ -38,6 +40,13 @@ export type {
   ActivityPlan,
   LessonPlanStreamEvent
 } from "./lessonPlan";
+
+// Presentation types
+export type {
+  Presentation,
+  Slide,
+  PresentationStreamEvent
+} from "./presentation";
 
 // Auth types
 export type {

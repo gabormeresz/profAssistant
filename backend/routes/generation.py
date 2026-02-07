@@ -9,15 +9,18 @@ import json
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 
 from agent.course_outline import run_course_outline_generator
 from agent.course_outline.dummy_generator import run_dummy_course_outline_generator
 from agent.lesson_plan import run_lesson_plan_generator
+from agent.presentation import run_presentation_generator
 from agent.prompt_enhancer import prompt_enhancer
 from config import DebugConfig
+from schemas.presentation import Presentation as PresentationSchema
 from services.auth_service import get_current_user
+from services.pptx_service import generate_pptx
 from utils.api_helpers import resolve_api_key, classify_error
 from utils.file_processor import file_processor
 from utils.sse import format_sse_event, format_sse_error
@@ -61,7 +64,7 @@ async def enhance_prompt(
         await resolve_api_key(current_user)
 
         # Validate context_type
-        valid_contexts = ["course_outline", "lesson_plan"]
+        valid_contexts = ["course_outline", "lesson_plan", "presentation"]
         if context_type not in valid_contexts:
             return JSONResponse(
                 content={
@@ -85,7 +88,7 @@ async def enhance_prompt(
         from typing import Literal, cast
 
         validated_context_type = cast(
-            Literal["course_outline", "lesson_plan"], context_type
+            Literal["course_outline", "lesson_plan", "presentation"], context_type
         )
         enhanced = await prompt_enhancer(
             message,
@@ -296,3 +299,149 @@ async def generate_lesson_plan(
             "X-Accel-Buffering": "no",
         },
     )
+
+
+# ============================================================================
+# Presentation generation (SSE)
+# ============================================================================
+
+
+async def _presentation_event_generator(
+    message: str,
+    course_title: Optional[str],
+    class_number: Optional[int],
+    class_title: Optional[str],
+    learning_objective: Optional[str],
+    key_points: Optional[List[str]],
+    lesson_breakdown: Optional[str],
+    activities: Optional[str],
+    homework: Optional[str],
+    extra_activities: Optional[str],
+    language: Optional[str],
+    thread_id: Optional[str],
+    file_contents: List[dict],
+    user_id: str,
+):
+    """
+    Generator function that yields Server-Sent Events (SSE) for presentation generation.
+    Yields progress updates and the final structured presentation.
+    """
+    try:
+        async for event in run_presentation_generator(
+            message,
+            course_title,
+            class_number,
+            class_title,
+            learning_objective,
+            key_points,
+            lesson_breakdown,
+            activities,
+            homework,
+            extra_activities,
+            thread_id,
+            file_contents,
+            language,
+            user_id=user_id,
+        ):
+            yield format_sse_event(event)
+    except Exception as e:
+        logger.error(f"Presentation generation error: {e}", exc_info=True)
+        yield format_sse_error(classify_error(e))
+
+
+@router.post("/presentation-generator")
+async def generate_presentation(
+    message: str = Form(""),
+    course_title: Optional[str] = Form(None),
+    class_number: Optional[int] = Form(None),
+    class_title: Optional[str] = Form(None),
+    learning_objective: Optional[str] = Form(None),
+    key_points: Optional[str] = Form(None),  # JSON string
+    lesson_breakdown: Optional[str] = Form(None),
+    activities: Optional[str] = Form(None),
+    homework: Optional[str] = Form(None),
+    extra_activities: Optional[str] = Form(None),
+    language: Optional[str] = Form(None),
+    thread_id: Optional[str] = Form(None),
+    files: Optional[List[UploadFile]] = File(None),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Handle presentation generation with structured output and optional file uploads.
+    Returns a streaming SSE response with progress updates and structured data.
+
+    For initial requests: course_title, class_number, class_title, and language are required.
+    For follow-up requests (with thread_id): only message and files are needed.
+    """
+    try:
+        key_points_list = json.loads(key_points) if key_points else None
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=400, detail=f"Invalid JSON in key_points: {str(e)}"
+        )
+
+    file_contents = []
+
+    if files:
+        file_contents += await file_processor(files)
+
+    # Validate that the user has an API key (fail-fast before streaming)
+    await resolve_api_key(current_user)
+
+    return StreamingResponse(
+        _presentation_event_generator(
+            message,
+            course_title,
+            class_number,
+            class_title,
+            learning_objective,
+            key_points_list,
+            lesson_breakdown,
+            activities,
+            homework,
+            extra_activities,
+            language,
+            thread_id,
+            file_contents,
+            user_id=current_user["user_id"],
+        ),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+# ============================================================================
+# Presentation export to PPTX
+# ============================================================================
+
+
+@router.post("/export-presentation-pptx")
+async def export_presentation_pptx(
+    presentation: PresentationSchema = Body(...),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Accept a Presentation JSON payload and return a .pptx file.
+    """
+    try:
+        pptx_bytes = generate_pptx(presentation)
+
+        safe_title = (
+            presentation.lesson_title.replace(" ", "_").replace("/", "-").lower()[:60]
+        )
+        filename = f"presentation_class_{presentation.class_number}_{safe_title}.pptx"
+
+        return Response(
+            content=pptx_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+    except Exception as e:
+        logger.error(f"PPTX export error: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"Failed to generate PPTX: {str(e)}"
+        )

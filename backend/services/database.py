@@ -168,6 +168,26 @@ class DatabaseManager:
         """
         )
 
+        # ── Presentation specific table ──
+        await conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS presentations (
+                thread_id TEXT PRIMARY KEY,
+                course_title TEXT NOT NULL,
+                class_number INTEGER NOT NULL,
+                class_title TEXT NOT NULL,
+                learning_objective TEXT,
+                key_points TEXT,
+                lesson_breakdown TEXT,
+                activities TEXT,
+                homework TEXT,
+                extra_activities TEXT,
+                user_comment TEXT,
+                FOREIGN KEY (thread_id) REFERENCES conversations (thread_id) ON DELETE CASCADE
+            )
+        """
+        )
+
         await conn.commit()
 
         # ── Seed admin user ──

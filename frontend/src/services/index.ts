@@ -14,6 +14,7 @@ export {
   getAccessToken,
   clearTokens
 } from "./authService";
+export { exportPresentationToPptx } from "./exportService";
 
 // Re-export types for convenience
 export type {

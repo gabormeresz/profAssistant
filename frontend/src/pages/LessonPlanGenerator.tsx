@@ -351,6 +351,8 @@ function LessonPlanGenerator() {
               <div className="mt-6">
                 <StructuredLessonPlan
                   lessonPlan={lessonHistory[index] || lessonPlan!}
+                  courseTitle={courseTitle}
+                  language={language}
                 />
               </div>
             )}

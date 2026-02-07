@@ -24,9 +24,25 @@ export interface LessonPlanRequest {
   files?: File[];
 }
 
+export interface PresentationRequest {
+  message: string;
+  course_title?: string;
+  class_number?: number;
+  class_title?: string;
+  learning_objective?: string;
+  key_points?: string[];
+  lesson_breakdown?: string;
+  activities?: string;
+  homework?: string;
+  extra_activities?: string;
+  language?: string;
+  thread_id?: string;
+  files?: File[];
+}
+
 export interface EnhancePromptRequest {
   message: string;
-  contextType: "course_outline" | "lesson_plan";
+  contextType: "course_outline" | "lesson_plan" | "presentation";
   additionalContext?: Record<string, unknown>;
   language?: string;
 }

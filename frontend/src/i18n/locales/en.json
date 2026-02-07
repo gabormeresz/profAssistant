@@ -10,6 +10,7 @@
     "complete": "Complete!",
     "generatingCourseOutline": "Generating course outline...",
     "generatingLessonPlan": "Generating lesson plan...",
+    "generatingPresentation": "Generating presentation...",
     "enhancingPrompt": "Enhancing your prompt...",
     "ingestingDocuments": "Processing uploaded documents...",
     "usingTool": "Using tool: {{toolName}}",
@@ -21,7 +22,10 @@
     "buildingMessages": "Building messages...",
     "evaluatingOutline": "Evaluating outline quality...",
     "evaluatingLessonPlan": "Evaluating lesson plan quality...",
+    "evaluatingPresentation": "Evaluating presentation quality...",
     "refiningOutline": "Refining outline based on evaluation...",
+    "refiningLessonPlan": "Refining lesson plan based on evaluation...",
+    "refiningPresentation": "Refining presentation based on evaluation...",
     "structuringResponse": "Structuring final response..."
   },
   "sidebar": {
@@ -113,6 +117,40 @@
     "maxTopics": "Please provide at most {{max}} key topics",
     "maxActivities": "Please provide at most {{max}} activities"
   },
+  "presentation": {
+    "courseTitle": "Course Title",
+    "courseTitlePlaceholder": "e.g., Introduction to Programming",
+    "classNumber": "Class Number",
+    "classTitle": "Class Title",
+    "classTitlePlaceholder": "e.g., Variables and Data Types",
+    "learningObjective": "Learning Objective",
+    "learningObjectivePlaceholder": "Main learning goal for this lesson...",
+    "keyPoints": "Key Points",
+    "keyPointsPlaceholder": "Essential concept or topic...",
+    "addKeyPoint": "Add Key Point",
+    "lessonBreakdown": "Lesson Breakdown",
+    "lessonBreakdownPlaceholder": "Describe the flow of the lesson (e.g., Opening, Instruction, Practice, Summary)...",
+    "activities": "Activities",
+    "activitiesPlaceholder": "Describe hands-on tasks, exercises, or projects...",
+    "homework": "Homework",
+    "homeworkPlaceholder": "Homework or follow-up work...",
+    "extraActivities": "Extra Activities",
+    "extraActivitiesPlaceholder": "Optional enrichment activities...",
+    "language": "Language",
+    "userComment": "Additional Instructions",
+    "userCommentPlaceholder": "Any specific requirements for the presentation...",
+    "generatePresentation": "Generate Presentation",
+    "emptyCourseTitle": "Please enter a course title",
+    "emptyClassTitle": "Please enter a class title",
+    "invalidClassNumber": "Please enter a valid class number",
+    "comingSoon": "Presentation generation is coming soon!"
+  },
+  "presentationOutput": {
+    "classNumber": "Class",
+    "slides": "slides",
+    "speakerNotes": "Speaker Notes",
+    "visualSuggestion": "Visual Suggestion"
+  },
   "followUp": {
     "placeholder": "Ask for modifications or refinements...",
     "sendHint": "Press Enter to send, Shift+Enter for new line",
@@ -134,7 +172,10 @@
   },
   "export": {
     "exportToDocx": "Export to DOCX",
-    "createLessonPlanDraft": "Create Lesson Plan Draft"
+    "exportToPptx": "Download PPTX",
+    "generatingPptx": "Generating PowerPoint presentation...",
+    "createLessonPlanDraft": "Create Lesson Plan Draft",
+    "createPresentationDraft": "Create Presentation Draft"
   },
   "errors": {
     "title": "Something went wrong",

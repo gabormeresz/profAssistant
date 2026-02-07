@@ -2,5 +2,6 @@ export { validateFile, validateFiles, formatFileSize } from "./fileValidation";
 export type { FileValidationResult } from "./fileValidation";
 export {
   lessonPlanToMarkdown,
-  courseOutlineToMarkdown
+  courseOutlineToMarkdown,
+  presentationToMarkdown
 } from "./exportFormatters";

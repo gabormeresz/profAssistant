@@ -10,7 +10,8 @@ export {
   FollowUpInput,
   FileUpload,
   PromptEnhancer,
-  LessonPlanInputSection
+  LessonPlanInputSection,
+  PresentationInputSection
 } from "./input";
 
 // UI components
@@ -21,6 +22,9 @@ export { StructuredCourseOutline } from "./course";
 
 // Lesson components
 export { StructuredLessonPlan } from "./lesson";
+
+// Presentation components
+export { StructuredPresentation } from "./presentation";
 
 // Auth components
 export { default as ProtectedRoute } from "./auth/ProtectedRoute";
