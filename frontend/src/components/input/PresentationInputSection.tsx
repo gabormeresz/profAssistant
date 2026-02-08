@@ -183,7 +183,7 @@ export function PresentationInputSection({
             value={learningObjective}
             onChange={(e) => setLearningObjective(e.target.value)}
             placeholder={t("presentation.learningObjectivePlaceholder")}
-            rows={2}
+            rows={3}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           />
         </div>
@@ -241,7 +241,7 @@ export function PresentationInputSection({
             value={lessonBreakdown}
             onChange={(e) => setLessonBreakdown(e.target.value)}
             placeholder={t("presentation.lessonBreakdownPlaceholder")}
-            rows={4}
+            rows={6}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           />
         </div>
@@ -259,7 +259,7 @@ export function PresentationInputSection({
             value={activities}
             onChange={(e) => setActivities(e.target.value)}
             placeholder={t("presentation.activitiesPlaceholder")}
-            rows={4}
+            rows={6}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           />
         </div>
@@ -277,7 +277,7 @@ export function PresentationInputSection({
             value={homework}
             onChange={(e) => setHomework(e.target.value)}
             placeholder={t("presentation.homeworkPlaceholder")}
-            rows={2}
+            rows={4}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           />
         </div>
@@ -295,7 +295,7 @@ export function PresentationInputSection({
             value={extraActivities}
             onChange={(e) => setExtraActivities(e.target.value)}
             placeholder={t("presentation.extraActivitiesPlaceholder")}
-            rows={2}
+            rows={4}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           />
         </div>
