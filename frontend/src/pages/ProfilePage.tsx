@@ -4,11 +4,9 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import { updateUserSettings } from "../services/authService";
 import { LanguageSelector } from "../components";
-import type { AvailableModel } from "../types/auth";
 import {
   User,
   Key,
-  Cpu,
   Check,
   Loader2,
   ShieldCheck,
@@ -33,15 +31,8 @@ export default function ProfilePage() {
   const [keySaveSuccess, setKeySaveSuccess] = useState(false);
   const [keySaveError, setKeySaveError] = useState("");
 
-  // Model form
-  const [selectedModel, setSelectedModel] = useState("gpt-4o-mini");
-  const [isSavingModel, setIsSavingModel] = useState(false);
-  const [modelSaveSuccess, setModelSaveSuccess] = useState(false);
-  const [modelSaveError, setModelSaveError] = useState("");
-
   useEffect(() => {
     if (!isLoadingSettings && settings) {
-      setSelectedModel(settings.preferred_model);
       if (isSetupMode && !settings.has_api_key && user?.role !== "admin") {
         setShowSetupBanner(true);
       }
@@ -96,26 +87,6 @@ export default function ProfilePage() {
       );
     } finally {
       setIsSavingKey(false);
-    }
-  };
-
-  const handleSaveModel = async () => {
-    setModelSaveError("");
-    setModelSaveSuccess(false);
-    setIsSavingModel(true);
-    try {
-      await updateUserSettings({
-        preferred_model: selectedModel
-      });
-      await refreshSettings();
-      setModelSaveSuccess(true);
-      setTimeout(() => setModelSaveSuccess(false), 3000);
-    } catch (err) {
-      setModelSaveError(
-        err instanceof Error ? err.message : t("profile.errors.saveFailed")
-      );
-    } finally {
-      setIsSavingModel(false);
     }
   };
 
@@ -269,82 +240,6 @@ export default function ProfilePage() {
 
           {keySaveError && (
             <p className="mt-2 text-sm text-red-600">{keySaveError}</p>
-          )}
-        </div>
-
-        {/* Model selection card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Cpu className="w-5 h-5 text-gray-700" />
-            <h3 className="text-lg font-semibold text-gray-900">
-              {t("profile.model.title")}
-            </h3>
-          </div>
-
-          <p className="text-sm text-gray-500 mb-4">
-            {t("profile.model.description")}
-          </p>
-
-          {isLoadingSettings ? (
-            <div className="flex items-center gap-2 text-gray-400">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span className="text-sm">{t("common.processing")}</span>
-            </div>
-          ) : (
-            <>
-              <div className="space-y-3 mb-5">
-                {(settings?.available_models ?? []).map(
-                  (model: AvailableModel) => (
-                    <label
-                      key={model.id}
-                      className={`flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-colors ${
-                        selectedModel === model.id
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="model"
-                        value={model.id}
-                        checked={selectedModel === model.id}
-                        onChange={(e) => setSelectedModel(e.target.value)}
-                        className="mt-1 accent-blue-600"
-                      />
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          {model.label}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {t(model.description_key)}
-                        </p>
-                      </div>
-                    </label>
-                  )
-                )}
-              </div>
-
-              <button
-                onClick={handleSaveModel}
-                disabled={
-                  isSavingModel || selectedModel === settings?.preferred_model
-                }
-                className="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2"
-              >
-                {isSavingModel ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : modelSaveSuccess ? (
-                  <Check className="w-4 h-4" />
-                ) : null}
-                {modelSaveSuccess
-                  ? t("profile.saved")
-                  : t("profile.model.save")}
-              </button>
-
-              {modelSaveError && (
-                <p className="mt-2 text-sm text-red-600">{modelSaveError}</p>
-              )}
-            </>
           )}
         </div>
 
