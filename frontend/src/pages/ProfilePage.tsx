@@ -128,13 +128,6 @@ export default function ProfilePage() {
             </div>
             <div>
               <p className="font-semibold text-gray-900">{user?.email}</p>
-              <p className="text-sm text-gray-500">
-                {t("profile.memberSince", {
-                  date: user?.created_at
-                    ? new Date(user.created_at).toLocaleDateString()
-                    : ""
-                })}
-              </p>
             </div>
           </div>
         </div>
