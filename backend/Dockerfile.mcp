@@ -1,0 +1,28 @@
+# ============================================================================
+# MCP Wikipedia Server Dockerfile
+# ============================================================================
+# Runs the wikipedia-mcp server as a standalone service via SSE transport.
+# ============================================================================
+
+FROM python:3.12-slim
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies (wikipedia-mcp is in the project deps)
+RUN uv sync --frozen --no-dev --no-install-project
+
+# Copy source (needed for the project to be installable)
+COPY . .
+RUN uv sync --frozen --no-dev
+
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 8765
+
+CMD ["wikipedia-mcp", "--transport", "sse", "--port", "8765"]

@@ -7,7 +7,7 @@ middleware, and mounts all route modules.  Business logic lives in
 """
 
 import logging
-from config import LoggingConfig, DebugConfig
+from config import LoggingConfig, DebugConfig, APIConfig
 
 # Configure logging before anything else
 logging.basicConfig(
@@ -73,10 +73,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:5174",
-    ],
+    allow_origins=APIConfig.ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

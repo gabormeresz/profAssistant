@@ -25,7 +25,7 @@ class RAGConfig:
     CHUNK_OVERLAP: int = 100
 
     # ChromaDB settings
-    PERSIST_DIRECTORY: str = "chroma_db"
+    PERSIST_DIRECTORY: str = os.path.join(os.getenv("DATA_DIR", "."), "chroma_db")
     COLLECTION_NAME: str = "documents"
 
     # Embedding model
@@ -109,10 +109,14 @@ class LLMConfig:
 class APIConfig:
     """Configuration for API settings."""
 
-    # CORS origins
+    # CORS origins — override via CORS_ORIGINS env var (comma-separated)
     ALLOWED_ORIGINS: list[str] = [
-        "http://localhost:5173",
-        "http://localhost:5174",
+        origin.strip()
+        for origin in os.getenv(
+            "CORS_ORIGINS",
+            "http://localhost:5173,http://localhost:5174,http://localhost:3000",
+        ).split(",")
+        if origin.strip()
     ]
 
 
@@ -124,8 +128,9 @@ class APIConfig:
 class DBConfig:
     """Configuration for database settings."""
 
-    CONVERSATIONS_DB: str = "conversations.db"
-    CHECKPOINTS_DB: str = "checkpoints.db"
+    DATA_DIR: str = os.getenv("DATA_DIR", ".")
+    CONVERSATIONS_DB: str = os.path.join(DATA_DIR, "conversations.db")
+    CHECKPOINTS_DB: str = os.path.join(DATA_DIR, "checkpoints.db")
 
 
 # =============================================================================

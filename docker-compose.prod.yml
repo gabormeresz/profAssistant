@@ -1,0 +1,36 @@
+# ============================================================================
+# Docker Compose — Production Override
+# ============================================================================
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+#
+# In production the frontend nginx reverse-proxies /api/ to the backend,
+# so only port 80 (or 443 with a TLS terminator) needs to be exposed.
+# ============================================================================
+
+services:
+  mcp-wiki:
+    # Don't expose MCP port to the host in production
+    ports: !override []
+    restart: always
+
+  backend:
+    # Don't expose backend port to the host — nginx proxies it
+    ports: !override []
+    environment:
+      MCP_WIKIPEDIA_URL: "http://mcp-wiki:8765/sse"
+      CORS_ORIGINS: "${ALLOWED_ORIGINS:-https://yourdomain.com}"
+      LOG_LEVEL: "WARNING"
+      USE_DUMMY_GRAPH: "false"
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # In production, the frontend calls /api/ which nginx proxies to backend
+        VITE_API_URL: "/api"
+    ports:
+      - "80:80"
+    restart: always

@@ -11,6 +11,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 
 from schemas.conversation import ConversationType, ConversationList
+from config import DBConfig
 from services.auth_service import get_current_user
 from services.conversation_manager import conversation_manager
 from services.rag_pipeline import get_rag_pipeline
@@ -133,7 +134,9 @@ async def get_conversation_history(
             raise HTTPException(status_code=404, detail="Conversation not found")
 
         # Connect to checkpoints database and retrieve history
-        async with AsyncSqliteSaver.from_conn_string("checkpoints.db") as checkpointer:
+        async with AsyncSqliteSaver.from_conn_string(
+            DBConfig.CHECKPOINTS_DB
+        ) as checkpointer:
             config = {"configurable": {"thread_id": thread_id}}
             checkpoint = await checkpointer.aget(config)  # type: ignore
 

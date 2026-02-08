@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Data (mounted as volumes in Docker)
+*.db
+chroma_db/
+
+# Jupyter
+.ipynb_checkpoints/
+playground.ipynb
+
+# uv cache
+.uv/
+
+# OS
+.DS_Store
+Thumbs.db

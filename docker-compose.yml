@@ -1,0 +1,77 @@
+# ============================================================================
+# Docker Compose — Local Development
+# ============================================================================
+# Usage:
+#   cp .env.docker.example .env.docker
+#   # Edit .env.docker with your actual values
+#   docker compose up --build
+#
+# Services:
+#   - frontend   → http://localhost:3000
+#   - backend    → http://localhost:8000
+#   - mcp-wiki   → http://localhost:8765  (Wikipedia MCP server)
+# ============================================================================
+
+services:
+  # ── MCP Wikipedia Server ──────────────────────────────────────────────────
+  mcp-wiki:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.mcp
+    container_name: profassistant-mcp-wiki
+    ports:
+      - "8765:8765"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8765/sse')"
+        ]
+      interval: 15s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  # ── Backend (FastAPI) ─────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: profassistant-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.docker
+    environment:
+      # Override MCP URL to point to the Docker service name
+      MCP_WIKIPEDIA_URL: "http://mcp-wiki:8765/sse"
+      # Allow frontend origins (local Docker + dev)
+      CORS_ORIGINS: "http://localhost:3000,http://localhost:5173"
+    volumes:
+      # Persist SQLite databases and ChromaDB across restarts
+      - backend-data:/app/data
+    depends_on:
+      mcp-wiki:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Frontend (React + Nginx) ──────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # For local dev, frontend calls backend directly on port 8000
+        VITE_API_URL: "http://localhost:8000"
+    container_name: profassistant-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  backend-data:
