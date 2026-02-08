@@ -275,6 +275,8 @@
     }
   },
   "app": {
-    "title": "ProfAssistant"
+    "title": "ProfAssistant",
+    "welcome": "Mit szeretnél létrehozni?",
+    "welcomeSubtitle": "Válassz az alábbi eszközök közül a kezdéshez."
   }
 }

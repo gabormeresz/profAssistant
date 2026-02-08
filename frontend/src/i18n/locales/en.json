@@ -275,6 +275,8 @@
     }
   },
   "app": {
-    "title": "ProfAssistant"
+    "title": "ProfAssistant",
+    "welcome": "What would you like to create?",
+    "welcomeSubtitle": "Choose a tool below to get started."
   }
 }
