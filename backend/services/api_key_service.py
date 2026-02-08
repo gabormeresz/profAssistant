@@ -59,3 +59,38 @@ async def require_api_key(user_id: str) -> str:
             "Please configure your API key in your profile settings."
         )
     return key
+
+
+async def resolve_user_llm_config(user_id: str) -> tuple[str, Optional[str]]:
+    """
+    Resolve both the API key **and** preferred model for a user in a
+    single DB look-up.
+
+    Returns:
+        ``(api_key, preferred_model)`` — *preferred_model* may be
+        ``None`` (falls back to the default in the model layer).
+
+    Raises:
+        ValueError: If no API key could be resolved.
+    """
+    user = await user_repository.get_user_by_id(user_id)
+    if user is None:
+        raise ValueError("User not found.")
+
+    # Admin → server-side key; model preference still comes from DB.
+    if user["role"] == "admin":
+        api_key = os.environ.get("OPENAI_API_KEY") or None
+    else:
+        api_key = await user_settings_repository.get_decrypted_api_key(user_id)
+
+    if not api_key:
+        raise ValueError(
+            "No OpenAI API key available. "
+            "Please configure your API key in your profile settings."
+        )
+
+    # Preferred model — one lightweight query (already cached by SQLite)
+    settings = await user_settings_repository.get_user_settings(user_id)
+    preferred_model = settings["preferred_model"] if settings else None
+
+    return api_key, preferred_model

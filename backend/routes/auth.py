@@ -18,6 +18,7 @@ from schemas.user import (
     TokenRefreshRequest,
     UserSettingsResponse,
     UserSettingsUpdate,
+    AvailableModel,
 )
 from services.auth_service import (
     register_user,
@@ -29,6 +30,7 @@ from services.auth_service import (
     get_current_admin,
 )
 from services.user_settings_repository import user_settings_repository
+from config import LLMConfig
 
 logger = logging.getLogger(__name__)
 
@@ -162,6 +164,7 @@ async def get_settings(user: dict = Depends(get_current_user)):
     return UserSettingsResponse(
         has_api_key=settings["has_api_key"],
         preferred_model=settings["preferred_model"],
+        available_models=[AvailableModel(**m) for m in LLMConfig.AVAILABLE_MODELS],
         updated_at=datetime.fromisoformat(settings["updated_at"]),
     )
 
@@ -203,5 +206,6 @@ async def update_settings(
     return UserSettingsResponse(
         has_api_key=settings["has_api_key"],
         preferred_model=settings["preferred_model"],
+        available_models=[AvailableModel(**m) for m in LLMConfig.AVAILABLE_MODELS],
         updated_at=datetime.fromisoformat(settings["updated_at"]),
     )

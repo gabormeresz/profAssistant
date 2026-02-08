@@ -12,7 +12,7 @@ from agent.model import get_structured_output_model
 from agent.base.nodes.helpers import extract_content
 from config import EvaluationConfig
 from schemas.evaluation import EvaluationResult
-from services.api_key_service import require_api_key
+from services.api_key_service import resolve_user_llm_config
 
 from ..state import LessonPlanState
 from ..prompts import get_evaluator_system_prompt
@@ -100,9 +100,12 @@ Provide your evaluation with:
 
     try:
         # Call the evaluator model with structured output (per-request for user API key)
-        api_key = await require_api_key(state.get("user_id", ""))
+        api_key, model_name = await resolve_user_llm_config(state.get("user_id", ""))
         evaluation_model = get_structured_output_model(
-            EvaluationResult, api_key=api_key
+            EvaluationResult,
+            api_key=api_key,
+            model_name=model_name,
+            purpose="evaluator",
         )
         evaluation_result = await evaluation_model.ainvoke(evaluation_messages)
 

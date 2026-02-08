@@ -14,7 +14,7 @@ from langchain_core.messages import HumanMessage
 
 from agent.tool_config import get_model_with_tools
 from schemas.evaluation import EvaluationResult
-from services.api_key_service import require_api_key
+from services.api_key_service import resolve_user_llm_config
 
 from ..state import BaseGenerationState
 
@@ -60,8 +60,10 @@ async def refine_content(
 
     # Get model with appropriate tools based on whether documents are ingested
     has_documents = state.get("has_ingested_documents", False)
-    api_key = await require_api_key(state.get("user_id", ""))
-    model_with_tools = get_model_with_tools(has_documents, api_key=api_key)
+    api_key, model_name = await resolve_user_llm_config(state.get("user_id", ""))
+    model_with_tools = get_model_with_tools(
+        has_documents, api_key=api_key, model_name=model_name, purpose="generator"
+    )
 
     response = await model_with_tools.ainvoke(messages)
 

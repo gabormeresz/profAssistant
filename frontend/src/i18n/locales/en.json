@@ -254,7 +254,10 @@
     },
     "models": {
       "gpt4oMiniDesc": "Fast and cost-effective. Great for most tasks.",
-      "gpt4oDesc": "Most capable model. Best quality, higher cost."
+      "gpt41MiniDesc": "Improved instruction following and structured output. Similar cost to 4o Mini.",
+      "gpt5MiniDesc": "Next-gen compact model. Excellent quality-to-cost ratio.",
+      "gpt5Desc": "Premium model. Top-tier quality for complex content generation.",
+      "gpt52Desc": "Latest flagship model. Best available quality and capabilities."
     },
     "errors": {
       "emptyApiKey": "Please enter an API key",

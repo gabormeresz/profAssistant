@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import { fetchUserSettings, updateUserSettings } from "../services/authService";
 import { LanguageSelector } from "../components";
-import type { UserSettingsResponse } from "../types/auth";
+import type { UserSettingsResponse, AvailableModel } from "../types/auth";
 import {
   ArrowLeft,
   User,
@@ -16,15 +16,6 @@ import {
   ShieldX,
   AlertTriangle
 } from "lucide-react";
-
-const AVAILABLE_MODELS = [
-  {
-    value: "gpt-4o-mini",
-    label: "GPT-4o Mini",
-    description: "profile.models.gpt4oMiniDesc"
-  },
-  { value: "gpt-4o", label: "GPT-4o", description: "profile.models.gpt4oDesc" }
-];
 
 export default function ProfilePage() {
   const { t } = useTranslation();
@@ -312,31 +303,35 @@ export default function ProfilePage() {
           ) : (
             <>
               <div className="space-y-3 mb-5">
-                {AVAILABLE_MODELS.map((model) => (
-                  <label
-                    key={model.value}
-                    className={`flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-colors ${
-                      selectedModel === model.value
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="model"
-                      value={model.value}
-                      checked={selectedModel === model.value}
-                      onChange={(e) => setSelectedModel(e.target.value)}
-                      className="mt-1 accent-blue-600"
-                    />
-                    <div>
-                      <p className="font-medium text-gray-900">{model.label}</p>
-                      <p className="text-sm text-gray-500">
-                        {t(model.description)}
-                      </p>
-                    </div>
-                  </label>
-                ))}
+                {(settings?.available_models ?? []).map(
+                  (model: AvailableModel) => (
+                    <label
+                      key={model.id}
+                      className={`flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-colors ${
+                        selectedModel === model.id
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="model"
+                        value={model.id}
+                        checked={selectedModel === model.id}
+                        onChange={(e) => setSelectedModel(e.target.value)}
+                        className="mt-1 accent-blue-600"
+                      />
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          {model.label}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {t(model.description_key)}
+                        </p>
+                      </div>
+                    </label>
+                  )
+                )}
               </div>
 
               <button

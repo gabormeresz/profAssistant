@@ -11,7 +11,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from agent.model import get_structured_output_model
 from agent.base.nodes.helpers import extract_content
 from schemas.presentation import Presentation
-from services.api_key_service import require_api_key
+from services.api_key_service import resolve_user_llm_config
 
 from ..state import PresentationState
 
@@ -69,8 +69,13 @@ async def generate_structured_response(state: PresentationState) -> dict:
 
         logger.info("Invoking structured output model...")
 
-        api_key = await require_api_key(state.get("user_id", ""))
-        structured_model = get_structured_output_model(Presentation, api_key=api_key)
+        api_key, model_name = await resolve_user_llm_config(state.get("user_id", ""))
+        structured_model = get_structured_output_model(
+            Presentation,
+            api_key=api_key,
+            model_name=model_name,
+            purpose="generator",
+        )
         response = await structured_model.ainvoke(messages)
 
         logger.info(f"Structured output model returned: {type(response)}")

@@ -254,7 +254,10 @@
     },
     "models": {
       "gpt4oMiniDesc": "Gyors és költséghatékony. A legtöbb feladathoz ideális.",
-      "gpt4oDesc": "A legképesebb modell. Legjobb minőség, magasabb költség."
+      "gpt41MiniDesc": "Jobb instrukció-követés és strukturált kimenet. Hasonló ár, mint a 4o Mini.",
+      "gpt5MiniDesc": "Új generációs kompakt modell. Kiváló minőség-ár arány.",
+      "gpt5Desc": "Prémium modell. Csúcsminőség összetett tartalom generáláshoz.",
+      "gpt52Desc": "A legújabb zászlóshajó modell. A legjobb elérhető minőség és képességek."
     },
     "errors": {
       "emptyApiKey": "Kérem adja meg az API kulcsot",

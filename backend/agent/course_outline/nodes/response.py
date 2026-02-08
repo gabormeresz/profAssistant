@@ -11,7 +11,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from agent.model import get_structured_output_model
 from agent.base.nodes.helpers import extract_content
 from schemas.course_outline import CourseOutline
-from services.api_key_service import require_api_key
+from services.api_key_service import resolve_user_llm_config
 
 from ..state import CourseOutlineState
 
@@ -46,8 +46,13 @@ async def generate_structured_response(state: CourseOutlineState) -> dict:
 
         # Generate structured output - the schema enforces the structure,
         # so we just need to pass the content for parsing
-        api_key = await require_api_key(state.get("user_id", ""))
-        structured_model = get_structured_output_model(CourseOutline, api_key=api_key)
+        api_key, model_name = await resolve_user_llm_config(state.get("user_id", ""))
+        structured_model = get_structured_output_model(
+            CourseOutline,
+            api_key=api_key,
+            model_name=model_name,
+            purpose="generator",
+        )
         response = await structured_model.ainvoke(
             [HumanMessage(content=context_content)]
         )

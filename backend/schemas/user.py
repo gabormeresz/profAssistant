@@ -2,7 +2,7 @@
 User-related schemas for authentication, sessions, and settings.
 """
 
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, field_validator
 from datetime import datetime
 from typing import Optional
 from enum import Enum
@@ -65,6 +65,14 @@ class TokenRefreshRequest(BaseModel):
 # =============================================================================
 
 
+class AvailableModel(BaseModel):
+    """A single selectable LLM model."""
+
+    id: str = Field(..., description="OpenAI model identifier")
+    label: str = Field(..., description="Human-readable label")
+    description_key: str = Field(..., description="i18n key for the model description")
+
+
 class UserSettingsResponse(BaseModel):
     """Response model for user settings (API key shown as masked)."""
 
@@ -73,6 +81,10 @@ class UserSettingsResponse(BaseModel):
     )
     preferred_model: str = Field(
         default="gpt-4o-mini", description="Preferred OpenAI model"
+    )
+    available_models: list[AvailableModel] = Field(
+        default_factory=list,
+        description="List of models the user may choose from",
     )
     updated_at: datetime = Field(..., description="Last settings update timestamp")
 
@@ -86,3 +98,14 @@ class UserSettingsUpdate(BaseModel):
     preferred_model: Optional[str] = Field(
         None, description="Preferred OpenAI model identifier"
     )
+
+    @field_validator("preferred_model")
+    @classmethod
+    def validate_preferred_model(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            from config import LLMConfig
+
+            if v not in LLMConfig.ALLOWED_MODEL_IDS:
+                allowed = ", ".join(sorted(LLMConfig.ALLOWED_MODEL_IDS))
+                raise ValueError(f"Invalid model '{v}'. Allowed models: {allowed}")
+        return v

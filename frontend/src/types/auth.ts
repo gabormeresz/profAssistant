@@ -27,9 +27,16 @@ export interface TokenRefreshRequest {
   refresh_token: string;
 }
 
+export interface AvailableModel {
+  id: string;
+  label: string;
+  description_key: string;
+}
+
 export interface UserSettingsResponse {
   has_api_key: boolean;
   preferred_model: string;
+  available_models: AvailableModel[];
   updated_at: string;
 }
 

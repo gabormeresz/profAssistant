@@ -40,23 +40,65 @@ class RAGConfig:
 class LLMConfig:
     """Configuration for LLM models."""
 
-    # Default models
+    # Default model assigned to every new user
     DEFAULT_MODEL: str = "gpt-4o-mini"
 
-    # Temperature settings
-    DEFAULT_TEMPERATURE: float = 0.7
+    # Supported models the user may choose from.
+    # Each entry carries an id (OpenAI model name), a human-readable label,
+    # and an i18n description key resolved by the frontend.
+    AVAILABLE_MODELS: list[dict] = [
+        {
+            "id": "gpt-4o-mini",
+            "label": "GPT-4o Mini",
+            "description_key": "profile.models.gpt4oMiniDesc",
+        },
+        {
+            "id": "gpt-4.1-mini",
+            "label": "GPT-4.1 Mini",
+            "description_key": "profile.models.gpt41MiniDesc",
+        },
+        {
+            "id": "gpt-5-mini",
+            "label": "GPT-5 Mini",
+            "description_key": "profile.models.gpt5MiniDesc",
+        },
+        {"id": "gpt-5", "label": "GPT-5", "description_key": "profile.models.gpt5Desc"},
+        {
+            "id": "gpt-5.2",
+            "label": "GPT-5.2",
+            "description_key": "profile.models.gpt52Desc",
+        },
+    ]
 
+    # Quick set for validation
+    ALLOWED_MODEL_IDS: set[str] = {m["id"] for m in AVAILABLE_MODELS}
 
-# =============================================================================
-# Prompt Enhancer Configuration
-# =============================================================================
+    # Models that use internal chain-of-thought (reasoning tokens).
+    # These support ``reasoning_effort`` but NOT custom ``temperature``.
+    REASONING_MODELS: set[str] = {"gpt-5-mini", "gpt-5", "gpt-5.2"}
 
-
-class PromptEnhancerConfig:
-    """Configuration for the prompt enhancer."""
-
-    TEMPERATURE: float = 0.5
-    MAX_TOKENS: int = 250
+    # -----------------------------------------------------------------
+    # Purpose-based model presets
+    # -----------------------------------------------------------------
+    # Each preset defines parameters sent to the OpenAI API.
+    #   • temperature / max_tokens  → used by non-reasoning models only
+    #   • reasoning_effort           → used by reasoning models only
+    # Incompatible params are stripped automatically in model.py.
+    MODEL_PRESETS: dict[str, dict] = {
+        "enhancer": {
+            "temperature": 0.5,
+            "max_tokens": 250,
+            "reasoning_effort": "low",
+        },
+        "generator": {
+            "temperature": 0.5,
+            "reasoning_effort": "medium",
+        },
+        "evaluator": {
+            "temperature": 0.3,
+            "reasoning_effort": "low",
+        },
+    }
 
 
 # =============================================================================

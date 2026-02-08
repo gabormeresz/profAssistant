@@ -55,5 +55,6 @@ export type {
   TokenPair,
   TokenRefreshRequest,
   UserSettingsResponse,
-  UserSettingsUpdate
+  UserSettingsUpdate,
+  AvailableModel
 } from "./auth";

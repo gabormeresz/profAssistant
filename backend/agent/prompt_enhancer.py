@@ -3,13 +3,12 @@ from typing import Optional, Dict, Any, List, Literal
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from agent.model import get_model
-from config import PromptEnhancerConfig
 
 
 def _build_system_prompt(language: Optional[str], context_text: str) -> str:
     """Build system prompt with language instruction and context if provided."""
     base_prompt = (
-        "You are an expert prompt engineer for educational content generation systems.\n\n"
+        "You are an expert prompt engineer specializing in **Higher Education (University-level)** content.\n"
         "Your task: Transform the user's basic prompt into a clear, specific, and effective instruction.\n\n"
         "## Rules\n"
         "1. **Enhance, don't change intent**: Preserve what the user wants, just make it clearer\n"
@@ -78,7 +77,7 @@ def _build_user_message(message: str, context_type: str) -> str:
     }
     content_type = type_map.get(context_type, "course outline")
     return (
-        f"My initial prompt is: '''{message}'''. "
+        f"My initial prompt is: '''{message}'''.\n"
         f"Please refine it into a clearer, richer, and more effective instruction for generating a {content_type}. "
         "Do not include any context details in your output."
     )
@@ -128,16 +127,18 @@ async def prompt_enhancer(
     messages = _build_messages(message, context_type, context_text, language)
 
     # Resolve per-user API key via the centralised service.
-    # require_api_key raises ValueError if a regular user has no key,
-    # preventing silent fallback to the server-side .env key.
-    from services.api_key_service import require_api_key
+    # Always use the default model (gpt-4o-mini) for prompt enhancement
+    # regardless of the user's preferred model.
+    from services.api_key_service import resolve_user_llm_config
 
-    api_key = (await require_api_key(user_id)) if user_id else None
+    if user_id:
+        api_key, _ = await resolve_user_llm_config(user_id)
+    else:
+        api_key = None
 
     model = get_model(
         api_key=api_key,
-        temperature=PromptEnhancerConfig.TEMPERATURE,
-        max_tokens=PromptEnhancerConfig.MAX_TOKENS,
+        purpose="enhancer",
     )
     response = await model.ainvoke(messages)
 
