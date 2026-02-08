@@ -3,7 +3,8 @@ import { useSavedConversationsContext } from "../../contexts/SavedConversationsC
 import SavedConversationItem from "./SavedConversationItem";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
-import UserStatusBadge from "./UserStatusBadge";
+import ModelSelector from "./ModelSelector";
+import ApiKeyWarning from "./ApiKeyWarning";
 import { FileText, BookOpen, Presentation, ClipboardList } from "lucide-react";
 
 interface SidebarProps {
@@ -88,7 +89,9 @@ function Sidebar({ onNewConversation }: SidebarProps) {
 
       <LanguageSelector />
 
-      <UserStatusBadge />
+      <ModelSelector />
+
+      <ApiKeyWarning />
 
       <hr className="my-2 border-[#3d4a5c]" />
 

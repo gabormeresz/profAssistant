@@ -6,7 +6,7 @@ export interface AuthContextValue {
   /** True while we are checking the stored token on first load. */
   isLoading: boolean;
   /** Re-fetch the current user (e.g. after login). */
-  refreshUser: () => Promise<void>;
+  refreshUser: () => Promise<import("../types/auth").UserResponse | null>;
   /** Log out and clear state. */
   logout: () => Promise<void>;
   /** Whether the user is authenticated. */
@@ -16,7 +16,9 @@ export interface AuthContextValue {
   /** True while settings are being loaded for the first time. */
   isLoadingSettings: boolean;
   /** Re-fetch settings (e.g. after saving on the profile page). */
-  refreshSettings: () => Promise<void>;
+  refreshSettings: () => Promise<
+    import("../types/auth").UserSettingsResponse | null
+  >;
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(

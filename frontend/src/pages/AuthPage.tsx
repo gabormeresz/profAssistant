@@ -2,12 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
-import {
-  loginUser,
-  registerUser,
-  fetchUserSettings,
-  fetchCurrentUser
-} from "../services/authService";
+import { loginUser, registerUser } from "../services/authService";
 import { LanguageSelector } from "../components";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
 
@@ -16,7 +11,7 @@ type AuthMode = "login" | "signup";
 export default function AuthPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { refreshUser } = useAuth();
+  const { refreshUser, refreshSettings } = useAuth();
 
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
@@ -75,20 +70,19 @@ export default function AuthPage() {
         }, 1500);
       } else {
         await loginUser({ email, password });
-        await refreshUser();
+        const [currentUser, userSettings] = await Promise.all([
+          refreshUser(),
+          refreshSettings()
+        ]);
 
         // Check if user needs API key setup (non-admin without key)
-        try {
-          const [currentUser, userSettings] = await Promise.all([
-            fetchCurrentUser(),
-            fetchUserSettings()
-          ]);
-          if (currentUser.role !== "admin" && !userSettings.has_api_key) {
-            navigate("/profile?setup=true");
-            return;
-          }
-        } catch {
-          // If settings fetch fails, still proceed to home
+        if (
+          currentUser &&
+          currentUser.role !== "admin" &&
+          !userSettings?.has_api_key
+        ) {
+          navigate("/profile?setup=true");
+          return;
         }
 
         navigate("/");

@@ -41,7 +41,9 @@
     "profileSettings": "Profil beállítások",
     "apiKey": "API kulcs",
     "apiSet": "API beállítva",
-    "apiNotSet": "API nincs beállítva"
+    "apiNotSet": "API nincs beállítva",
+    "selectModel": "Modell választás",
+    "apiKeyMissing": "API kulcs beállítása →"
   },
   "header": {
     "courseOutlineGenerator": "Tárgytematika Készítő",

@@ -41,7 +41,9 @@
     "profileSettings": "Profile settings",
     "apiKey": "API key",
     "apiSet": "API set",
-    "apiNotSet": "API not set"
+    "apiNotSet": "API not set",
+    "selectModel": "Select model",
+    "apiKeyMissing": "Set your API key →"
   },
   "header": {
     "courseOutlineGenerator": "Course Outline Generator",

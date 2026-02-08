@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Settings, CheckCircle, AlertTriangle } from "lucide-react";
+import { Settings, AlertTriangle } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function UserStatusBadge() {
@@ -21,12 +21,8 @@ export default function UserStatusBadge() {
       <Settings className="w-5 h-5 shrink-0" />
 
       <span className="flex items-center gap-1.5 shrink-0">
-        <span>{t("sidebar.apiKey")}</span>
-        {hasApiKey ? (
-          <CheckCircle className="w-4 h-4 text-emerald-400" />
-        ) : (
-          <AlertTriangle className="w-4 h-4 text-amber-400" />
-        )}
+        <span>{t("sidebar.profileSettings")}</span>
+        {!hasApiKey && <AlertTriangle className="w-4 h-4 text-amber-400" />}
       </span>
 
       {modelLabel && (

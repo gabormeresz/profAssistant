@@ -20,8 +20,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const u = await fetchCurrentUser();
       setUser(u);
+      return u;
     } catch {
       setUser(null);
+      return null;
     }
   }, []);
 
@@ -29,8 +31,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const s = await fetchUserSettings();
       setSettings(s);
+      return s;
     } catch {
       setSettings(null);
+      return null;
     }
   }, []);
 
