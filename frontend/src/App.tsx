@@ -6,7 +6,8 @@ import {
   PresentationGenerator,
   AssessmentGenerator,
   AuthPage,
-  ProfilePage
+  ProfilePage,
+  AppPage
 } from "./pages";
 import { SavedConversationsProvider } from "./contexts/SavedConversationsContext";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -25,6 +26,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/app"
+              element={
+                <ProtectedRoute>
+                  <AppPage />
                 </ProtectedRoute>
               }
             />

@@ -37,7 +37,11 @@
     "noConversations": "Még nincsenek beszélgetések",
     "startNewConversation": "Indíts egy új beszélgetést, hogy itt megjelenjen",
     "classes": "óra",
-    "deleteConversation": "Beszélgetés törlése"
+    "deleteConversation": "Beszélgetés törlése",
+    "profileSettings": "Profil beállítások",
+    "apiKey": "API kulcs",
+    "apiSet": "API beállítva",
+    "apiNotSet": "API nincs beállítva"
   },
   "header": {
     "courseOutlineGenerator": "Tárgytematika Készítő",
@@ -259,9 +263,16 @@
       "gpt5Desc": "Prémium modell. Csúcsminőség összetett tartalom generáláshoz.",
       "gpt52Desc": "A legújabb zászlóshajó modell. A legjobb elérhető minőség és képességek."
     },
+    "navigation": {
+      "home": "Főoldal",
+      "openApp": "Alkalmazás Megnyitása"
+    },
     "errors": {
       "emptyApiKey": "Kérem adja meg az API kulcsot",
       "saveFailed": "A beállítások mentése sikertelen"
     }
+  },
+  "app": {
+    "title": "ProfAssistant"
   }
 }

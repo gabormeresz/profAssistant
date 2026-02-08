@@ -11,6 +11,12 @@ export interface AuthContextValue {
   logout: () => Promise<void>;
   /** Whether the user is authenticated. */
   isAuthenticated: boolean;
+  /** The user's settings (API key status, preferred model, etc.). */
+  settings: import("../types/auth").UserSettingsResponse | null;
+  /** True while settings are being loaded for the first time. */
+  isLoadingSettings: boolean;
+  /** Re-fetch settings (e.g. after saving on the profile page). */
+  refreshSettings: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(

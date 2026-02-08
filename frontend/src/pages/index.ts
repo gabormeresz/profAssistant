@@ -5,3 +5,4 @@ export { default as PresentationGenerator } from "./PresentationGenerator";
 export { default as AssessmentGenerator } from "./AssessmentGenerator";
 export { default as AuthPage } from "./AuthPage";
 export { default as ProfilePage } from "./ProfilePage";
+export { default as AppPage } from "./AppPage";

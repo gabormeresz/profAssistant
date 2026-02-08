@@ -3,6 +3,7 @@ import { useSavedConversationsContext } from "../../contexts/SavedConversationsC
 import SavedConversationItem from "./SavedConversationItem";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "./LanguageSelector";
+import UserStatusBadge from "./UserStatusBadge";
 import { FileText, BookOpen, Presentation, ClipboardList } from "lucide-react";
 
 interface SidebarProps {
@@ -87,7 +88,11 @@ function Sidebar({ onNewConversation }: SidebarProps) {
 
       <LanguageSelector />
 
-      <nav className="space-y-2">
+      <UserStatusBadge />
+
+      <hr className="my-2 border-[#3d4a5c]" />
+
+      <nav className="space-y-1">
         {navItems.map((item) => {
           const isActive = currentBasePath === item.path;
           const Icon = item.icon;
@@ -96,7 +101,7 @@ function Sidebar({ onNewConversation }: SidebarProps) {
               key={item.path}
               to={item.path}
               onClick={(e) => handleNavClick(e, item.path)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              className={`flex items-center gap-3 px-4 py-2 rounded-lg transition-colors ${
                 isActive
                   ? "bg-[#333f51] text-white font-medium"
                   : "text-[#cddaef] hover:text-white hover:bg-[#333f51]"
@@ -109,10 +114,10 @@ function Sidebar({ onNewConversation }: SidebarProps) {
         })}
       </nav>
 
-      <hr className="my-6 border-[#3d4a5c]" />
+      <hr className="my-3 border-[#3d4a5c]" />
 
       <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-        <div className="flex items-center justify-between mb-3 flex-shrink-0">
+        <div className="flex items-center justify-between mb-2 flex-shrink-0">
           <h3 className="text-sm font-semibold text-[#cddaef] px-3">
             {t("sidebar.recentConversations")}
           </h3>

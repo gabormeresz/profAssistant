@@ -42,11 +42,11 @@ const LanguageSelector = ({ variant = "sidebar" }: LanguageSelectorProps) => {
   // Sidebar styles
   if (variant === "sidebar") {
     return (
-      <div className="mb-6">
+      <div className="mb-1">
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[#cddaef] hover:text-white hover:bg-[#333f51] focus:outline-none focus:border-transparent cursor-pointer transition-colors"
+            className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-[#cddaef] hover:text-white hover:bg-[#333f51] focus:outline-none focus:border-transparent cursor-pointer transition-colors"
           >
             <Globe className="w-5 h-5 opacity-70" />
             <div className="flex items-center justify-between flex-1">

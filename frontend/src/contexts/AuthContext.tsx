@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, type ReactNode } from "react";
-import type { UserResponse } from "../types/auth";
+import type { UserResponse, UserSettingsResponse } from "../types/auth";
 import {
   fetchCurrentUser,
+  fetchUserSettings,
   logoutUser,
   getAccessToken
 } from "../services/authService";
@@ -12,6 +13,8 @@ export type { AuthContextValue } from "./authContextDef";
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [settings, setSettings] = useState<UserSettingsResponse | null>(null);
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
   const refreshUser = useCallback(async () => {
     try {
@@ -22,21 +25,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const refreshSettings = useCallback(async () => {
+    try {
+      const s = await fetchUserSettings();
+      setSettings(s);
+    } catch {
+      setSettings(null);
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     await logoutUser();
     setUser(null);
+    setSettings(null);
   }, []);
 
-  // On mount, check if there's a stored token and load user
+  // On mount, check if there's a stored token and load user + settings
   useEffect(() => {
     const init = async () => {
       if (getAccessToken()) {
         await refreshUser();
+        await refreshSettings();
       }
       setIsLoading(false);
+      setIsLoadingSettings(false);
     };
     init();
-  }, [refreshUser]);
+  }, [refreshUser, refreshSettings]);
 
   return (
     <AuthContext.Provider
@@ -45,7 +60,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         refreshUser,
         logout,
-        isAuthenticated: user !== null
+        isAuthenticated: user !== null,
+        settings,
+        isLoadingSettings,
+        refreshSettings
       }}
     >
       {children}

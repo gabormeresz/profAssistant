@@ -37,7 +37,11 @@
     "noConversations": "No conversations yet",
     "startNewConversation": "Start a new conversation to see it here",
     "classes": "classes",
-    "deleteConversation": "Delete conversation"
+    "deleteConversation": "Delete conversation",
+    "profileSettings": "Profile settings",
+    "apiKey": "API key",
+    "apiSet": "API set",
+    "apiNotSet": "API not set"
   },
   "header": {
     "courseOutlineGenerator": "Course Outline Generator",
@@ -259,9 +263,16 @@
       "gpt5Desc": "Premium model. Top-tier quality for complex content generation.",
       "gpt52Desc": "Latest flagship model. Best available quality and capabilities."
     },
+    "navigation": {
+      "home": "Home",
+      "openApp": "Open App"
+    },
     "errors": {
       "emptyApiKey": "Please enter an API key",
       "saveFailed": "Failed to save settings"
     }
+  },
+  "app": {
+    "title": "ProfAssistant"
   }
 }

@@ -7,7 +7,8 @@ import {
   BookOpen,
   Presentation,
   ClipboardList,
-  User
+  User,
+  Rocket
 } from "lucide-react";
 
 function Home() {
@@ -80,7 +81,15 @@ function Home() {
             <p className="text-lg text-gray-600 mb-8 leading-relaxed">
               {t("home.hero.subtitle")}
             </p>
-            {!isAuthenticated && (
+            {isAuthenticated ? (
+              <Link
+                to="/app"
+                className="inline-flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
+              >
+                <Rocket className="w-5 h-5" />
+                {t("profile.navigation.openApp")}
+              </Link>
+            ) : (
               <Link
                 to="/auth"
                 className="inline-block px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"

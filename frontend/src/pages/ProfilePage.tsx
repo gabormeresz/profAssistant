@@ -2,11 +2,10 @@ import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
-import { fetchUserSettings, updateUserSettings } from "../services/authService";
+import { updateUserSettings } from "../services/authService";
 import { LanguageSelector } from "../components";
-import type { UserSettingsResponse, AvailableModel } from "../types/auth";
+import type { AvailableModel } from "../types/auth";
 import {
-  ArrowLeft,
   User,
   Key,
   Cpu,
@@ -14,17 +13,18 @@ import {
   Loader2,
   ShieldCheck,
   ShieldX,
-  AlertTriangle
+  AlertTriangle,
+  Home,
+  Rocket
 } from "lucide-react";
 
 export default function ProfilePage() {
   const { t } = useTranslation();
-  const { user, logout } = useAuth();
+  const { user, logout, settings, isLoadingSettings, refreshSettings } =
+    useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const isSetupMode = searchParams.get("setup") === "true";
 
-  const [settings, setSettings] = useState<UserSettingsResponse | null>(null);
-  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
   const [showSetupBanner, setShowSetupBanner] = useState(false);
 
   // API key form
@@ -40,26 +40,17 @@ export default function ProfilePage() {
   const [modelSaveError, setModelSaveError] = useState("");
 
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const s = await fetchUserSettings();
-        setSettings(s);
-        setSelectedModel(s.preferred_model);
-        // Show setup banner for non-admin users without API key on first visit
-        if (isSetupMode && !s.has_api_key && user?.role !== "admin") {
-          setShowSetupBanner(true);
-        }
-      } catch {
-        // Settings may not exist yet, that's ok
-        if (isSetupMode && user?.role !== "admin") {
-          setShowSetupBanner(true);
-        }
-      } finally {
-        setIsLoadingSettings(false);
+    if (!isLoadingSettings && settings) {
+      setSelectedModel(settings.preferred_model);
+      if (isSetupMode && !settings.has_api_key && user?.role !== "admin") {
+        setShowSetupBanner(true);
       }
-    };
-    loadSettings();
-  }, [isSetupMode, user?.role]);
+    } else if (!isLoadingSettings && !settings) {
+      if (isSetupMode && user?.role !== "admin") {
+        setShowSetupBanner(true);
+      }
+    }
+  }, [isLoadingSettings, settings, isSetupMode, user?.role]);
 
   const handleSaveApiKey = async () => {
     setKeySaveError("");
@@ -72,8 +63,8 @@ export default function ProfilePage() {
 
     setIsSavingKey(true);
     try {
-      const updated = await updateUserSettings({ openai_api_key: apiKey });
-      setSettings(updated);
+      await updateUserSettings({ openai_api_key: apiKey });
+      await refreshSettings();
       setApiKey("");
       setKeySaveSuccess(true);
       setShowSetupBanner(false);
@@ -95,8 +86,8 @@ export default function ProfilePage() {
     setKeySaveError("");
     setIsSavingKey(true);
     try {
-      const updated = await updateUserSettings({ openai_api_key: "" });
-      setSettings(updated);
+      await updateUserSettings({ openai_api_key: "" });
+      await refreshSettings();
       setKeySaveSuccess(true);
       setTimeout(() => setKeySaveSuccess(false), 3000);
     } catch (err) {
@@ -113,10 +104,10 @@ export default function ProfilePage() {
     setModelSaveSuccess(false);
     setIsSavingModel(true);
     try {
-      const updated = await updateUserSettings({
+      await updateUserSettings({
         preferred_model: selectedModel
       });
-      setSettings(updated);
+      await refreshSettings();
       setModelSaveSuccess(true);
       setTimeout(() => setModelSaveSuccess(false), 3000);
     } catch (err) {
@@ -134,7 +125,6 @@ export default function ProfilePage() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2">
-            <ArrowLeft className="w-5 h-5 text-gray-500" />
             <h1 className="text-2xl font-bold">
               Prof<span className="text-blue-600">Assistant</span>
             </h1>
@@ -356,6 +346,24 @@ export default function ProfilePage() {
               )}
             </>
           )}
+        </div>
+
+        {/* Navigation buttons */}
+        <div className="flex gap-4 mt-8">
+          <Link
+            to="/"
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 transition-colors text-gray-700 font-medium"
+          >
+            <Home className="w-5 h-5" />
+            {t("profile.navigation.home")}
+          </Link>
+          <Link
+            to="/app"
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 rounded-xl shadow-sm hover:bg-blue-700 transition-colors text-white font-medium"
+          >
+            <Rocket className="w-5 h-5" />
+            {t("profile.navigation.openApp")}
+          </Link>
         </div>
       </div>
     </div>
