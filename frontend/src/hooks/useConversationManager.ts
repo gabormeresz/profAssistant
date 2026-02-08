@@ -162,7 +162,7 @@ export function useConversationManager<TResult, TConversation>(
   const { refetch: refetchConversations } = useSavedConversationsContext();
 
   // State
-  const [hasStarted, setHasStarted] = useState(false);
+  const [hasStarted, setHasStarted] = useState(!!urlThreadId);
   const [userMessages, setUserMessages] = useState<ConversationMessage[]>([]);
   const [resultHistory, setResultHistory] = useState<TResult[]>([]);
 
