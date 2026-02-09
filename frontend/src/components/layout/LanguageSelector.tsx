@@ -89,46 +89,42 @@ const LanguageSelector = ({ variant = "sidebar" }: LanguageSelectorProps) => {
 
   // Header styles
   return (
-    <div className="relative">
-      <div className="relative" ref={dropdownRef}>
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none cursor-pointer transition-colors h-10"
-        >
-          <div className="flex items-center gap-2">
-            <span
-              className={`fi fi-${currentLanguage?.flag} rounded-sm`}
-            ></span>
-            <span className="whitespace-nowrap text-sm">
-              {currentLanguage?.label}
-            </span>
-            <ChevronDown
-              className={`w-4 h-4 transition-transform ${
-                isOpen ? "rotate-180" : ""
-              }`}
-            />
-          </div>
-        </button>
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none cursor-pointer transition-colors h-10"
+      >
+        <div className="flex items-center gap-2">
+          <span className={`fi fi-${currentLanguage?.flag} rounded-sm`}></span>
+          <span className="whitespace-nowrap text-sm">
+            {currentLanguage?.label}
+          </span>
+          <ChevronDown
+            className={`w-4 h-4 transition-transform ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          />
+        </div>
+      </button>
 
-        {isOpen && (
-          <div className="absolute z-10 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg min-w-[140px]">
-            {languages.map((lang) => (
-              <button
-                key={lang.code}
-                onClick={() => handleLanguageChange(lang.code)}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-md last:rounded-b-md transition-colors ${
-                  i18n.language === lang.code
-                    ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium"
-                    : "text-gray-700 dark:text-gray-300"
-                }`}
-              >
-                <span className={`fi fi-${lang.flag} rounded-sm`}></span>
-                <span>{lang.label}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      {isOpen && (
+        <div className="absolute z-10 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg min-w-[120px]">
+          {languages.map((lang) => (
+            <button
+              key={lang.code}
+              onClick={() => handleLanguageChange(lang.code)}
+              className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-md last:rounded-b-md transition-colors ${
+                i18n.language === lang.code
+                  ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium"
+                  : "text-gray-700 dark:text-gray-300"
+              }`}
+            >
+              <span className={`fi fi-${lang.flag} rounded-sm`}></span>
+              <span>{lang.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

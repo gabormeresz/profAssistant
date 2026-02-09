@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import { loginUser, registerUser } from "../services/authService";
 import { LanguageSelector } from "../components";
-import { Eye, EyeOff, Mail, Lock, ArrowLeft, Sun, Moon } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Sun, Moon } from "lucide-react";
 import { useTheme } from "../hooks/useTheme";
 
 type AuthMode = "login" | "signup";
@@ -106,7 +106,6 @@ export default function AuthPage() {
       <header className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2">
-            <ArrowLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
             <h1 className="text-2xl font-bold dark:text-gray-200">
               Prof
               <span className="text-blue-600 dark:text-blue-400">
@@ -130,9 +129,7 @@ export default function AuthPage() {
                 <Moon className="w-5 h-5" />
               )}
             </button>
-            <div className="w-40">
-              <LanguageSelector variant="header" />
-            </div>
+            <LanguageSelector variant="header" />
           </div>
         </div>
       </header>

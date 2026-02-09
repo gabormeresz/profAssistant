@@ -123,9 +123,7 @@ export default function ProfilePage() {
                 <Moon className="w-5 h-5" />
               )}
             </button>
-            <div className="w-40">
-              <LanguageSelector variant="header" />
-            </div>
+            <LanguageSelector variant="header" />
             <button
               onClick={logout}
               className="px-4 py-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium text-sm"

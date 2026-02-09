@@ -49,9 +49,7 @@ function Home() {
                 <Moon className="w-5 h-5" />
               )}
             </button>
-            <div className="w-40">
-              <LanguageSelector variant="header" />
-            </div>
+            <LanguageSelector variant="header" />
             {isAuthenticated ? (
               <>
                 <Link
