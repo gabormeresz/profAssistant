@@ -4,3 +4,4 @@ export { default as Sidebar } from "./Sidebar";
 export { default as LanguageSelector } from "./LanguageSelector";
 export { default as ModelSelector } from "./ModelSelector";
 export { default as ApiKeyWarning } from "./ApiKeyWarning";
+export { default as ThemeToggle } from "./ThemeToggle";

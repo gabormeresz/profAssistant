@@ -27,10 +27,11 @@ export default function Header({ title }: { title?: string }) {
   return (
     <div
       ref={headerRef}
-      className={`sticky top-0 z-10 pt-6 pb-4 text-center transition-shadow duration-200 ${
-        isScrolled ? "shadow-md border-b border-gray-200" : ""
+      className={`sticky top-0 z-10 pt-6 pb-4 text-center transition-shadow duration-200 bg-surface ${
+        isScrolled
+          ? "shadow-md border-b border-gray-200 dark:border-gray-700"
+          : ""
       }`}
-      style={{ backgroundColor: "#f3f4f4" }}
     >
       <h1 className="text-3xl font-bold text-dark mb-2">{title}</h1>
     </div>

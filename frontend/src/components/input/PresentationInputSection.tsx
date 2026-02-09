@@ -90,16 +90,16 @@ export function PresentationInputSection({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
       <div className="space-y-4">
         {/* Course Title */}
         <div className="mb-6">
           <label
             htmlFor="courseTitle"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {t("presentation.courseTitle")}{" "}
-            <span className="text-red-500">*</span>
+            <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="text"
@@ -116,10 +116,10 @@ export function PresentationInputSection({
           <div>
             <label
               htmlFor="classNumber"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
               {t("presentation.classNumber")}{" "}
-              <span className="text-red-500">*</span>
+              <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               type="number"
@@ -135,10 +135,10 @@ export function PresentationInputSection({
           <div className="md:col-span-3">
             <label
               htmlFor="classTitle"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
               {t("presentation.classTitle")}{" "}
-              <span className="text-red-500">*</span>
+              <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -155,9 +155,10 @@ export function PresentationInputSection({
         <div className="mb-6">
           <label
             htmlFor="language"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
-            {t("presentation.language")} <span className="text-red-500">*</span>
+            {t("presentation.language")}{" "}
+            <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <select
             id="language"
@@ -174,7 +175,7 @@ export function PresentationInputSection({
         <div className="mb-6">
           <label
             htmlFor="learningObjective"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {t("presentation.learningObjective")}
           </label>
@@ -191,14 +192,14 @@ export function PresentationInputSection({
         {/* Key Points */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t("presentation.keyPoints")}
             </label>
             {keyPoints.length < PRESENTATION.MAX_KEY_POINTS && (
               <button
                 type="button"
                 onClick={addKeyPoint}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
               >
                 {t("presentation.addKeyPoint")}
               </button>
@@ -218,7 +219,7 @@ export function PresentationInputSection({
                   <button
                     type="button"
                     onClick={() => removeKeyPoint(index)}
-                    className="px-3 py-2 text-red-600 hover:text-red-700 font-medium"
+                    className="px-3 py-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
                   >
                     ✕
                   </button>
@@ -232,7 +233,7 @@ export function PresentationInputSection({
         <div className="mb-6">
           <label
             htmlFor="lessonBreakdown"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {t("presentation.lessonBreakdown")}
           </label>
@@ -250,7 +251,7 @@ export function PresentationInputSection({
         <div className="mb-6">
           <label
             htmlFor="activities"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {t("presentation.activities")}
           </label>
@@ -268,7 +269,7 @@ export function PresentationInputSection({
         <div className="mb-6">
           <label
             htmlFor="homework"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {t("presentation.homework")}
           </label>
@@ -286,7 +287,7 @@ export function PresentationInputSection({
         <div className="mb-6">
           <label
             htmlFor="extraActivities"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {t("presentation.extraActivities")}
           </label>
@@ -304,7 +305,7 @@ export function PresentationInputSection({
         <div className="mb-6">
           <label
             htmlFor="userComment"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {t("presentation.userComment")}
           </label>
@@ -354,7 +355,7 @@ export function PresentationInputSection({
           <button
             onClick={onSubmit}
             disabled={isButtonDisabled}
-            className="px-6 py-3 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
+            className="px-6 py-3 rounded-lg font-medium transition-colors bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-400 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
           >
             {t("presentation.generatePresentation")}
           </button>

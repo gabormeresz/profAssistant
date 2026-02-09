@@ -6,3 +6,4 @@ export { usePresentationSSE } from "./usePresentationSSE";
 export { useSavedConversations } from "./useSavedConversations";
 export { useConversationManager } from "./useConversationManager";
 export { useAuth } from "./useAuth";
+export { useTheme } from "./useTheme";

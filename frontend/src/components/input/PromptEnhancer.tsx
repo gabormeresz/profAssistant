@@ -65,7 +65,7 @@ export default function PromptEnhancer({
           type="button"
           onClick={handleEnhance}
           disabled={isDisabled}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-600 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 border border-purple-200 dark:border-purple-700 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed dark:disabled:opacity-100 dark:disabled:text-gray-500 dark:disabled:bg-gray-800/40 dark:disabled:border-gray-700"
         >
           <Sparkles className="h-4 w-4" />
           {isEnhancing
@@ -73,7 +73,11 @@ export default function PromptEnhancer({
             : t("promptEnhancer.enhance")}
         </button>
       </div>
-      {error && <p className="text-sm text-red-600">{t(error, error)}</p>}
+      {error && (
+        <p className="text-sm text-red-600 dark:text-red-400">
+          {t(error, error)}
+        </p>
+      )}
     </div>
   );
 }

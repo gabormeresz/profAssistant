@@ -91,16 +91,16 @@ export function LessonPlanInputSection({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
       <div className="space-y-4">
         {/* Course Title */}
         <div className="mb-6">
           <label
             htmlFor="courseTitle"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {t("lessonPlan.courseTitle")}{" "}
-            <span className="text-red-500">*</span>
+            <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="text"
@@ -117,10 +117,10 @@ export function LessonPlanInputSection({
           <div>
             <label
               htmlFor="classNumber"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
               {t("lessonPlan.classNumber")}{" "}
-              <span className="text-red-500">*</span>
+              <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               type="number"
@@ -136,10 +136,10 @@ export function LessonPlanInputSection({
           <div className="md:col-span-3">
             <label
               htmlFor="classTitle"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
               {t("lessonPlan.classTitle")}{" "}
-              <span className="text-red-500">*</span>
+              <span className="text-red-500 dark:text-red-400">*</span>
             </label>
             <input
               type="text"
@@ -156,9 +156,10 @@ export function LessonPlanInputSection({
         <div className="mb-6">
           <label
             htmlFor="language"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
-            {t("lessonPlan.language")} <span className="text-red-500">*</span>
+            {t("lessonPlan.language")}{" "}
+            <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <select
             id="language"
@@ -174,7 +175,7 @@ export function LessonPlanInputSection({
         {/* Learning Objectives */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t("lessonPlan.learningObjectives")}
             </label>
             {learningObjectives.length < LESSON_PLAN.MAX_OBJECTIVES && (
@@ -183,7 +184,7 @@ export function LessonPlanInputSection({
                 onClick={() =>
                   addArrayItem(learningObjectives, setLearningObjectives)
                 }
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
               >
                 {t("lessonPlan.addObjective")}
               </button>
@@ -216,7 +217,7 @@ export function LessonPlanInputSection({
                         setLearningObjectives
                       )
                     }
-                    className="px-3 py-2 text-red-600 hover:text-red-700 font-medium"
+                    className="px-3 py-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
                   >
                     ✕
                   </button>
@@ -229,14 +230,14 @@ export function LessonPlanInputSection({
         {/* Key Topics */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t("lessonPlan.keyTopics")}
             </label>
             {keyTopics.length < LESSON_PLAN.MAX_TOPICS && (
               <button
                 type="button"
                 onClick={() => addArrayItem(keyTopics, setKeyTopics)}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
               >
                 {t("lessonPlan.addTopic")}
               </button>
@@ -265,7 +266,7 @@ export function LessonPlanInputSection({
                     onClick={() =>
                       removeArrayItem(index, keyTopics, setKeyTopics)
                     }
-                    className="px-3 py-2 text-red-600 hover:text-red-700 font-medium"
+                    className="px-3 py-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
                   >
                     ✕
                   </button>
@@ -278,7 +279,7 @@ export function LessonPlanInputSection({
         {/* Activities & Projects */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-2">
-            <label className="block text-sm font-medium text-gray-700">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               {t("lessonPlan.activitiesProjects")}
             </label>
             {activitiesProjects.length < LESSON_PLAN.MAX_ACTIVITIES && (
@@ -287,7 +288,7 @@ export function LessonPlanInputSection({
                 onClick={() =>
                   addArrayItem(activitiesProjects, setActivitiesProjects)
                 }
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
               >
                 {t("lessonPlan.addActivity")}
               </button>
@@ -320,7 +321,7 @@ export function LessonPlanInputSection({
                         setActivitiesProjects
                       )
                     }
-                    className="px-3 py-2 text-red-600 hover:text-red-700 font-medium"
+                    className="px-3 py-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
                   >
                     ✕
                   </button>
@@ -334,7 +335,7 @@ export function LessonPlanInputSection({
         <div className="mb-6">
           <label
             htmlFor="userComment"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {t("lessonPlan.userComment")}
           </label>
@@ -385,7 +386,7 @@ export function LessonPlanInputSection({
           <button
             onClick={onSubmit}
             disabled={isButtonDisabled}
-            className="px-6 py-3 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
+            className="px-6 py-3 rounded-lg font-medium transition-colors bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-400 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
           >
             {t("lessonPlan.generateLessonPlan")}
           </button>

@@ -59,11 +59,11 @@ export default function FileUpload({
             {files.map((file, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg border border-gray-200"
+                className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <FileIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                  <span className="text-sm text-gray-700 truncate">
+                  <FileIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                  <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
                     {file.name}
                   </span>
                   <span className="text-xs text-gray-500 flex-shrink-0">
@@ -72,11 +72,11 @@ export default function FileUpload({
                 </div>
                 <button
                   onClick={() => removeFile(index)}
-                  className="ml-2 p-1 hover:bg-gray-200 rounded transition-colors flex-shrink-0"
+                  className="ml-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors flex-shrink-0"
                   type="button"
                   disabled={disabled}
                 >
-                  <X className="h-4 w-4 text-gray-500" />
+                  <X className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                 </button>
               </div>
             ))}
@@ -84,12 +84,14 @@ export default function FileUpload({
         )}
 
         {/* Error message */}
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && (
+          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        )}
 
         {/* Upload button (compact) */}
         <label className="cursor-pointer inline-block">
-          <div className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <Upload className="h-5 w-5 text-gray-500" />
+          <div className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <Upload className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           </div>
           <input
             type="file"
@@ -107,8 +109,8 @@ export default function FileUpload({
   // Display-only mode (for showing files when form is disabled)
   if (displayOnly) {
     return (
-      <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-        <div className="text-sm font-medium text-gray-700 mb-2">
+      <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+        <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           {t("fileUpload.uploadedFiles")}
         </div>
         {displayFiles && displayFiles.length > 0 ? (
@@ -116,9 +118,9 @@ export default function FileUpload({
             {displayFiles.map((file, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-2 text-sm text-gray-600"
+                className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
               >
-                <FileIcon className="h-4 w-4 text-gray-400" />
+                <FileIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                 <span>{file.name}</span>
               </div>
             ))}
@@ -135,15 +137,15 @@ export default function FileUpload({
   // Full version for initial input
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
         {t("fileUpload.label")}
       </label>
 
       {/* Upload area */}
       <label className="flex-1 cursor-pointer">
-        <div className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors text-center">
-          <Upload className="mx-auto h-8 w-8 text-gray-400" />
-          <p className="mt-1 text-sm text-gray-500">
+        <div className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-blue-400 dark:hover:border-blue-500 transition-colors text-center">
+          <Upload className="mx-auto h-8 w-8 text-gray-400 dark:text-gray-500" />
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {t("fileUpload.clickToUpload")}
           </p>
           <p className="text-xs text-gray-400 mt-1">
@@ -161,7 +163,9 @@ export default function FileUpload({
       </label>
 
       {/* Error message */}
-      {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-600 dark:text-red-400 mt-2">{error}</p>
+      )}
 
       {/* Uploaded files list */}
       {files.length > 0 && (
@@ -169,11 +173,11 @@ export default function FileUpload({
           {files.map((file, index) => (
             <div
               key={index}
-              className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg border border-gray-200"
+              className="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <FileIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
-                <span className="text-sm text-gray-700 truncate">
+                <FileIcon className="h-5 w-5 text-gray-400 dark:text-gray-500 flex-shrink-0" />
+                <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
                   {file.name}
                 </span>
                 <span className="text-xs text-gray-500 flex-shrink-0">
@@ -182,11 +186,11 @@ export default function FileUpload({
               </div>
               <button
                 onClick={() => removeFile(index)}
-                className="ml-2 p-1 hover:bg-gray-200 rounded transition-colors flex-shrink-0"
+                className="ml-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors flex-shrink-0"
                 type="button"
                 disabled={disabled}
               >
-                <X className="h-4 w-4 text-gray-500" />
+                <X className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               </button>
             </div>
           ))}

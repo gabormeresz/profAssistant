@@ -93,7 +93,7 @@ const LanguageSelector = ({ variant = "sidebar" }: LanguageSelectorProps) => {
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none cursor-pointer transition-colors h-10"
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none cursor-pointer transition-colors h-10"
         >
           <Globe className="w-5 h-5" />
           <div className="flex items-center gap-2">
@@ -112,15 +112,15 @@ const LanguageSelector = ({ variant = "sidebar" }: LanguageSelectorProps) => {
         </button>
 
         {isOpen && (
-          <div className="absolute z-10 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg min-w-[140px]">
+          <div className="absolute z-10 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg min-w-[140px]">
             {languages.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => handleLanguageChange(lang.code)}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-100 first:rounded-t-md last:rounded-b-md transition-colors ${
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 first:rounded-t-md last:rounded-b-md transition-colors ${
                   i18n.language === lang.code
-                    ? "bg-gray-100 text-gray-900 font-medium"
-                    : "text-gray-700"
+                    ? "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white font-medium"
+                    : "text-gray-700 dark:text-gray-300"
                 }`}
               >
                 <span className={`fi fi-${lang.flag} rounded-sm`}></span>

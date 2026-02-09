@@ -53,12 +53,12 @@ export function LoadingOverlay({ message, show }: LoadingOverlayProps) {
       className="fixed inset-0 z-50 flex items-center justify-center pointer-events-auto backdrop-blur-sm"
       style={{ backgroundColor: "rgba(0, 0, 0, 0.15)" }}
     >
-      <div className="bg-white rounded-lg shadow-2xl p-8 max-w-md mx-4 pointer-events-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-8 max-w-md mx-4 pointer-events-auto">
         <div className="flex flex-col items-center">
           {/* Spinner */}
           <div className="mb-6">
             <svg
-              className="animate-spin h-16 w-16 text-blue-600"
+              className="animate-spin h-16 w-16 text-blue-600 dark:text-blue-400"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -85,7 +85,7 @@ export function LoadingOverlay({ message, show }: LoadingOverlayProps) {
           </h3>
 
           {/* Warning */}
-          <div className="mt-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+          <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-950 border-l-4 border-yellow-400 rounded">
             <div className="flex">
               <div className="flex-shrink-0">
                 <svg
@@ -102,7 +102,7 @@ export function LoadingOverlay({ message, show }: LoadingOverlayProps) {
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-yellow-700">
+                <p className="text-sm text-yellow-700 dark:text-yellow-300">
                   {t("overlay.doNotNavigate")}
                 </p>
               </div>

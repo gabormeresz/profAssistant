@@ -1,7 +1,18 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --color-dark: #2a3342;
+  --color-surface: #f3f4f4;
+  --color-surface-alt: #f7f8f9;
+}
+
+.dark {
+  color-scheme: dark;
+  --color-dark: #e2e8f0;
+  --color-surface: #0f172a;
+  --color-surface-alt: #111827;
 }
 
 .text-dark {
@@ -12,11 +23,47 @@
   background-color: var(--color-dark);
 }
 
+.bg-surface {
+  background-color: var(--color-surface);
+}
+
+.bg-surface-alt {
+  background-color: var(--color-surface-alt);
+}
+
 body {
   font-family: "Poppins", sans-serif;
 }
 
-/* Custom markdown prose styles */
+/* ── Dark mode: global form element overrides ── */
+
+.dark input:where(:not([type="checkbox"]):not([type="radio"])),
+.dark textarea,
+.dark select {
+  background-color: #1e293b;
+  border-color: #4b5563;
+  color: #e2e8f0;
+}
+
+.dark input:where(:not([type="checkbox"]):not([type="radio"]))::placeholder,
+.dark textarea::placeholder {
+  color: #94a3b8;
+}
+
+.dark input:where(:not([type="checkbox"]):not([type="radio"])):focus,
+.dark textarea:focus,
+.dark select:focus {
+  --tw-ring-color: #60a5fa; /* blue-400 – softer ring in dark mode */
+}
+
+.dark input:where(:not([type="checkbox"]):not([type="radio"])):disabled,
+.dark textarea:disabled,
+.dark select:disabled {
+  background-color: #374151;
+  color: #9ca3af;
+}
+
+/* ── Custom markdown prose styles ── */
 
 .markdown-content {
   color: var(--color-dark);
@@ -103,4 +150,34 @@ body {
 
 .markdown-content hr {
   @apply border-t border-gray-300 my-6;
+}
+
+/* ── Dark mode: markdown overrides ── */
+
+.dark .markdown-content code {
+  @apply bg-pink-950 text-pink-300;
+}
+
+.dark .markdown-content pre {
+  background-color: #1e293b;
+}
+
+.dark .markdown-content blockquote {
+  @apply border-gray-600 text-gray-400;
+}
+
+.dark .markdown-content a {
+  @apply text-blue-400 hover:text-blue-300;
+}
+
+.dark .markdown-content th {
+  @apply border-gray-600 bg-gray-800 text-gray-200;
+}
+
+.dark .markdown-content td {
+  @apply border-gray-600;
+}
+
+.dark .markdown-content hr {
+  @apply border-gray-600;
 }

@@ -17,12 +17,9 @@ function Layout({
 }: LayoutProps) {
   if (showSidebar) {
     return (
-      <div className="h-screen bg-gray-50 flex overflow-hidden">
+      <div className="h-screen bg-gray-50 dark:bg-gray-900 flex overflow-hidden">
         <Sidebar onNewConversation={onNewConversation} />
-        <main
-          className="flex-1 overflow-y-auto relative"
-          style={{ backgroundColor: "#f3f4f4" }}
-        >
+        <main className="flex-1 overflow-y-auto relative bg-surface">
           {header}
           <div className="max-w-5xl mx-auto p-6 pb-24">{children}</div>
           <ScrollNavigationButtons />
@@ -32,10 +29,7 @@ function Layout({
   }
 
   return (
-    <div
-      className="h-screen overflow-y-auto"
-      style={{ backgroundColor: "#f7f8f9" }}
-    >
+    <div className="h-screen overflow-y-auto bg-surface-alt">
       {header}
       <div className="max-w-4xl mx-auto p-6">{children}</div>
     </div>

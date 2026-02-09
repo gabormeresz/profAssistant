@@ -47,14 +47,14 @@ export function StructuredPresentation({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
       {/* PPTX Loading Overlay (reuses the same modal as generation) */}
       <LoadingOverlay message={t("export.generatingPptx")} show={pptxLoading} />
 
       {/* Presentation Header */}
-      <div className="mb-8 border-b-2 border-purple-500 pb-4">
+      <div className="mb-8 border-b-2 border-purple-500 dark:border-purple-400 pb-4">
         <div className="flex items-baseline gap-3 mb-2">
-          <span className="text-sm font-semibold text-purple-600 bg-purple-50 px-3 py-1 rounded">
+          <span className="text-sm font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/40 px-3 py-1 rounded">
             {t("presentationOutput.classNumber")} {presentation.class_number}
           </span>
           <h1 className="text-3xl font-bold text-dark flex-1">
@@ -65,7 +65,7 @@ export function StructuredPresentation({
             <button
               onClick={handleExportPptx}
               disabled={pptxLoading}
-              className="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-md hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-purple-600 dark:bg-purple-500 text-white text-sm font-medium rounded-md hover:bg-purple-700 dark:hover:bg-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
               title={t("export.exportToPptx")}
             >
               <svg
@@ -87,7 +87,7 @@ export function StructuredPresentation({
             {/* Export to DOCX */}
             <button
               onClick={handleExportDocx}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-700 dark:hover:bg-blue-400 transition-colors flex items-center gap-2"
               title={t("export.exportToDocx")}
             >
               <svg
@@ -110,17 +110,19 @@ export function StructuredPresentation({
         </div>
         {/* PPTX error banner */}
         {pptxError && (
-          <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between">
-            <span className="text-red-700 text-sm">{pptxError}</span>
+          <div className="mt-2 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg flex items-center justify-between">
+            <span className="text-red-700 dark:text-red-300 text-sm">
+              {pptxError}
+            </span>
             <button
               onClick={() => setPptxError(null)}
-              className="text-red-400 hover:text-red-600 text-sm ml-4"
+              className="text-red-400 hover:text-red-600 dark:hover:text-red-300 text-sm ml-4"
             >
               ✕
             </button>
           </div>
         )}
-        <p className="text-gray-500 text-sm">
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
           {presentation.course_title} &mdash; {presentation.slides.length}{" "}
           {t("presentationOutput.slides")}
         </p>
@@ -131,14 +133,14 @@ export function StructuredPresentation({
         {presentation.slides.map((slide) => (
           <div
             key={slide.slide_number}
-            className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+            className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
           >
             {/* Slide header */}
-            <div className="bg-purple-50 px-5 py-3 flex items-center gap-3 border-b border-purple-200">
-              <span className="text-xs font-bold text-purple-700 bg-purple-200 px-2 py-0.5 rounded">
+            <div className="bg-purple-50 dark:bg-purple-950 px-5 py-3 flex items-center gap-3 border-b border-purple-200 dark:border-purple-800">
+              <span className="text-xs font-bold text-purple-700 dark:text-purple-300 bg-purple-200 dark:bg-purple-800 px-2 py-0.5 rounded">
                 {slide.slide_number}
               </span>
-              <h2 className="text-lg font-semibold text-gray-800">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
                 {slide.title}
               </h2>
             </div>
@@ -149,9 +151,11 @@ export function StructuredPresentation({
                 {slide.bullet_points.map((point, idx) => (
                   <li
                     key={idx}
-                    className="flex items-start gap-3 text-gray-700"
+                    className="flex items-start gap-3 text-gray-700 dark:text-gray-300"
                   >
-                    <span className="text-purple-500 font-bold mt-0.5">•</span>
+                    <span className="text-purple-500 dark:text-purple-400 font-bold mt-0.5">
+                      •
+                    </span>
                     <span>{point}</span>
                   </li>
                 ))}
@@ -159,11 +163,11 @@ export function StructuredPresentation({
 
               {/* Speaker notes */}
               {slide.speaker_notes && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-amber-700 mb-1">
+                <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                  <h3 className="text-sm font-semibold text-amber-700 dark:text-amber-300 mb-1">
                     {t("presentationOutput.speakerNotes")}
                   </h3>
-                  <p className="text-gray-700 text-sm whitespace-pre-line">
+                  <p className="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-line">
                     {slide.speaker_notes}
                   </p>
                 </div>
@@ -171,8 +175,8 @@ export function StructuredPresentation({
 
               {/* Visual suggestion */}
               {slide.visual_suggestion && (
-                <div className="bg-sky-50 border border-sky-200 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-sky-700 mb-1 flex items-center gap-1">
+                <div className="bg-sky-50 dark:bg-sky-950 border border-sky-200 dark:border-sky-800 rounded-lg p-4">
+                  <h3 className="text-sm font-semibold text-sky-700 dark:text-sky-300 mb-1 flex items-center gap-1">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       className="h-4 w-4"
@@ -189,7 +193,7 @@ export function StructuredPresentation({
                     </svg>
                     {t("presentationOutput.visualSuggestion")}
                   </h3>
-                  <p className="text-gray-700 text-sm">
+                  <p className="text-gray-700 dark:text-gray-300 text-sm">
                     {slide.visual_suggestion}
                   </p>
                 </div>

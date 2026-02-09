@@ -40,16 +40,16 @@ export function StructuredCourseOutline({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
       {/* Course Title */}
-      <div className="border-b-2 border-blue-500 pb-3 mb-8">
+      <div className="border-b-2 border-blue-500 dark:border-blue-400 pb-3 mb-8">
         <div className="flex items-baseline gap-3">
           <h1 className="text-3xl font-bold text-dark flex-1">
             {outline.course_title}
           </h1>
           <button
             onClick={handleExport}
-            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-700 dark:hover:bg-blue-400 transition-colors flex items-center gap-2"
             title={t("export.exportToDocx")}
           >
             <svg
@@ -76,11 +76,11 @@ export function StructuredCourseOutline({
         {outline.classes.map((courseClass) => (
           <div
             key={courseClass.class_number}
-            className="border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
+            className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-lg transition-shadow"
           >
             {/* Class Header */}
             <div className="flex items-baseline gap-3 mb-4">
-              <span className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded">
+              <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/40 px-3 py-1 rounded">
                 {t("lessonPlanOutput.classNumber")} {courseClass.class_number}
               </span>
               <h2 className="text-2xl font-semibold text-dark flex-1">
@@ -88,7 +88,7 @@ export function StructuredCourseOutline({
               </h2>
               <button
                 onClick={() => handleCreateLessonPlan(courseClass)}
-                className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors flex items-center gap-2"
+                className="px-4 py-2 bg-green-600 dark:bg-green-500 text-white text-sm font-medium rounded-md hover:bg-green-700 dark:hover:bg-green-400 transition-colors flex items-center gap-2"
                 title={t("export.createLessonPlanDraft")}
               >
                 <svg
@@ -111,10 +111,10 @@ export function StructuredCourseOutline({
 
             {/* Learning Objectives */}
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 {t("courseOutline.learningObjectives")}
               </h3>
-              <ul className="list-disc list-inside space-y-1 text-gray-600">
+              <ul className="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-400">
                 {courseClass.learning_objectives.map((objective, idx) => (
                   <li key={idx} className="ml-2">
                     {objective}
@@ -125,14 +125,14 @@ export function StructuredCourseOutline({
 
             {/* Key Topics */}
             <div className="mb-4">
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 {t("courseOutline.keyTopics")}
               </h3>
               <div className="flex flex-wrap gap-2">
                 {courseClass.key_topics.map((topic, idx) => (
                   <span
                     key={idx}
-                    className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+                    className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full text-sm"
                   >
                     {topic}
                   </span>
@@ -142,10 +142,10 @@ export function StructuredCourseOutline({
 
             {/* Activities & Projects */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 {t("courseOutline.activitiesProjects")}
               </h3>
-              <ul className="list-disc list-inside space-y-1 text-gray-600">
+              <ul className="list-disc list-inside space-y-1 text-gray-600 dark:text-gray-400">
                 {courseClass.activities_projects.map((activity, idx) => (
                   <li key={idx} className="ml-2">
                     {activity}

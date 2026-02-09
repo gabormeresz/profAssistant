@@ -6,6 +6,7 @@ import LanguageSelector from "./LanguageSelector";
 import ModelSelector from "./ModelSelector";
 import ApiKeyWarning from "./ApiKeyWarning";
 import { FileText, BookOpen, Presentation, ClipboardList } from "lucide-react";
+import ThemeToggle from "./ThemeToggle";
 
 interface SidebarProps {
   onNewConversation?: () => void;
@@ -80,11 +81,12 @@ function Sidebar({ onNewConversation }: SidebarProps) {
 
   return (
     <aside className="w-88 bg-[#2a3342] border-r border-[#1f2937] sticky top-0 h-screen max-h-screen p-4 flex flex-col">
-      <div className="mb-6 text-center">
+      <div className="mb-6 flex items-center justify-between">
         <Link to="/" className="text-2xl font-bold transition-colors">
           <span className="text-white">Prof</span>
-          <span className="text-[#5f7aff]">Assistant</span>
+          <span className="text-blue-400">Assistant</span>
         </Link>
+        <ThemeToggle />
       </div>
 
       <LanguageSelector />

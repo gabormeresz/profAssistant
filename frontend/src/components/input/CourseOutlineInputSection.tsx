@@ -41,15 +41,16 @@ export default function CourseOutlineInputSection({
     !topic.trim() || numberOfClasses < COURSE_OUTLINE.MIN_CLASSES;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
       <div className="space-y-4">
         {/* Topic Field */}
         <div>
           <label
             htmlFor="topic"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
-            {t("courseOutline.topic")} <span className="text-red-500">*</span>
+            {t("courseOutline.topic")}{" "}
+            <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="text"
@@ -65,10 +66,10 @@ export default function CourseOutlineInputSection({
         <div>
           <label
             htmlFor="numberOfClasses"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {t("courseOutline.numberOfClasses")}{" "}
-            <span className="text-red-500">*</span>
+            <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <input
             type="number"
@@ -90,10 +91,10 @@ export default function CourseOutlineInputSection({
         <div>
           <label
             htmlFor="language"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {t("courseOutline.language")}{" "}
-            <span className="text-red-500">*</span>
+            <span className="text-red-500 dark:text-red-400">*</span>
           </label>
           <select
             id="language"
@@ -110,7 +111,7 @@ export default function CourseOutlineInputSection({
         <div>
           <label
             htmlFor="userComment"
-            className="block text-sm font-medium text-gray-700 mb-2"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
           >
             {t("courseOutline.userComment")}
           </label>
@@ -151,7 +152,7 @@ export default function CourseOutlineInputSection({
           <button
             onClick={onSubmit}
             disabled={isButtonDisabled}
-            className="px-6 py-3 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
+            className="px-6 py-3 rounded-lg font-medium transition-colors bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-400 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-400"
           >
             {t("courseOutline.generateOutline")}
           </button>

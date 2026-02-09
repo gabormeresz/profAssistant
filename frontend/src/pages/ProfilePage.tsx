@@ -13,13 +13,17 @@ import {
   ShieldX,
   AlertTriangle,
   Home,
-  Rocket
+  Rocket,
+  Sun,
+  Moon
 } from "lucide-react";
+import { useTheme } from "../hooks/useTheme";
 
 export default function ProfilePage() {
   const { t } = useTranslation();
   const { user, logout, settings, isLoadingSettings, refreshSettings } =
     useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const isSetupMode = searchParams.get("setup") === "true";
 
@@ -91,22 +95,40 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white dark:bg-gray-800 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <Link to="/" className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold">
-              Prof<span className="text-blue-600">Assistant</span>
+            <h1 className="text-2xl font-bold dark:text-gray-200">
+              Prof
+              <span className="text-blue-600 dark:text-blue-400">
+                Assistant
+              </span>
             </h1>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              aria-label={
+                theme === "dark"
+                  ? "Switch to light mode"
+                  : "Switch to dark mode"
+              }
+            >
+              {theme === "dark" ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </button>
             <div className="w-40">
               <LanguageSelector variant="header" />
             </div>
             <button
               onClick={logout}
-              className="px-4 py-2 text-red-600 hover:text-red-700 font-medium text-sm"
+              className="px-4 py-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium text-sm"
             >
               {t("profile.logout")}
             </button>
@@ -116,25 +138,27 @@ export default function ProfilePage() {
 
       {/* Content */}
       <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-10">
-        <h2 className="text-3xl font-bold text-gray-900 mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-200 mb-8">
           {t("profile.title")}
         </h2>
 
         {/* User info card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-              <User className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+              <User className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="font-semibold text-gray-900">{user?.email}</p>
+              <p className="font-semibold text-gray-900 dark:text-gray-200">
+                {user?.email}
+              </p>
             </div>
           </div>
         </div>
 
         {/* API Key Setup Banner (shown on first login for non-admin users) */}
         {showSetupBanner && (
-          <div className="bg-amber-50 border-2 border-amber-400 rounded-2xl p-6 mb-6 animate-pulse-once">
+          <div className="bg-amber-50 dark:bg-amber-950 border-2 border-amber-400 dark:border-amber-700 rounded-2xl p-6 mb-6 animate-pulse-once">
             <div className="flex items-start gap-3 mb-4">
               <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
@@ -168,15 +192,15 @@ export default function ProfilePage() {
         )}
 
         {/* API Key card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
           <div className="flex items-center gap-3 mb-4">
-            <Key className="w-5 h-5 text-gray-700" />
-            <h3 className="text-lg font-semibold text-gray-900">
+            <Key className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-200">
               {t("profile.apiKey.title")}
             </h3>
           </div>
 
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             {t("profile.apiKey.description")}
           </p>
 
@@ -192,7 +216,7 @@ export default function ProfilePage() {
                   <button
                     onClick={handleRemoveApiKey}
                     disabled={isSavingKey}
-                    className="ml-auto text-sm text-red-500 hover:text-red-700 font-medium"
+                    className="ml-auto text-sm text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
                   >
                     {t("profile.apiKey.remove")}
                   </button>
@@ -220,7 +244,7 @@ export default function ProfilePage() {
             <button
               onClick={handleSaveApiKey}
               disabled={isSavingKey || !apiKey.trim()}
-              className="px-5 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2"
+              className="px-5 py-2.5 bg-blue-600 dark:bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2"
             >
               {isSavingKey ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -232,7 +256,9 @@ export default function ProfilePage() {
           </div>
 
           {keySaveError && (
-            <p className="mt-2 text-sm text-red-600">{keySaveError}</p>
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+              {keySaveError}
+            </p>
           )}
         </div>
 
@@ -240,14 +266,14 @@ export default function ProfilePage() {
         <div className="flex gap-4 mt-8">
           <Link
             to="/"
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 transition-colors text-gray-700 font-medium"
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300 font-medium"
           >
             <Home className="w-5 h-5" />
             {t("profile.navigation.home")}
           </Link>
           <Link
             to="/app"
-            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 rounded-xl shadow-sm hover:bg-blue-700 transition-colors text-white font-medium"
+            className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-blue-600 dark:bg-blue-500 rounded-xl shadow-sm hover:bg-blue-700 dark:hover:bg-blue-400 transition-colors text-white font-medium"
           >
             <Rocket className="w-5 h-5" />
             {t("profile.navigation.openApp")}

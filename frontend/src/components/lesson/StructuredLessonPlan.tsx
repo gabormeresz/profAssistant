@@ -45,11 +45,11 @@ export function StructuredLessonPlan({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
       {/* Lesson Header */}
-      <div className="mb-8 border-b-2 border-green-500 pb-4">
+      <div className="mb-8 border-b-2 border-green-500 dark:border-green-400 pb-4">
         <div className="flex items-baseline gap-3 mb-2">
-          <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded">
+          <span className="text-sm font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/40 px-3 py-1 rounded">
             {t("lessonPlanOutput.classNumber")} {lessonPlan.class_number}
           </span>
           <h1 className="text-3xl font-bold text-dark flex-1">
@@ -57,7 +57,7 @@ export function StructuredLessonPlan({
           </h1>
           <button
             onClick={handleExport}
-            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-700 dark:hover:bg-blue-400 transition-colors flex items-center gap-2"
             title={t("export.exportToDocx")}
           >
             <svg
@@ -78,7 +78,7 @@ export function StructuredLessonPlan({
           </button>
           <button
             onClick={handleCreatePresentation}
-            className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-green-600 dark:bg-green-500 text-white text-sm font-medium rounded-md hover:bg-green-700 dark:hover:bg-green-400 transition-colors flex items-center gap-2"
             title={t("export.createPresentationDraft")}
           >
             <svg
@@ -105,7 +105,7 @@ export function StructuredLessonPlan({
         <h2 className="text-xl font-semibold text-dark mb-3">
           {t("lessonPlanOutput.learningObjective")}
         </h2>
-        <p className="text-gray-700 bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+        <p className="text-gray-700 dark:text-gray-300 bg-green-50 dark:bg-green-950 p-4 rounded-lg border-l-4 border-green-500 dark:border-green-400">
           {lessonPlan.learning_objective}
         </p>
       </div>
@@ -119,9 +119,11 @@ export function StructuredLessonPlan({
           {lessonPlan.key_points.map((point, idx) => (
             <li
               key={idx}
-              className="flex items-start gap-3 text-gray-700 bg-gray-50 p-3 rounded"
+              className="flex items-start gap-3 text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded"
             >
-              <span className="text-green-600 font-bold mt-0.5">•</span>
+              <span className="text-green-600 dark:text-green-400 font-bold mt-0.5">
+                •
+              </span>
               <span>{point}</span>
             </li>
           ))}
@@ -137,12 +139,14 @@ export function StructuredLessonPlan({
           {lessonPlan.lesson_breakdown.map((section, idx) => (
             <div
               key={idx}
-              className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+              className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
             >
-              <h3 className="text-lg font-semibold text-green-600 mb-2">
+              <h3 className="text-lg font-semibold text-green-600 dark:text-green-400 mb-2">
                 {section.section_title}
               </h3>
-              <p className="text-gray-700">{section.description}</p>
+              <p className="text-gray-700 dark:text-gray-300">
+                {section.description}
+              </p>
             </div>
           ))}
         </div>
@@ -157,22 +161,26 @@ export function StructuredLessonPlan({
           {lessonPlan.activities.map((activity, idx) => (
             <div
               key={idx}
-              className="bg-blue-50 border border-blue-200 rounded-lg p-4"
+              className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4"
             >
-              <h3 className="text-lg font-semibold text-blue-700 mb-2">
+              <h3 className="text-lg font-semibold text-blue-700 dark:text-blue-400 mb-2">
                 {activity.name}
               </h3>
               <div className="mb-3">
-                <span className="text-sm font-semibold text-gray-600">
+                <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
                   {t("lessonPlanOutput.objective")}:{" "}
                 </span>
-                <span className="text-gray-700">{activity.objective}</span>
+                <span className="text-gray-700 dark:text-gray-300">
+                  {activity.objective}
+                </span>
               </div>
               <div>
-                <span className="text-sm font-semibold text-gray-600">
+                <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
                   {t("lessonPlanOutput.instructions")}:{" "}
                 </span>
-                <p className="text-gray-700 mt-1">{activity.instructions}</p>
+                <p className="text-gray-700 dark:text-gray-300 mt-1">
+                  {activity.instructions}
+                </p>
               </div>
             </div>
           ))}
@@ -184,8 +192,10 @@ export function StructuredLessonPlan({
         <h2 className="text-xl font-semibold text-dark mb-3">
           {t("lessonPlanOutput.homework")}
         </h2>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-gray-700">{lessonPlan.homework}</p>
+        <div className="bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+          <p className="text-gray-700 dark:text-gray-300">
+            {lessonPlan.homework}
+          </p>
         </div>
       </div>
 
@@ -194,8 +204,10 @@ export function StructuredLessonPlan({
         <h2 className="text-xl font-semibold text-dark mb-3">
           {t("lessonPlanOutput.extraActivities")}
         </h2>
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-          <p className="text-gray-700">{lessonPlan.extra_activities}</p>
+        <div className="bg-purple-50 dark:bg-purple-950 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+          <p className="text-gray-700 dark:text-gray-300">
+            {lessonPlan.extra_activities}
+          </p>
         </div>
       </div>
     </div>

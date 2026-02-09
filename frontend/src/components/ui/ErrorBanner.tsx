@@ -20,10 +20,10 @@ export function ErrorBanner({ error, onDismiss }: ErrorBannerProps) {
   if (!error) return null;
 
   return (
-    <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 flex items-start gap-3">
+    <div className="mb-6 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 p-4 flex items-start gap-3">
       {/* Warning icon */}
       <svg
-        className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0"
+        className="h-5 w-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={1.5}
@@ -38,14 +38,18 @@ export function ErrorBanner({ error, onDismiss }: ErrorBannerProps) {
 
       {/* Content */}
       <div className="flex-1">
-        <p className="text-sm font-medium text-red-800">{t("errors.title")}</p>
-        <p className="text-sm text-red-700 mt-1">{t(error, error)}</p>
+        <p className="text-sm font-medium text-red-800 dark:text-red-300">
+          {t("errors.title")}
+        </p>
+        <p className="text-sm text-red-700 dark:text-red-400 mt-1">
+          {t(error, error)}
+        </p>
       </div>
 
       {/* Dismiss button */}
       <button
         onClick={onDismiss}
-        className="text-red-400 hover:text-red-600 transition-colors"
+        className="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors"
         aria-label={t("common.dismiss", "Dismiss")}
       >
         <svg

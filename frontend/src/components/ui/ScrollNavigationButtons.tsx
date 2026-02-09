@@ -110,8 +110,8 @@ export function ScrollNavigationButtons() {
         disabled={!canScrollUp}
         className={`p-3 rounded-full shadow-lg transition-all flex items-center justify-center ${
           canScrollUp
-            ? "bg-blue-600 text-white hover:bg-blue-700 hover:scale-110 cursor-pointer"
-            : "bg-gray-300 text-gray-500 cursor-not-allowed opacity-40"
+            ? "bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-400 hover:scale-110 cursor-pointer"
+            : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-40"
         }`}
         aria-label={t("common.scrollToTop")}
         title={t("common.scrollToTop")}
@@ -138,8 +138,8 @@ export function ScrollNavigationButtons() {
         disabled={!canScrollDown}
         className={`p-3 rounded-full shadow-lg transition-all flex items-center justify-center ${
           canScrollDown
-            ? "bg-blue-600 text-white hover:bg-blue-700 hover:scale-110 cursor-pointer"
-            : "bg-gray-300 text-gray-500 cursor-not-allowed opacity-40"
+            ? "bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-400 hover:scale-110 cursor-pointer"
+            : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed opacity-40"
         }`}
         aria-label={t("common.scrollToBottom")}
         title={t("common.scrollToBottom")}
