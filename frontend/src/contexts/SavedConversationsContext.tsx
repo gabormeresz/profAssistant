@@ -1,35 +1,15 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  type ReactNode
-} from "react";
-import type {
-  SavedConversation,
-  ConversationType
-} from "../types/conversation";
+import { useState, useEffect, useCallback, type ReactNode } from "react";
+import type { ConversationType } from "../types/conversation";
 import {
   fetchConversations,
   deleteConversation as deleteConversationAPI
 } from "../services";
 import { useAuth } from "../hooks/useAuth";
 import { logger } from "../utils/logger";
-
-interface SavedConversationsContextValue {
-  conversations: SavedConversation[];
-  isLoading: boolean;
-  error: string | null;
-  refetch: () => Promise<void>;
-  deleteConversation: (threadId: string) => Promise<void>;
-  filterByType: (type?: ConversationType) => void;
-  currentFilter?: ConversationType;
-}
-
-const SavedConversationsContext = createContext<
-  SavedConversationsContextValue | undefined
->(undefined);
+import {
+  SavedConversationsContext,
+  type SavedConversationsContextValue
+} from "./savedConversationsContextDef";
 
 interface SavedConversationsProviderProps {
   children: ReactNode;
@@ -81,7 +61,7 @@ export function SavedConversationsProvider({
       setConversations([]);
       setIsLoading(false);
     }
-  }, [user?.user_id, isAuthLoading, fetchData, currentFilter]);
+  }, [user, isAuthLoading, fetchData, currentFilter]);
 
   const refetch = useCallback(async () => {
     await fetchData(currentFilter);
@@ -120,18 +100,4 @@ export function SavedConversationsProvider({
       {children}
     </SavedConversationsContext.Provider>
   );
-}
-
-/**
- * Hook to access saved conversations context.
- * Must be used within SavedConversationsProvider.
- */
-export function useSavedConversationsContext(): SavedConversationsContextValue {
-  const context = useContext(SavedConversationsContext);
-  if (context === undefined) {
-    throw new Error(
-      "useSavedConversationsContext must be used within SavedConversationsProvider"
-    );
-  }
-  return context;
 }

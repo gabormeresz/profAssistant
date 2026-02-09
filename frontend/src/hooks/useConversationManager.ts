@@ -6,7 +6,7 @@ import {
   fetchConversationHistory
 } from "../services/conversationService";
 import type { ConversationMessage, StreamingState } from "../types";
-import { useSavedConversationsContext } from "../contexts/SavedConversationsContext";
+import { useSavedConversationsContext } from "./useSavedConversationsContext";
 
 /**
  * Parse a user message to extract file contents section
