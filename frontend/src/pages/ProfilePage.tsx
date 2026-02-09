@@ -3,7 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
 import { updateUserSettings } from "../services/authService";
-import { LanguageSelector } from "../components";
+import { PageHeader } from "../components";
 import {
   User,
   Key,
@@ -13,17 +13,13 @@ import {
   ShieldX,
   AlertTriangle,
   Home,
-  Rocket,
-  Sun,
-  Moon
+  Rocket
 } from "lucide-react";
-import { useTheme } from "../hooks/useTheme";
 
 export default function ProfilePage() {
   const { t } = useTranslation();
   const { user, logout, settings, isLoadingSettings, refreshSettings } =
     useAuth();
-  const { theme, toggleTheme } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const isSetupMode = searchParams.get("setup") === "true";
 
@@ -97,42 +93,16 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <Link to="/" className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold dark:text-gray-200">
-              Prof
-              <span className="text-blue-600 dark:text-blue-400">
-                Assistant
-              </span>
-            </h1>
-          </Link>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-              aria-label={
-                theme === "dark"
-                  ? "Switch to light mode"
-                  : "Switch to dark mode"
-              }
-            >
-              {theme === "dark" ? (
-                <Sun className="w-5 h-5" />
-              ) : (
-                <Moon className="w-5 h-5" />
-              )}
-            </button>
-            <LanguageSelector variant="header" />
-            <button
-              onClick={logout}
-              className="px-4 py-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium text-sm"
-            >
-              {t("profile.logout")}
-            </button>
-          </div>
-        </div>
-      </header>
+      <PageHeader
+        actions={
+          <button
+            onClick={logout}
+            className="px-4 py-2 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium text-sm"
+          >
+            {t("profile.logout")}
+          </button>
+        }
+      />
 
       {/* Content */}
       <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-10">

@@ -1,5 +1,5 @@
 // Layout components
-export { Header, Layout, LanguageSelector } from "./layout";
+export { Header, Layout, LanguageSelector, PageHeader } from "./layout";
 
 // Chat components
 export { UserMessage } from "./chat";
