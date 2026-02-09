@@ -25,4 +25,4 @@ ENV PYTHONUNBUFFERED=1
 
 EXPOSE 8765
 
-CMD ["wikipedia-mcp", "--transport", "sse", "--port", "8765"]
+CMD ["wikipedia-mcp", "--transport", "sse", "--port", "8765", "--host", "0.0.0.0"]

@@ -19,8 +19,8 @@ services:
       context: ./backend
       dockerfile: Dockerfile.mcp
     container_name: profassistant-mcp-wiki
-    ports:
-      - "8765:8765"
+    expose:
+      - "8765"
     restart: unless-stopped
     healthcheck:
       test:
