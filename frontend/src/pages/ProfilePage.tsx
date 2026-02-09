@@ -158,19 +158,19 @@ export default function ProfilePage() {
 
         {/* API Key Setup Banner (shown on first login for non-admin users) */}
         {showSetupBanner && (
-          <div className="bg-amber-50 dark:bg-amber-950 border-2 border-amber-400 dark:border-amber-700 rounded-2xl p-6 mb-6 animate-pulse-once">
+          <div className="bg-amber-50 dark:bg-amber-900/30 border-2 border-amber-400 dark:border-amber-600 rounded-2xl p-6 mb-6 animate-pulse-once">
             <div className="flex items-start gap-3 mb-4">
-              <AlertTriangle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="text-lg font-bold text-amber-800">
+                <h3 className="text-lg font-bold text-amber-800 dark:text-amber-300">
                   {t("profile.setupBanner.title")}
                 </h3>
-                <p className="text-sm text-amber-700 mt-1">
+                <p className="text-sm text-amber-700 dark:text-amber-400 mt-1">
                   {t("profile.setupBanner.description")}
                 </p>
               </div>
             </div>
-            <ol className="list-decimal list-inside space-y-2 text-sm text-amber-800 ml-9 mb-4">
+            <ol className="list-decimal list-inside space-y-2 text-sm text-amber-800 dark:text-amber-300 ml-9 mb-4">
               <li>{t("profile.setupBanner.steps.step1")}</li>
               <li>{t("profile.setupBanner.steps.step2")}</li>
               <li>{t("profile.setupBanner.steps.step3")}</li>
@@ -183,7 +183,7 @@ export default function ProfilePage() {
                     setSearchParams({}, { replace: true });
                   }
                 }}
-                className="text-sm text-amber-600 hover:text-amber-800 underline"
+                className="text-sm text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 underline"
               >
                 {t("profile.setupBanner.dismiss")}
               </button>
@@ -209,8 +209,8 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2 mb-4">
               {settings?.has_api_key ? (
                 <>
-                  <ShieldCheck className="w-4 h-4 text-green-600" />
-                  <span className="text-sm text-green-700 font-medium">
+                  <ShieldCheck className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  <span className="text-sm text-green-700 dark:text-green-400 font-medium">
                     {t("profile.apiKey.keyStored")}
                   </span>
                   <button
@@ -223,8 +223,8 @@ export default function ProfilePage() {
                 </>
               ) : (
                 <>
-                  <ShieldX className="w-4 h-4 text-amber-500" />
-                  <span className="text-sm text-amber-600 font-medium">
+                  <ShieldX className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                  <span className="text-sm text-amber-600 dark:text-amber-400 font-medium">
                     {t("profile.apiKey.noKey")}
                   </span>
                 </>

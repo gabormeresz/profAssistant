@@ -20,7 +20,7 @@ export function ErrorBanner({ error, onDismiss }: ErrorBannerProps) {
   if (!error) return null;
 
   return (
-    <div className="mb-6 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950 p-4 flex items-start gap-3">
+    <div className="mb-6 rounded-lg border border-red-200 dark:border-red-700 bg-red-50 dark:bg-red-900/30 p-4 flex items-start gap-3">
       {/* Warning icon */}
       <svg
         className="h-5 w-5 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0"
