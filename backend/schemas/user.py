@@ -23,7 +23,7 @@ class UserRole(str, Enum):
 class UserCreate(BaseModel):
     """Request model for user registration."""
 
-    email: str = Field(..., description="User email address")
+    email: EmailStr = Field(..., description="User email address")
     password: str = Field(..., min_length=8, description="User password (min 8 chars)")
 
 
@@ -51,6 +51,15 @@ class TokenPair(BaseModel):
 
     access_token: str = Field(..., description="Short-lived JWT access token")
     refresh_token: str = Field(..., description="Long-lived refresh token")
+    token_type: str = Field(default="bearer", description="Token type")
+
+
+class AccessTokenResponse(BaseModel):
+    """Response containing only the short-lived access token.
+
+    The refresh token is delivered via an httpOnly cookie instead."""
+
+    access_token: str = Field(..., description="Short-lived JWT access token")
     token_type: str = Field(default="bearer", description="Token type")
 
 

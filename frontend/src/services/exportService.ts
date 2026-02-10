@@ -5,7 +5,7 @@
 
 import type { Presentation } from "../types";
 import { API_ENDPOINTS } from "../utils/constants";
-import { getAccessToken, tryRefresh } from "./authService";
+import { authFetch } from "./authService";
 
 /**
  * Send presentation data to the backend and receive a .pptx blob.
@@ -13,31 +13,11 @@ import { getAccessToken, tryRefresh } from "./authService";
 export async function exportPresentationToPptx(
   presentation: Presentation
 ): Promise<Blob> {
-  let token = getAccessToken();
-
-  let response = await fetch(API_ENDPOINTS.EXPORT_PRESENTATION_PPTX, {
+  const response = await authFetch(API_ENDPOINTS.EXPORT_PRESENTATION_PPTX, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(presentation)
   });
-
-  if (response.status === 401) {
-    const refreshed = await tryRefresh();
-    if (refreshed) {
-      token = getAccessToken();
-      response = await fetch(API_ENDPOINTS.EXPORT_PRESENTATION_PPTX, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify(presentation)
-      });
-    }
-  }
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));

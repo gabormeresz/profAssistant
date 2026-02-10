@@ -4,39 +4,8 @@ import type {
   SavedConversation,
   ConversationHistoryResponse
 } from "../types/conversation";
-import { getAccessToken, tryRefresh } from "./authService";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-/**
- * Build Authorization header if a token is available.
- */
-function authHeaders(): HeadersInit {
-  const token = getAccessToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
-/**
- * Authenticated fetch with automatic token refresh on 401.
- */
-async function authFetch(url: string, init?: RequestInit): Promise<Response> {
-  let res = await fetch(url, {
-    ...init,
-    headers: { ...authHeaders(), ...(init?.headers || {}) }
-  });
-
-  if (res.status === 401) {
-    const refreshed = await tryRefresh();
-    if (refreshed) {
-      res = await fetch(url, {
-        ...init,
-        headers: { ...authHeaders(), ...(init?.headers || {}) }
-      });
-    }
-  }
-
-  return res;
-}
+import { authFetch } from "./authService";
+import { API_BASE_URL } from "../utils/constants";
 
 export interface FetchConversationsParams {
   conversation_type?: ConversationType;

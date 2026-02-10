@@ -23,6 +23,11 @@ export interface TokenPair {
   token_type: string;
 }
 
+export interface AccessTokenResponse {
+  access_token: string;
+  token_type: string;
+}
+
 export interface TokenRefreshRequest {
   refresh_token: string;
 }

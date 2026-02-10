@@ -17,8 +17,13 @@ logging.basicConfig(
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from rate_limit import limiter
 
 from services.database import db
 from services.mcp_client import mcp_manager
@@ -33,7 +38,6 @@ if DebugConfig.USE_DUMMY_GRAPH:
     logger.warning(
         "⚠️  DUMMY GRAPH ENABLED — course outline requests use fake data (no LLM calls)"
     )
-
 
 # --------------------------------------------------------------------------- #
 #  Application lifespan
@@ -69,7 +73,19 @@ async def lifespan(app: FastAPI):
 #  App factory
 # --------------------------------------------------------------------------- #
 
-app = FastAPI(lifespan=lifespan)
+# In production (WARNING+), hide Swagger / ReDoc / OpenAPI schema entirely.
+_is_production = LoggingConfig.LEVEL >= logging.WARNING
+
+app = FastAPI(
+    lifespan=lifespan,
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
+    openapi_url=None if _is_production else "/openapi.json",
+)
+
+# Wire rate-limiter into the app
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
 app.add_middleware(
     CORSMiddleware,
@@ -83,3 +99,9 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(generation_router)
 app.include_router(conversations_router)
+
+
+# ── Health endpoint (always available, used by Docker HEALTHCHECK) ──
+@app.get("/health", include_in_schema=False)
+async def health():
+    return {"status": "ok"}

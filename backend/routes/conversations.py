@@ -8,7 +8,7 @@ import json
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from schemas.conversation import ConversationType, ConversationList
 from config import DBConfig
@@ -24,8 +24,8 @@ router = APIRouter(prefix="/conversations", tags=["Conversations"])
 @router.get("")
 async def list_conversations(
     conversation_type: Optional[str] = None,
-    limit: int = 100,
-    offset: int = 0,
+    limit: int = Query(default=100, ge=1, le=500),
+    offset: int = Query(default=0, ge=0),
     current_user: dict = Depends(get_current_user),
 ):
     """
@@ -52,7 +52,8 @@ async def list_conversations(
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid conversation type")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Failed to list conversations: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{thread_id}")
@@ -236,7 +237,7 @@ async def get_conversation_history(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Failed to retrieve conversation history: {e}", exc_info=True)
+        logger.error("Failed to retrieve conversation history: %s", e, exc_info=True)
         raise HTTPException(
-            status_code=500, detail=f"Failed to retrieve conversation history: {str(e)}"
+            status_code=500, detail="Failed to retrieve conversation history"
         )

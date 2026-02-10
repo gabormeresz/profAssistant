@@ -1,41 +1,44 @@
 /**
  * Authentication API service.
  * Handles login, registration, token refresh, logout, and user settings.
+ *
+ * Security model:
+ *   - Access token: short-lived JWT, held **in memory only** (never persisted).
+ *   - Refresh token: long-lived opaque UUID, stored as an httpOnly cookie by
+ *     the backend. The frontend never sees or handles the refresh token value.
  */
 
 import type {
   UserCreate,
   UserResponse,
-  TokenPair,
+  AccessTokenResponse,
   UserSettingsResponse,
   UserSettingsUpdate
 } from "../types/auth";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+import { API_BASE_URL } from "../utils/constants";
 
 // ---------------------------------------------------------------------------
-//  Token storage helpers
+//  In-memory token storage (never persisted to localStorage)
 // ---------------------------------------------------------------------------
 
-const ACCESS_TOKEN_KEY = "access_token";
-const REFRESH_TOKEN_KEY = "refresh_token";
+let _accessToken: string | null = null;
 
 export function getAccessToken(): string | null {
-  return localStorage.getItem(ACCESS_TOKEN_KEY);
+  return _accessToken;
 }
 
-export function getRefreshToken(): string | null {
-  return localStorage.getItem(REFRESH_TOKEN_KEY);
+export function setAccessToken(token: string | null): void {
+  _accessToken = token;
 }
 
-export function storeTokens(tokens: TokenPair): void {
-  localStorage.setItem(ACCESS_TOKEN_KEY, tokens.access_token);
-  localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh_token);
-}
-
+/**
+ * Clear in-memory token and any legacy localStorage entries.
+ */
 export function clearTokens(): void {
-  localStorage.removeItem(ACCESS_TOKEN_KEY);
-  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  _accessToken = null;
+  // Clean up legacy localStorage entries from before the migration
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
 }
 
 // ---------------------------------------------------------------------------
@@ -44,35 +47,30 @@ export function clearTokens(): void {
 
 /**
  * Build headers with Bearer token for authenticated requests.
+ * Does NOT set Content-Type — callers sending JSON should add it explicitly
+ * so that FormData requests can let the browser set the boundary automatically.
  */
 function authHeaders(): HeadersInit {
   const token = getAccessToken();
-  return {
-    "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {})
-  };
+  return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 /**
- * Try to refresh the access token using the stored refresh token.
- * Returns true on success (new tokens stored), false otherwise.
+ * Try to refresh the access token using the httpOnly refresh-token cookie.
+ * Returns true on success (new access token stored in memory), false otherwise.
  */
 export async function tryRefresh(): Promise<boolean> {
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return false;
-
   try {
     const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh_token: refreshToken })
+      credentials: "include" // send httpOnly cookie
     });
     if (!res.ok) {
       clearTokens();
       return false;
     }
-    const tokens: TokenPair = await res.json();
-    storeTokens(tokens);
+    const data: AccessTokenResponse = await res.json();
+    setAccessToken(data.access_token);
     return true;
   } catch {
     clearTokens();
@@ -82,10 +80,17 @@ export async function tryRefresh(): Promise<boolean> {
 
 /**
  * Authenticated fetch wrapper with automatic token refresh on 401.
+ *
+ * Exported so that other service modules can reuse it instead of
+ * duplicating the 401-retry logic.
  */
-async function authFetch(url: string, init?: RequestInit): Promise<Response> {
+export async function authFetch(
+  url: string,
+  init?: RequestInit
+): Promise<Response> {
   let res = await fetch(url, {
     ...init,
+    credentials: "include",
     headers: { ...authHeaders(), ...(init?.headers || {}) }
   });
 
@@ -94,6 +99,7 @@ async function authFetch(url: string, init?: RequestInit): Promise<Response> {
     if (refreshed) {
       res = await fetch(url, {
         ...init,
+        credentials: "include",
         headers: { ...authHeaders(), ...(init?.headers || {}) }
       });
     }
@@ -124,11 +130,16 @@ export async function registerUser(data: UserCreate): Promise<UserResponse> {
 }
 
 /**
- * Log in with email + password. Stores tokens on success.
+ * Log in with email + password.
+ * The backend sets the refresh token as an httpOnly cookie.
+ * We only store the short-lived access token in memory.
  */
-export async function loginUser(data: UserCreate): Promise<TokenPair> {
+export async function loginUser(
+  data: UserCreate
+): Promise<AccessTokenResponse> {
   const res = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
+    credentials: "include", // receive the httpOnly cookie
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
   });
@@ -138,23 +149,20 @@ export async function loginUser(data: UserCreate): Promise<TokenPair> {
     throw new Error(err.detail || "Login failed");
   }
 
-  const tokens: TokenPair = await res.json();
-  storeTokens(tokens);
+  const tokens: AccessTokenResponse = await res.json();
+  setAccessToken(tokens.access_token);
   return tokens;
 }
 
 /**
- * Log out: invalidate refresh token server-side and clear local storage.
+ * Log out: invalidate refresh token server-side (cookie is cleared by
+ * the backend) and clear the in-memory access token.
  */
 export async function logoutUser(): Promise<void> {
-  const refreshToken = getRefreshToken();
-  if (refreshToken) {
-    await fetch(`${API_BASE_URL}/auth/logout`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh_token: refreshToken })
-    }).catch(() => {});
-  }
+  await fetch(`${API_BASE_URL}/auth/logout`, {
+    method: "POST",
+    credentials: "include" // send the httpOnly cookie so the backend can invalidate it
+  }).catch(() => {});
   clearTokens();
 }
 
@@ -162,7 +170,9 @@ export async function logoutUser(): Promise<void> {
  * Get the current authenticated user's profile.
  */
 export async function fetchCurrentUser(): Promise<UserResponse> {
-  const res = await authFetch(`${API_BASE_URL}/auth/me`);
+  const res = await authFetch(`${API_BASE_URL}/auth/me`, {
+    headers: { "Content-Type": "application/json" }
+  });
   if (!res.ok) {
     throw new Error("Not authenticated");
   }
@@ -173,7 +183,9 @@ export async function fetchCurrentUser(): Promise<UserResponse> {
  * Get the current user's settings.
  */
 export async function fetchUserSettings(): Promise<UserSettingsResponse> {
-  const res = await authFetch(`${API_BASE_URL}/auth/settings`);
+  const res = await authFetch(`${API_BASE_URL}/auth/settings`, {
+    headers: { "Content-Type": "application/json" }
+  });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.detail || "Failed to fetch settings");
@@ -189,6 +201,7 @@ export async function updateUserSettings(
 ): Promise<UserSettingsResponse> {
   const res = await authFetch(`${API_BASE_URL}/auth/settings`, {
     method: "PATCH",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
   });
   if (!res.ok) {

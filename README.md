@@ -330,6 +330,8 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 | Application     | http://localhost (port 80) |
 | API (via proxy) | http://localhost/api/      |
 
+> **Security note:** The production compose file already sets `COOKIE_SECURE=true` and `COOKIE_SAMESITE=strict` for secure refresh-token cookies. If you're deploying under a custom domain, also set `COOKIE_DOMAIN=yourdomain.com` in your `.env.docker` or uncomment it in `docker-compose.prod.yml`.
+
 ### 4. Stop & Clean Up
 
 ```bash
@@ -346,17 +348,18 @@ docker compose down -v
 
 All backend settings are centralized in `backend/config.py`:
 
-| Config Class         | Key Settings                                                 | Env Vars                                                        |
-| -------------------- | ------------------------------------------------------------ | --------------------------------------------------------------- |
-| **RAGConfig**        | Chunk size (500), overlap (100), embedding model             | `DATA_DIR`                                                      |
-| **LLMConfig**        | Available models, presets, reasoning models                  | —                                                               |
-| **APIConfig**        | CORS origins                                                 | `CORS_ORIGINS`                                                  |
-| **DBConfig**         | SQLite paths for conversations & checkpoints                 | `DATA_DIR`                                                      |
-| **AuthConfig**       | JWT secret, token expiry, admin credentials                  | `JWT_SECRET`, `ENCRYPTION_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` |
-| **EvaluationConfig** | Approval threshold (0.8), max retries (3), dimension weights | —                                                               |
-| **MCPConfig**        | Wikipedia server URL & transport                             | `MCP_WIKIPEDIA_ENABLED`, `MCP_WIKIPEDIA_URL`                    |
-| **DebugConfig**      | Dummy graph toggle for testing (course outline only)         | `USE_DUMMY_GRAPH`                                               |
-| **LoggingConfig**    | Log level                                                    | `LOG_LEVEL`                                                     |
+| Config Class         | Key Settings                                                 | Env Vars                                                                                                             |
+| -------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| **RAGConfig**        | Chunk size (500), overlap (100), embedding model             | `DATA_DIR`                                                                                                           |
+| **LLMConfig**        | Available models, presets, reasoning models                  | —                                                                                                                    |
+| **APIConfig**        | CORS origins                                                 | `CORS_ORIGINS`                                                                                                       |
+| **DBConfig**         | SQLite paths for conversations & checkpoints                 | `DATA_DIR`                                                                                                           |
+| **AuthConfig**       | JWT secret, token expiry, admin credentials, cookie settings | `JWT_SECRET`, `ENCRYPTION_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `COOKIE_SECURE`, `COOKIE_SAMESITE`, `COOKIE_DOMAIN` |
+| **EvaluationConfig** | Approval threshold (0.8), max retries (3), dimension weights | —                                                                                                                    |
+| **UploadConfig**     | Maximum file upload size (default: 10 MB)                    | `MAX_FILE_SIZE`                                                                                                      |
+| **MCPConfig**        | Wikipedia server URL & transport                             | `MCP_WIKIPEDIA_ENABLED`, `MCP_WIKIPEDIA_URL`                                                                         |
+| **DebugConfig**      | Dummy graph toggle for testing (course outline only)         | `USE_DUMMY_GRAPH`                                                                                                    |
+| **LoggingConfig**    | Log level                                                    | `LOG_LEVEL`                                                                                                          |
 
 ---
 
@@ -426,6 +429,8 @@ npm run preview
 | `GET`  | `/conversations/{id}`      | Load a specific conversation             |
 
 > Full interactive API docs available at **http://localhost:8000/docs** when running locally.
+>
+> **Production note:** Swagger, ReDoc, and the OpenAPI schema are automatically disabled when `LOG_LEVEL` is set to `WARNING` or higher. Authentication endpoints are rate-limited (login: 5/min, register: 3/min, refresh: 10/min).
 
 ---
 

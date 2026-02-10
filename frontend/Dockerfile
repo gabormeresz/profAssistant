@@ -42,10 +42,19 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy built assets from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-EXPOSE 80
+# Prepare directories for non-root nginx and set ownership
+RUN mkdir -p /var/cache/nginx /var/run /var/log/nginx /tmp/nginx && \
+    chown -R nginx:nginx /var/cache/nginx /var/run /var/log/nginx /usr/share/nginx/html /tmp/nginx && \
+    # Allow non-root nginx to write pid file
+    sed -i 's|/var/run/nginx.pid|/tmp/nginx/nginx.pid|g' /etc/nginx/nginx.conf
+
+EXPOSE 8080
+
+# Switch to built-in non-root nginx user
+USER nginx
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD wget -qO- http://localhost:80/ || exit 1
+    CMD wget -qO- http://localhost:8080/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]

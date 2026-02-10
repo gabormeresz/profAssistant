@@ -1,5 +1,8 @@
-// API Configuration
-export const API_BASE_URL = "http://localhost:8000";
+// API Configuration — single source of truth for the backend URL.
+// In Docker/production, set VITE_API_URL at build time (or leave empty to
+// use the nginx reverse-proxy on the same origin).
+export const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:8000";
 export const API_ENDPOINTS = {
   COURSE_OUTLINE_GENERATOR: `${API_BASE_URL}/course-outline-generator`,
   LESSON_PLAN_GENERATOR: `${API_BASE_URL}/lesson-plan-generator`,

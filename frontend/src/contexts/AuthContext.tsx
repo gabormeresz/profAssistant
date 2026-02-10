@@ -4,6 +4,7 @@ import {
   fetchCurrentUser,
   fetchUserSettings,
   logoutUser,
+  tryRefresh,
   getAccessToken
 } from "../services/authService";
 import { AuthContext } from "./authContextDef";
@@ -44,10 +45,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSettings(null);
   }, []);
 
-  // On mount, check if there's a stored token and load user + settings
+  // On mount, attempt a silent token refresh via the httpOnly cookie.
+  // If the cookie is valid the backend returns a new access token,
+  // which we then use to load user + settings.
   useEffect(() => {
     const init = async () => {
-      if (getAccessToken()) {
+      // If we already have an in-memory access token (e.g. after SPA
+      // navigation), skip the refresh.
+      let hasToken = !!getAccessToken();
+
+      if (!hasToken) {
+        // Try to obtain an access token using the httpOnly refresh cookie.
+        hasToken = await tryRefresh();
+      }
+
+      if (hasToken) {
         await refreshUser();
         await refreshSettings();
       }

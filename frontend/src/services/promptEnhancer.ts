@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from "../utils/constants";
-import { getAccessToken, tryRefresh } from "./authService";
+import { authFetch } from "./authService";
 import type { EnhancePromptRequest, EnhancePromptResponse } from "../types";
 
 export type { EnhancePromptRequest, EnhancePromptResponse };
@@ -27,25 +27,10 @@ export async function enhancePrompt(
     formData.append("language", data.language);
   }
 
-  let token = getAccessToken();
-  let response = await fetch(API_ENDPOINTS.ENHANCE_PROMPT, {
+  const response = await authFetch(API_ENDPOINTS.ENHANCE_PROMPT, {
     method: "POST",
-    body: formData,
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined
+    body: formData
   });
-
-  // Retry once with a refreshed token on 401
-  if (response.status === 401) {
-    const refreshed = await tryRefresh();
-    if (refreshed) {
-      token = getAccessToken();
-      response = await fetch(API_ENDPOINTS.ENHANCE_PROMPT, {
-        method: "POST",
-        body: formData,
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined
-      });
-    }
-  }
 
   const result = await response.json();
 

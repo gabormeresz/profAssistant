@@ -37,10 +37,10 @@ router = APIRouter(tags=["Generation"])
 
 @router.post("/enhance-prompt")
 async def enhance_prompt(
-    message: str = Form(...),
-    context_type: str = Form("course_outline"),
-    additional_context: Optional[str] = Form(None),
-    language: Optional[str] = Form(None),
+    message: str = Form(..., max_length=5000),
+    context_type: str = Form("course_outline", max_length=50),
+    additional_context: Optional[str] = Form(None, max_length=10000),
+    language: Optional[str] = Form(None, max_length=50),
     current_user: dict = Depends(get_current_user),
 ):
     """
@@ -102,7 +102,8 @@ async def enhance_prompt(
     except HTTPException:
         raise  # Let FastAPI handle 403/500 from resolve_api_key directly
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+        logger.error("Prompt enhancement failed: %s", e, exc_info=True)
+        return JSONResponse(content={"error": "Internal server error"}, status_code=500)
 
 
 # ============================================================================
@@ -152,11 +153,11 @@ async def _course_outline_event_generator(
 
 @router.post("/course-outline-generator")
 async def generate_course_outline(
-    message: str = Form(""),
-    topic: Optional[str] = Form(None),
+    message: str = Form("", max_length=5000),
+    topic: Optional[str] = Form(None, max_length=500),
     number_of_classes: Optional[int] = Form(None),
-    language: Optional[str] = Form(None),
-    thread_id: Optional[str] = Form(None),
+    language: Optional[str] = Form(None, max_length=50),
+    thread_id: Optional[str] = Form(None, max_length=100),
     files: Optional[List[UploadFile]] = File(None),
     current_user: dict = Depends(get_current_user),
 ):
@@ -238,15 +239,15 @@ async def _lesson_plan_event_generator(
 
 @router.post("/lesson-plan-generator")
 async def generate_lesson_plan(
-    message: str = Form(""),
-    course_title: Optional[str] = Form(None),
+    message: str = Form("", max_length=5000),
+    course_title: Optional[str] = Form(None, max_length=500),
     class_number: Optional[int] = Form(None),
-    class_title: Optional[str] = Form(None),
-    learning_objectives: Optional[str] = Form(None),  # JSON string
-    key_topics: Optional[str] = Form(None),  # JSON string
-    activities_projects: Optional[str] = Form(None),  # JSON string
-    language: Optional[str] = Form(None),
-    thread_id: Optional[str] = Form(None),
+    class_title: Optional[str] = Form(None, max_length=500),
+    learning_objectives: Optional[str] = Form(None, max_length=5000),  # JSON string
+    key_topics: Optional[str] = Form(None, max_length=5000),  # JSON string
+    activities_projects: Optional[str] = Form(None, max_length=5000),  # JSON string
+    language: Optional[str] = Form(None, max_length=50),
+    thread_id: Optional[str] = Form(None, max_length=100),
     files: Optional[List[UploadFile]] = File(None),
     current_user: dict = Depends(get_current_user),
 ):
@@ -351,18 +352,18 @@ async def _presentation_event_generator(
 
 @router.post("/presentation-generator")
 async def generate_presentation(
-    message: str = Form(""),
-    course_title: Optional[str] = Form(None),
+    message: str = Form("", max_length=5000),
+    course_title: Optional[str] = Form(None, max_length=500),
     class_number: Optional[int] = Form(None),
-    class_title: Optional[str] = Form(None),
-    learning_objective: Optional[str] = Form(None),
-    key_points: Optional[str] = Form(None),  # JSON string
-    lesson_breakdown: Optional[str] = Form(None),
-    activities: Optional[str] = Form(None),
-    homework: Optional[str] = Form(None),
-    extra_activities: Optional[str] = Form(None),
-    language: Optional[str] = Form(None),
-    thread_id: Optional[str] = Form(None),
+    class_title: Optional[str] = Form(None, max_length=500),
+    learning_objective: Optional[str] = Form(None, max_length=2000),
+    key_points: Optional[str] = Form(None, max_length=5000),  # JSON string
+    lesson_breakdown: Optional[str] = Form(None, max_length=5000),
+    activities: Optional[str] = Form(None, max_length=5000),
+    homework: Optional[str] = Form(None, max_length=5000),
+    extra_activities: Optional[str] = Form(None, max_length=5000),
+    language: Optional[str] = Form(None, max_length=50),
+    thread_id: Optional[str] = Form(None, max_length=100),
     files: Optional[List[UploadFile]] = File(None),
     current_user: dict = Depends(get_current_user),
 ):
@@ -441,7 +442,5 @@ async def export_presentation_pptx(
             headers={"Content-Disposition": f'attachment; filename="{filename}"'},
         )
     except Exception as e:
-        logger.error(f"PPTX export error: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"Failed to generate PPTX: {str(e)}"
-        )
+        logger.error("PPTX export error: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to generate PPTX")

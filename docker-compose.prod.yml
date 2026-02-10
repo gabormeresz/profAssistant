@@ -22,6 +22,10 @@ services:
       CORS_ORIGINS: "${ALLOWED_ORIGINS:-https://yourdomain.com}"
       LOG_LEVEL: "WARNING"
       USE_DUMMY_GRAPH: "false"
+      # Secure cookie settings for production (HTTPS)
+      COOKIE_SECURE: "true"
+      COOKIE_SAMESITE: "strict"
+      # COOKIE_DOMAIN: "yourdomain.com"  # Uncomment and set for your domain
     restart: always
 
   frontend:
@@ -32,5 +36,5 @@ services:
         # In production, the frontend calls /api/ which nginx proxies to backend
         VITE_API_URL: "/api"
     ports:
-      - "80:80"
+      - "80:8080"
     restart: always

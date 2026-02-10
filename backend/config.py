@@ -4,6 +4,7 @@ Central configuration for the backend application.
 All configurable constants and settings should be defined here.
 """
 
+import base64
 import logging
 import os
 from dotenv import load_dotenv
@@ -158,6 +159,42 @@ class AuthConfig:
 
     JWT_ALGORITHM: str = "HS256"
 
+    # Cookie settings for refresh tokens
+    COOKIE_SECURE: bool = os.getenv("COOKIE_SECURE", "false").lower() == "true"
+    COOKIE_SAMESITE: str = os.getenv(
+        "COOKIE_SAMESITE", "lax"
+    )  # "lax" for dev, "strict" for prod
+    COOKIE_DOMAIN: str | None = os.getenv("COOKIE_DOMAIN") or None
+
+    @classmethod
+    def validate(cls) -> None:
+        """Fail fast if critical auth secrets are missing or insecure."""
+        if not cls.JWT_SECRET or len(cls.JWT_SECRET) < 32:
+            raise RuntimeError(
+                "JWT_SECRET env var must be set and be at least 32 characters. "
+                'Generate one with: python3 -c "import secrets; print(secrets.token_hex(32))"'
+            )
+
+        if not cls.ENCRYPTION_KEY:
+            raise RuntimeError(
+                "ENCRYPTION_KEY env var must be set. "
+                'Generate one with: python3 -c "import base64,os; print(base64.urlsafe_b64encode(os.urandom(32)).decode())"'
+            )
+
+        # Validate that ENCRYPTION_KEY is a valid Fernet key (URL-safe base64, 32 bytes)
+        try:
+            key_bytes = base64.urlsafe_b64decode(cls.ENCRYPTION_KEY)
+            if len(key_bytes) != 32:
+                raise ValueError("Key must be 32 bytes")
+        except Exception:
+            raise RuntimeError(
+                "ENCRYPTION_KEY must be a valid Fernet key (URL-safe base64-encoded 32 bytes). "
+                'Generate one with: python3 -c "import base64,os; print(base64.urlsafe_b64encode(os.urandom(32)).decode())"'
+            )
+
+
+AuthConfig.validate()
+
 
 # =============================================================================
 # Evaluation Agents Configuration
@@ -182,6 +219,18 @@ class EvaluationConfig:
         "activities": 0.20,
         "completeness": 0.15,
     }
+
+
+# =============================================================================
+# Upload Configuration
+# =============================================================================
+
+
+class UploadConfig:
+    """Configuration for file upload limits."""
+
+    # Maximum file size in bytes (default: 10 MB)
+    MAX_FILE_SIZE: int = int(os.getenv("MAX_FILE_SIZE", str(10 * 1024 * 1024)))
 
 
 # =============================================================================
@@ -211,7 +260,7 @@ class DebugConfig:
     # When True, the course outline endpoint uses a dummy generator that
     # returns hardcoded data with realistic SSE events (no LLM calls).
     # Toggle this to quickly reproduce SSE streaming bugs.
-    USE_DUMMY_GRAPH: bool = os.getenv("USE_DUMMY_GRAPH", "true").lower() == "true"
+    USE_DUMMY_GRAPH: bool = os.getenv("USE_DUMMY_GRAPH", "false").lower() == "true"
 
 
 # =============================================================================
