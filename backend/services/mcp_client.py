@@ -131,11 +131,13 @@ class MCPClientManager:
         """
         Get loaded MCP tools.
 
+        Returns a shallow copy so callers cannot mutate the internal list.
+
         Returns:
             List of LangChain tools loaded from MCP servers.
             Empty list if not initialized or initialization failed.
         """
-        return self._tools or []
+        return list(self._tools) if self._tools else []
 
     def is_initialized(self) -> bool:
         """Check if the client manager has been initialized."""
