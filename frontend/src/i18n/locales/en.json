@@ -28,6 +28,14 @@
     "refiningPresentation": "Refining presentation based on evaluation...",
     "structuringResponse": "Structuring final response..."
   },
+  "toolNames": {
+    "search_wikipedia": "Searching Wikipedia",
+    "get_article": "Fetching Wikipedia Article",
+    "get_summary": "Fetching Wikipedia Summary",
+    "tavily_search": "Searching the Web",
+    "tavily_extract": "Extracting Web Content",
+    "search_uploaded_documents": "Searching Uploaded Files"
+  },
   "sidebar": {
     "courseOutlineGenerator": "Course Outline Generator",
     "lessonPlanGenerator": "Lesson Plan Generator",

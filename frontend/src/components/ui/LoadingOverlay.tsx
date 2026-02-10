@@ -9,6 +9,12 @@ interface LoadingOverlayProps {
 export function LoadingOverlay({ message, show }: LoadingOverlayProps) {
   const { t } = useTranslation();
 
+  // Map raw tool names to readable translated names
+  const resolveToolName = (name: string): string => {
+    const translated = t(`toolNames.${name}`, { defaultValue: "" });
+    return translated || name;
+  };
+
   // Parse and translate the message
   const getTranslatedMessage = (msg?: string): string => {
     if (!msg) return t("common.processing");
@@ -17,7 +23,12 @@ export function LoadingOverlay({ message, show }: LoadingOverlayProps) {
     try {
       const parsed = JSON.parse(msg);
       if (parsed.key && parsed.params) {
-        return t(parsed.key, parsed.params) as string;
+        // Resolve tool name params to human-readable versions
+        const resolvedParams = { ...parsed.params };
+        if (resolvedParams.toolName) {
+          resolvedParams.toolName = resolveToolName(resolvedParams.toolName);
+        }
+        return t(parsed.key, resolvedParams) as string;
       }
     } catch {
       // Not JSON, treat as a simple translation key

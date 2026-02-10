@@ -28,6 +28,14 @@
     "refiningPresentation": "Prezentáció finomítása az értékelés alapján...",
     "structuringResponse": "Végső válasz strukturálása..."
   },
+  "toolNames": {
+    "search_wikipedia": "Keresés a Wikipédián",
+    "get_article": "Wikipédia cikk lekérése",
+    "get_summary": "Wikipédia összefoglaló lekérése",
+    "tavily_search": "Keresés a weben",
+    "tavily_extract": "Webes tartalom kinyerése",
+    "search_uploaded_documents": "Keresés a feltöltött fájlokban"
+  },
   "sidebar": {
     "courseOutlineGenerator": "Tárgytematika Készítő",
     "lessonPlanGenerator": "Óraterv Készítő",
