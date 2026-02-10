@@ -32,16 +32,14 @@ export default function ProfilePage() {
   const [keySaveError, setKeySaveError] = useState("");
 
   useEffect(() => {
-    if (!isLoadingSettings && settings) {
-      if (isSetupMode && !settings.has_api_key && user?.role !== "admin") {
+    if (!isLoadingSettings && user?.role !== "admin") {
+      if (!settings || !settings.has_api_key) {
         setShowSetupBanner(true);
-      }
-    } else if (!isLoadingSettings && !settings) {
-      if (isSetupMode && user?.role !== "admin") {
-        setShowSetupBanner(true);
+      } else {
+        setShowSetupBanner(false);
       }
     }
-  }, [isLoadingSettings, settings, isSetupMode, user?.role]);
+  }, [isLoadingSettings, settings, user?.role]);
 
   const handleSaveApiKey = async () => {
     setKeySaveError("");
@@ -138,24 +136,11 @@ export default function ProfilePage() {
                 </p>
               </div>
             </div>
-            <ol className="list-decimal list-inside space-y-2 text-sm text-amber-800 dark:text-amber-300 ml-9 mb-4">
+            <ol className="list-decimal list-inside space-y-2 text-sm text-amber-800 dark:text-amber-300 ml-9">
               <li>{t("profile.setupBanner.steps.step1")}</li>
               <li>{t("profile.setupBanner.steps.step2")}</li>
               <li>{t("profile.setupBanner.steps.step3")}</li>
             </ol>
-            <div className="ml-9">
-              <button
-                onClick={() => {
-                  setShowSetupBanner(false);
-                  if (isSetupMode) {
-                    setSearchParams({}, { replace: true });
-                  }
-                }}
-                className="text-sm text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 underline"
-              >
-                {t("profile.setupBanner.dismiss")}
-              </button>
-            </div>
           </div>
         )}
 
