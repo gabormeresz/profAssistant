@@ -85,13 +85,14 @@ class ConversationRepository:
         """Create a new course outline conversation."""
         now = datetime.now().isoformat()
         conn = self.conn
+        uploaded_file_names_json = json.dumps(data.uploaded_file_names)
 
         # Insert into base table
         await conn.execute(
             """
             INSERT INTO conversations 
-            (thread_id, user_id, conversation_type, title, language, created_at, updated_at, message_count)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (thread_id, user_id, conversation_type, title, language, created_at, updated_at, message_count, uploaded_file_names)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
             (
                 thread_id,
@@ -102,6 +103,7 @@ class ConversationRepository:
                 now,
                 now,
                 0,
+                uploaded_file_names_json,
             ),
         )
 
@@ -135,6 +137,7 @@ class ConversationRepository:
             difficulty_level=data.difficulty_level,
             target_audience=data.target_audience,
             user_comment=data.user_comment,
+            uploaded_file_names=data.uploaded_file_names,
             created_at=datetime.fromisoformat(now),
             updated_at=datetime.fromisoformat(now),
             message_count=0,
@@ -150,13 +153,14 @@ class ConversationRepository:
         """Create a new lesson plan conversation."""
         now = datetime.now().isoformat()
         conn = self.conn
+        uploaded_file_names_json = json.dumps(data.uploaded_file_names)
 
         # Insert into base table
         await conn.execute(
             """
             INSERT INTO conversations 
-            (thread_id, user_id, conversation_type, title, language, created_at, updated_at, message_count)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (thread_id, user_id, conversation_type, title, language, created_at, updated_at, message_count, uploaded_file_names)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
             (
                 thread_id,
@@ -167,6 +171,7 @@ class ConversationRepository:
                 now,
                 now,
                 0,
+                uploaded_file_names_json,
             ),
         )
 
@@ -209,6 +214,7 @@ class ConversationRepository:
             key_topics=data.key_topics,
             activities_projects=data.activities_projects,
             user_comment=data.user_comment,
+            uploaded_file_names=data.uploaded_file_names,
             created_at=datetime.fromisoformat(now),
             updated_at=datetime.fromisoformat(now),
             message_count=0,
@@ -224,13 +230,14 @@ class ConversationRepository:
         """Create a new presentation conversation."""
         now = datetime.now().isoformat()
         conn = self.conn
+        uploaded_file_names_json = json.dumps(data.uploaded_file_names)
 
         # Insert into base table
         await conn.execute(
             """
             INSERT INTO conversations 
-            (thread_id, user_id, conversation_type, title, language, created_at, updated_at, message_count)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (thread_id, user_id, conversation_type, title, language, created_at, updated_at, message_count, uploaded_file_names)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
             (
                 thread_id,
@@ -241,6 +248,7 @@ class ConversationRepository:
                 now,
                 now,
                 0,
+                uploaded_file_names_json,
             ),
         )
 
@@ -288,6 +296,7 @@ class ConversationRepository:
             homework=data.homework,
             extra_activities=data.extra_activities,
             user_comment=data.user_comment,
+            uploaded_file_names=data.uploaded_file_names,
             created_at=datetime.fromisoformat(now),
             updated_at=datetime.fromisoformat(now),
             message_count=0,
@@ -308,7 +317,7 @@ class ConversationRepository:
         # Get base conversation data
         cursor = await conn.execute(
             """
-            SELECT thread_id, user_id, conversation_type, title, language, created_at, updated_at, message_count
+            SELECT thread_id, user_id, conversation_type, title, language, created_at, updated_at, message_count, uploaded_file_names
             FROM conversations
             WHERE thread_id = ?
         """,
@@ -329,8 +338,12 @@ class ConversationRepository:
             created_at,
             updated_at,
             message_count,
+            uploaded_file_names_raw,
         ) = row
         conversation_type = ConversationType(conv_type)
+        uploaded_file_names = (
+            json.loads(uploaded_file_names_raw) if uploaded_file_names_raw else []
+        )
 
         # Get type-specific data
         if conversation_type == ConversationType.COURSE_OUTLINE:
@@ -358,6 +371,7 @@ class ConversationRepository:
                 difficulty_level=outline_row[2],
                 target_audience=outline_row[3],
                 user_comment=outline_row[4],
+                uploaded_file_names=uploaded_file_names,
                 created_at=datetime.fromisoformat(created_at),
                 updated_at=datetime.fromisoformat(updated_at),
                 message_count=message_count,
@@ -395,6 +409,7 @@ class ConversationRepository:
                 key_topics=key_topics,
                 activities_projects=activities_projects,
                 user_comment=lesson_row[6],
+                uploaded_file_names=uploaded_file_names,
                 created_at=datetime.fromisoformat(created_at),
                 updated_at=datetime.fromisoformat(updated_at),
                 message_count=message_count,
@@ -433,6 +448,7 @@ class ConversationRepository:
                 homework=pres_row[7],
                 extra_activities=pres_row[8],
                 user_comment=pres_row[9],
+                uploaded_file_names=uploaded_file_names,
                 created_at=datetime.fromisoformat(created_at),
                 updated_at=datetime.fromisoformat(updated_at),
                 message_count=message_count,
@@ -465,7 +481,7 @@ class ConversationRepository:
 
         cursor = await conn.execute(
             f"""
-            SELECT thread_id, user_id, conversation_type, title, language, created_at, updated_at, message_count
+            SELECT thread_id, user_id, conversation_type, title, language, created_at, updated_at, message_count, uploaded_file_names
             FROM conversations
             {where_clause}
             ORDER BY updated_at DESC
@@ -487,8 +503,12 @@ class ConversationRepository:
                 created_at,
                 updated_at,
                 message_count,
+                uploaded_file_names_raw,
             ) = row
             ct = ConversationType(conv_type)
+            uploaded_file_names = (
+                json.loads(uploaded_file_names_raw) if uploaded_file_names_raw else []
+            )
 
             # Fetch type-specific data
             if ct == ConversationType.COURSE_OUTLINE:
@@ -515,6 +535,7 @@ class ConversationRepository:
                             difficulty_level=outline_row[2],
                             target_audience=outline_row[3],
                             user_comment=outline_row[4],
+                            uploaded_file_names=uploaded_file_names,
                             created_at=datetime.fromisoformat(created_at),
                             updated_at=datetime.fromisoformat(updated_at),
                             message_count=message_count,
@@ -556,6 +577,7 @@ class ConversationRepository:
                             key_topics=key_topics,
                             activities_projects=activities_projects,
                             user_comment=lesson_row[6],
+                            uploaded_file_names=uploaded_file_names,
                             created_at=datetime.fromisoformat(created_at),
                             updated_at=datetime.fromisoformat(updated_at),
                             message_count=message_count,
@@ -594,6 +616,7 @@ class ConversationRepository:
                             homework=pres_row[7],
                             extra_activities=pres_row[8],
                             user_comment=pres_row[9],
+                            uploaded_file_names=uploaded_file_names,
                             created_at=datetime.fromisoformat(created_at),
                             updated_at=datetime.fromisoformat(updated_at),
                             message_count=message_count,

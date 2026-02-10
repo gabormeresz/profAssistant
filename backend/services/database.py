@@ -128,6 +128,7 @@ class DatabaseManager:
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
                 message_count INTEGER DEFAULT 0,
+                uploaded_file_names TEXT DEFAULT '[]',
                 FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
             )
         """
@@ -190,8 +191,25 @@ class DatabaseManager:
 
         await conn.commit()
 
+        # ── Migrations for existing databases ──
+        await self._run_migrations()
+
         # ── Seed admin user ──
         await self._seed_admin()
+
+    async def _run_migrations(self):
+        """Apply schema migrations for existing databases."""
+        conn = self.conn
+
+        # Add uploaded_file_names column if it doesn't exist
+        cursor = await conn.execute("PRAGMA table_info(conversations)")
+        columns = [row[1] for row in await cursor.fetchall()]
+        if "uploaded_file_names" not in columns:
+            await conn.execute(
+                "ALTER TABLE conversations ADD COLUMN uploaded_file_names TEXT DEFAULT '[]'"
+            )
+            await conn.commit()
+            logger.info("Migration: added uploaded_file_names column to conversations")
 
     async def _seed_admin(self):
         """Create the admin user from env vars if it doesn't already exist."""

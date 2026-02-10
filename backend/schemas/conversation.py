@@ -39,6 +39,10 @@ class ConversationBase(BaseModel):
     message_count: int = Field(
         default=0, description="Number of messages in the conversation"
     )
+    uploaded_file_names: List[str] = Field(
+        default_factory=list,
+        description="Names of files uploaded with the initial request",
+    )
 
 
 class CourseOutlineMetadata(ConversationBase):
@@ -126,6 +130,7 @@ class CourseOutlineCreate(BaseModel):
     difficulty_level: Optional[str] = None
     target_audience: Optional[str] = None
     user_comment: Optional[str] = None
+    uploaded_file_names: List[str] = []
 
 
 class LessonPlanCreate(BaseModel):
@@ -140,6 +145,7 @@ class LessonPlanCreate(BaseModel):
     activities_projects: List[str]
     language: str = "Hungarian"
     user_comment: Optional[str] = None
+    uploaded_file_names: List[str] = []
 
 
 class PresentationCreate(BaseModel):
@@ -157,6 +163,7 @@ class PresentationCreate(BaseModel):
     extra_activities: Optional[str] = None
     language: str = "Hungarian"
     user_comment: Optional[str] = None
+    uploaded_file_names: List[str] = []
 
 
 class ConversationList(BaseModel):

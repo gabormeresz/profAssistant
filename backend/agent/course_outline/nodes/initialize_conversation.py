@@ -38,6 +38,12 @@ async def initialize_conversation(state: CourseOutlineState) -> dict:
         topic = state["topic"]
         title = f"{topic[:50]}..." if len(topic) > 50 else topic
 
+        # Extract file names from uploaded file contents
+        file_contents = state.get("file_contents") or []
+        uploaded_file_names = [
+            fc["filename"] for fc in file_contents if fc.get("filename")
+        ]
+
         await conversation_manager.create_course_outline(
             thread_id=thread_id,
             user_id=state["user_id"],
@@ -52,6 +58,7 @@ async def initialize_conversation(state: CourseOutlineState) -> dict:
                     if (state.get("message") or "").strip()
                     else None
                 ),
+                uploaded_file_names=uploaded_file_names,
             ),
         )
         return {

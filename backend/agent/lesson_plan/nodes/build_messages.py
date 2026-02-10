@@ -148,6 +148,11 @@ You MUST use the `search_uploaded_documents` tool before responding to search th
                 "uploaded documents into your response."
             )
 
+        # Tag uploaded file names so the frontend can recover them on reload
+        if file_contents:
+            names = " | ".join(fc.get("filename", "unknown") for fc in file_contents)
+            follow_up_content += f"\n\n[uploaded_files: {names}]"
+
         new_messages.append(HumanMessage(content=follow_up_content))
 
     logger.debug(f"returning {len(new_messages)} new messages")

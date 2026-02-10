@@ -19,6 +19,7 @@ export interface SavedConversationBase {
   created_at: string;
   updated_at: string;
   message_count: number;
+  uploaded_file_names?: string[];
 }
 
 export interface SavedCourseOutline extends SavedConversationBase {

@@ -38,6 +38,12 @@ async def initialize_conversation(state: LessonPlanState) -> dict:
         class_title = state["class_title"]
         title = f"{class_title[:50]}..." if len(class_title) > 50 else class_title
 
+        # Extract file names from uploaded file contents
+        file_contents = state.get("file_contents") or []
+        uploaded_file_names = [
+            fc["filename"] for fc in file_contents if fc.get("filename")
+        ]
+
         await conversation_manager.create_lesson_plan(
             thread_id=thread_id,
             user_id=state["user_id"],
@@ -56,6 +62,7 @@ async def initialize_conversation(state: LessonPlanState) -> dict:
                     if (state.get("message") or "").strip()
                     else None
                 ),
+                uploaded_file_names=uploaded_file_names,
             ),
         )
         return {

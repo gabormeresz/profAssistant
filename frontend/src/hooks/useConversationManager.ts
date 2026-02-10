@@ -19,33 +19,40 @@ function parseUserMessage(content: string): {
   const files: { name: string }[] = [];
   let userContent = content;
 
-  // Check if message contains file contents section
-  const fileMarkerStart = "<<<REFERENCE_MATERIALS_BEGIN>>>";
-  const fileMarkerEnd = "<<<REFERENCE_MATERIALS_END>>>";
+  // Extract file names from compact tag: [uploaded_files: a.pdf | b.docx]
+  const tagPattern = /\[uploaded_files:\s*(.+?)\]/;
+  const tagMatch = userContent.match(tagPattern);
 
-  const startIdx = content.indexOf(fileMarkerStart);
-  const endIdx = content.indexOf(fileMarkerEnd);
+  if (tagMatch) {
+    userContent = userContent.replace(tagPattern, "").trim();
 
-  if (startIdx !== -1 && endIdx !== -1) {
-    // Extract the file contents section
-    const fileSection = content.substring(
-      startIdx + fileMarkerStart.length,
-      endIdx
+    const names = tagMatch[1]
+      .split("|")
+      .map((n) => n.trim())
+      .filter(Boolean);
+    for (const name of names) {
+      files.push({ name });
+    }
+  }
+
+  // Strip backend-generated follow-up prompt boilerplate so only the
+  // user's actual text remains visible in the chat UI.
+  if (userContent.startsWith("## Follow-up Request")) {
+    userContent = userContent.replace(/^## Follow-up Request\s*/, "");
+
+    // Remove the document upload instruction block
+    userContent = userContent.replace(
+      /\*\*IMPORTANT: New documents have been uploaded with this request\.\*\*[\s\S]*?incorporate the findings into your response\.\s*/,
+      ""
     );
 
-    // Remove file section from user content
-    userContent = content.substring(0, startIdx).trim();
+    // Remove the default placeholder when user sent no text (only files)
+    userContent = userContent.replace(
+      /^Please incorporate the information from the newly uploaded documents into your response\.?\s*$/,
+      ""
+    );
 
-    // Parse individual files from the section
-    // Format: <<<FILE_BEGIN:filename>>>\ncontent\n<<<FILE_END>>>
-    const filePattern = /<<<FILE_BEGIN:(.+?)>>>/g;
-    let match;
-
-    while ((match = filePattern.exec(fileSection)) !== null) {
-      const filename = match[1].trim();
-
-      files.push({ name: filename });
-    }
+    userContent = userContent.trim();
   }
 
   return { userContent, files };
@@ -248,17 +255,32 @@ export function useConversationManager<TResult, TConversation>(
         const userMsgs: ConversationMessage[] = [];
         const results: TResult[] = [];
 
+        // Get uploaded file names from conversation metadata
+        const uploadedFileNames = conversation.uploaded_file_names;
+        const metadataFiles =
+          uploadedFileNames && uploadedFileNames.length > 0
+            ? uploadedFileNames.map((name: string) => ({ name }))
+            : undefined;
+
         history.messages.forEach((msg) => {
           if (msg.role === "user") {
             // Parse the message to separate user content from file contents
             const { userContent, files } = parseUserMessage(msg.content);
+
+            // For the first user message, use file names from metadata if available
+            const messageFiles =
+              userMsgs.length === 0 && metadataFiles
+                ? metadataFiles
+                : files.length > 0
+                  ? files
+                  : undefined;
 
             userMsgs.push({
               id: `user-${crypto.randomUUID()}`,
               role: "user",
               content: userContent,
               timestamp: new Date(),
-              files: files.length > 0 ? files : undefined
+              files: messageFiles
             });
           } else if (msg.role === "assistant") {
             try {
