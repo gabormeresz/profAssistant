@@ -61,6 +61,14 @@ def _build_context_text(context_type: str, additional_context: Dict[str, Any]) -
             f"Learning Objective: {additional_context.get('learning_objective', 'N/A')}, "
             f"Key Points: {additional_context.get('key_points', [])}"
         )
+    elif context_type == "assessment":
+        # TODO: Revise context fields once the assessment schema is finalized
+        return (
+            f"Course Title: {additional_context.get('course_title', 'N/A')}, "
+            f"Class Title: {additional_context.get('class_title', 'N/A')}, "
+            f"Learning Objectives: {additional_context.get('learning_objectives', [])}, "
+            f"Key Topics: {additional_context.get('key_topics', [])}"
+        )
     else:  # course_outline
         return (
             f"Topic: {additional_context.get('topic', 'N/A')}, "
@@ -73,6 +81,7 @@ def _build_user_message(message: str, context_type: str) -> str:
     type_map = {
         "lesson_plan": "detailed lesson plan",
         "presentation": "educational presentation",
+        "assessment": "student assessment or evaluation",
         "course_outline": "course outline",
     }
     content_type = type_map.get(context_type, "course outline")
@@ -96,7 +105,7 @@ def _build_messages(
 async def prompt_enhancer(
     message: str,
     context_type: Literal[
-        "course_outline", "lesson_plan", "presentation"
+        "course_outline", "lesson_plan", "presentation", "assessment"
     ] = "course_outline",
     additional_context: Optional[Dict[str, Any]] = None,
     language: Optional[str] = None,
@@ -107,11 +116,14 @@ async def prompt_enhancer(
 
     Args:
         message: The main user message/prompt
-        context_type: Type of content being generated ("course_outline" or "lesson_plan")
+        context_type: Type of content being generated
+            ("course_outline", "lesson_plan", "presentation", or "assessment")
         additional_context: Optional dict with context-specific fields:
             - For course_outline: topic, num_classes
             - For lesson_plan: topic (course_title), class_title, learning_objectives,
               key_topics, activities_projects
+            - For presentation: course_title, class_title, learning_objective, key_points
+            - For assessment: (TBD)
         language: Optional language for the output (e.g., "English", "Hungarian")
         user_id: Optional user ID. Resolves the per-user API key via api_key_service.
 

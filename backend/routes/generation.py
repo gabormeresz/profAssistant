@@ -48,10 +48,13 @@ async def enhance_prompt(
 
     Args:
         message: The user's message/instructions to enhance
-        context_type: Type of content being generated ("course_outline" or "lesson_plan")
+        context_type: Type of content being generated
+            ("course_outline", "lesson_plan", "presentation", or "assessment")
         additional_context: JSON string with context-specific fields:
             - For course_outline: topic, num_classes
             - For lesson_plan: topic, class_title, learning_objectives, key_topics, activities_projects
+            - For presentation: course_title, class_title, learning_objective, key_points
+            - For assessment: (TBD)
         language: Optional language for the output (e.g., "English", "Hungarian")
     """
     try:
@@ -64,7 +67,7 @@ async def enhance_prompt(
         await resolve_api_key(current_user)
 
         # Validate context_type
-        valid_contexts = ["course_outline", "lesson_plan", "presentation"]
+        valid_contexts = ["course_outline", "lesson_plan", "presentation", "assessment"]
         if context_type not in valid_contexts:
             return JSONResponse(
                 content={
@@ -88,7 +91,7 @@ async def enhance_prompt(
         from typing import Literal, cast
 
         validated_context_type = cast(
-            Literal["course_outline", "lesson_plan", "presentation"], context_type
+            Literal["course_outline", "lesson_plan", "presentation", "assessment"], context_type
         )
         enhanced = await prompt_enhancer(
             message,
