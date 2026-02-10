@@ -247,6 +247,20 @@ class MCPConfig:
     )
     WIKIPEDIA_URL: str = os.getenv("MCP_WIKIPEDIA_URL", "http://localhost:8765/sse")
     WIKIPEDIA_TRANSPORT: str = "sse"
+    # Only expose these tools from the Wikipedia MCP server
+    WIKIPEDIA_ALLOWED_TOOLS: list[str] = [
+        "search_wikipedia",
+        "get_article",
+        "get_summary",
+    ]
+
+    # Tavily MCP server settings (remote hosted)
+    TAVILY_ENABLED: bool = os.getenv("MCP_TAVILY_ENABLED", "true").lower() == "true"
+    TAVILY_API_KEY: str = os.getenv("TAVILY_API_KEY", "")
+    TAVILY_URL: str = "https://mcp.tavily.com/mcp/"
+    TAVILY_TRANSPORT: str = "http"
+    # Only expose these tools from the Tavily MCP server
+    TAVILY_ALLOWED_TOOLS: list[str] = ["tavily_search", "tavily_extract"]
 
 
 # =============================================================================

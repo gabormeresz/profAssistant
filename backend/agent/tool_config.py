@@ -5,7 +5,7 @@ Provides consistent tool binding and model configuration across
 course_outline, lesson_plan, presentation, and assessment generators.
 
 Tool availability:
-- Base tools (always available): web_search + MCP tools (Wikipedia, etc.)
+- Base tools (always available): MCP tools (Tavily web search, Wikipedia, etc.)
 - Document search: only available when user has uploaded documents
 """
 
@@ -15,7 +15,7 @@ from typing import List, Optional
 from langchain_core.tools import BaseTool
 
 from .model import ModelPurpose, get_model
-from .tools import web_search, search_uploaded_documents
+from .tools import search_uploaded_documents
 from services.mcp_client import mcp_manager
 
 logger = logging.getLogger(__name__)
@@ -26,9 +26,9 @@ def get_base_tools() -> List[BaseTool]:
     Get base tools that are always available.
 
     Returns:
-        List of base tools: web_search + MCP tools (Wikipedia, etc.)
+        List of base tools: MCP tools (Tavily web search, Wikipedia, etc.)
     """
-    return [web_search] + mcp_manager.get_tools()
+    return mcp_manager.get_tools()
 
 
 def get_available_tools(has_documents: bool = False) -> List[BaseTool]:

@@ -91,15 +91,32 @@ Identify 2-10 essential concepts that students must understand, including:
 
 You have access to the following tools to gather information for building the lesson plan:
 
-1. **web_search**: Search the web for current information, teaching resources, and examples.
+1. **tavily_search**: Search the web for current information, teaching resources, and examples.
    - Use for: Teaching strategies, real-world applications, current examples
 
-2. **search_wikipedia**: Search Wikipedia for encyclopedic knowledge and established facts.
-   - Use for: Foundational concepts, definitions, background information
-   - Best for: Understanding core terminology, theoretical frameworks
+2. **tavily_extract**: Extract detailed content from specific web page URLs.
+   - Use for: Reading full articles, detailed teaching resources from a known URL
 
-3. **search_uploaded_documents** (if documents uploaded): Search user's reference materials.
+3. **search_wikipedia**: Search Wikipedia for articles matching a query.
+   - Use for: Discovering relevant articles, foundational concepts, background information
+   - Best for: Finding the right article titles and overviews on a topic
+
+4. **get_article**: Get the full content of a Wikipedia article by title.
+   - Use for: Reading complete articles on key concepts, detailed explanations
+   - Requires: An exact article title (use `search_wikipedia` first to find it)
+
+5. **get_summary**: Get a concise summary of a Wikipedia article by title.
+   - Use for: Quick overviews, definitions, theoretical frameworks
+   - Requires: An exact article title (use `search_wikipedia` first to find it)
+
+6. **search_uploaded_documents** (if documents uploaded): Search user's reference materials.
    - Use for: Aligning with existing curriculum, specific examples, preferred approaches
+
+**Tool Usage Strategy**:
+- Use `search_wikipedia` first to discover relevant articles, then `get_summary` or `get_article` for details
+- Use `tavily_search` for current applications, recent developments, and practical examples
+- Use `tavily_extract` to read detailed content from promising URLs found via search
+- Use `search_uploaded_documents` to incorporate user's specific materials and preferences
 {document_search_instruction}
 
 ## Output Specifications

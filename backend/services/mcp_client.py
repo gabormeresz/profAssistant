@@ -3,9 +3,13 @@ MCP Client manager for integrating MCP tools into the application.
 
 This module provides a singleton manager for connecting to MCP servers
 and loading their tools for use in LangGraph workflows.
+
+Configured servers:
+- Wikipedia (local SSE server for encyclopedic knowledge)
+- Tavily (remote hosted server for web search and content extraction)
 """
 
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from langchain_core.tools import BaseTool
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
@@ -30,39 +34,80 @@ class MCPClientManager:
             cls._instance = super().__new__(cls)
         return cls._instance
 
+    def _build_server_config(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Build the server configuration dict for MultiServerMCPClient.
+
+        Includes only enabled servers. Tavily uses an Authorization header
+        to keep the API key out of URLs and logs.
+        """
+        servers: Dict[str, Dict[str, Any]] = {}
+
+        if MCPConfig.WIKIPEDIA_ENABLED:
+            servers["wikipedia"] = {
+                "transport": MCPConfig.WIKIPEDIA_TRANSPORT,
+                "url": MCPConfig.WIKIPEDIA_URL,
+            }
+
+        if MCPConfig.TAVILY_ENABLED:
+            if not MCPConfig.TAVILY_API_KEY:
+                print("[MCP] Tavily enabled but TAVILY_API_KEY is not set — skipping")
+            else:
+                servers["tavily"] = {
+                    "transport": MCPConfig.TAVILY_TRANSPORT,
+                    "url": MCPConfig.TAVILY_URL,
+                    "headers": {
+                        "Authorization": f"Bearer {MCPConfig.TAVILY_API_KEY}",
+                    },
+                }
+
+        return servers
+
+    def _filter_tools(self, tools: List[BaseTool]) -> List[BaseTool]:
+        """
+        Filter loaded tools to only expose allowed ones.
+
+        Tools from each server are filtered to their respective
+        allowed-tool lists in MCPConfig.
+        """
+        allowed = set(MCPConfig.WIKIPEDIA_ALLOWED_TOOLS) | set(
+            MCPConfig.TAVILY_ALLOWED_TOOLS
+        )
+        filtered = [t for t in tools if t.name in allowed]
+        return filtered
+
     async def initialize(self) -> None:
         """
         Initialize MCP client connections.
 
-        Connects to configured MCP servers (e.g., Wikipedia) and loads
-        their tools. Safe to call multiple times - will only initialize once.
+        Connects to configured MCP servers (Wikipedia, Tavily, etc.) and
+        loads their tools. Safe to call multiple times — only initializes once.
         """
         if self._initialized:
             return
 
-        if not MCPConfig.WIKIPEDIA_ENABLED:
-            print("[MCP] Wikipedia server disabled via configuration")
+        servers = self._build_server_config()
+
+        if not servers:
+            print("[MCP] No MCP servers enabled")
             self._tools = []
             self._initialized = True
             return
 
         try:
-            # Import here to avoid import errors if package not installed
+            self._client = MultiServerMCPClient(servers)  # type: ignore[arg-type]
 
-            self._client = MultiServerMCPClient(
-                {  # type: ignore[arg-type]
-                    "wikipedia": {
-                        "transport": MCPConfig.WIKIPEDIA_TRANSPORT,
-                        "url": MCPConfig.WIKIPEDIA_URL,
-                    }
-                }
-            )
-
-            self._tools = await self._client.get_tools()
+            all_tools = await self._client.get_tools()
+            self._tools = self._filter_tools(all_tools)
             self._initialized = True
 
-            tool_names = [t.name for t in self._tools] if self._tools else []
+            tool_names = [t.name for t in self._tools]
             print(f"[MCP] Initialized successfully with tools: {tool_names}")
+
+            # Log any filtered-out tools for transparency
+            filtered_out = [t.name for t in all_tools if t not in self._tools]
+            if filtered_out:
+                print(f"[MCP] Filtered out tools: {filtered_out}")
 
         except ImportError as e:
             print(f"[MCP] langchain-mcp-adapters not installed: {e}")
@@ -70,11 +115,15 @@ class MCPClientManager:
             self._initialized = True
 
         except Exception as e:
-            print(f"[MCP] Failed to initialize Wikipedia server: {e}")
-            print(
-                "[MCP] Continuing without MCP tools - ensure wikipedia-mcp is running:"
-            )
-            print("[MCP]   uv run wikipedia-mcp --transport sse --port 8765")
+            print(f"[MCP] Failed to initialize MCP servers: {e}")
+            print("[MCP] Continuing without MCP tools")
+            if MCPConfig.WIKIPEDIA_ENABLED:
+                print(
+                    "[MCP]   Ensure wikipedia-mcp is running: "
+                    "uv run wikipedia-mcp --transport sse --port 8765"
+                )
+            if MCPConfig.TAVILY_ENABLED:
+                print("[MCP]   Ensure TAVILY_API_KEY is valid")
             self._tools = []
             self._initialized = True
 

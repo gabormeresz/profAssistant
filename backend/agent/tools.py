@@ -1,39 +1,12 @@
-import asyncio
 from typing import Optional, List, Callable, Annotated, Any
 from langchain.tools import tool
 from langchain_core.tools import StructuredTool
 from langgraph.prebuilt import InjectedState
 from dotenv import load_dotenv
-from langchain_community.utilities import GoogleSerperAPIWrapper
 
 from services.rag_pipeline import get_rag_pipeline
 
 load_dotenv()
-
-# Setup tools using the new @tool decorator
-serper = GoogleSerperAPIWrapper()
-
-
-@tool
-async def web_search(query: str) -> str:
-    """
-    Search the web for current information on a topic.
-
-    Use this tool when you need:
-    - Recent developments, news, or updates on a subject
-    - Specific facts, statistics, or data not in your training
-    - Industry best practices or current standards
-    - Real-world examples or case studies
-
-    Args:
-        query: A clear, specific search query. Use descriptive keywords.
-               Good: "Python data science curriculum 2024 best practices"
-               Bad: "python course"
-
-    Returns:
-        Search results with relevant information from the web.
-    """
-    return await asyncio.to_thread(serper.run, query)
 
 
 @tool
