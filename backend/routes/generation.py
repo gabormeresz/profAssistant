@@ -16,6 +16,7 @@ from agent.course_outline import run_course_outline_generator
 from agent.course_outline.dummy_generator import run_dummy_course_outline_generator
 from agent.lesson_plan import run_lesson_plan_generator
 from agent.presentation import run_presentation_generator
+from agent.assessment import run_assessment_generator
 from agent.prompt_enhancer import prompt_enhancer
 from config import DebugConfig
 from schemas.presentation import Presentation as PresentationSchema
@@ -91,7 +92,8 @@ async def enhance_prompt(
         from typing import Literal, cast
 
         validated_context_type = cast(
-            Literal["course_outline", "lesson_plan", "presentation", "assessment"], context_type
+            Literal["course_outline", "lesson_plan", "presentation", "assessment"],
+            context_type,
         )
         enhanced = await prompt_enhancer(
             message,
@@ -404,6 +406,114 @@ async def generate_presentation(
             activities,
             homework,
             extra_activities,
+            language,
+            thread_id,
+            file_contents,
+            user_id=current_user["user_id"],
+        ),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+# ============================================================================
+# Assessment generation (SSE)
+# ============================================================================
+
+
+async def _assessment_event_generator(
+    message: str,
+    course_title: Optional[str],
+    class_title: Optional[str],
+    key_topics: Optional[List[str]],
+    assessment_type: Optional[str],
+    difficulty_level: Optional[str],
+    question_type_configs: Optional[List[dict]],
+    additional_instructions: Optional[str],
+    language: Optional[str],
+    thread_id: Optional[str],
+    file_contents: List[dict],
+    user_id: str,
+):
+    """
+    Generator function that yields Server-Sent Events (SSE) for assessment generation.
+    Yields progress updates and the final structured assessment.
+    """
+    try:
+        async for event in run_assessment_generator(
+            message,
+            course_title,
+            class_title,
+            key_topics,
+            assessment_type,
+            difficulty_level,
+            question_type_configs,
+            additional_instructions,
+            thread_id,
+            file_contents,
+            language,
+            user_id=user_id,
+        ):
+            yield format_sse_event(event)
+    except Exception as e:
+        logger.error(f"Assessment generation error: {e}", exc_info=True)
+        yield format_sse_error(classify_error(e))
+
+
+@router.post("/assessment-generator")
+async def generate_assessment(
+    message: str = Form("", max_length=5000),
+    course_title: Optional[str] = Form(None, max_length=500),
+    class_title: Optional[str] = Form(None, max_length=500),
+    key_topics: Optional[str] = Form(None, max_length=5000),  # JSON string
+    assessment_type: Optional[str] = Form(None, max_length=50),
+    difficulty_level: Optional[str] = Form(None, max_length=50),
+    question_type_configs: Optional[str] = Form(None, max_length=5000),  # JSON string
+    additional_instructions: Optional[str] = Form(None, max_length=5000),
+    language: Optional[str] = Form(None, max_length=50),
+    thread_id: Optional[str] = Form(None, max_length=100),
+    files: Optional[List[UploadFile]] = File(None),
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    Handle assessment generation with structured output and optional file uploads.
+    Returns a streaming SSE response with progress updates and structured data.
+
+    For initial requests: course_title, key_topics, assessment_type, and language are required.
+    For follow-up requests (with thread_id): only message and files are needed.
+    """
+    try:
+        key_topics_list = json.loads(key_topics) if key_topics else None
+        question_type_configs_list = (
+            json.loads(question_type_configs) if question_type_configs else None
+        )
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=400, detail=f"Invalid JSON in form fields: {str(e)}"
+        )
+
+    file_contents = []
+
+    if files:
+        file_contents += await file_processor(files)
+
+    # Validate that the user has an API key (fail-fast before streaming)
+    await resolve_api_key(current_user)
+
+    return StreamingResponse(
+        _assessment_event_generator(
+            message,
+            course_title,
+            class_title,
+            key_topics_list,
+            assessment_type,
+            difficulty_level,
+            question_type_configs_list,
+            additional_instructions,
             language,
             thread_id,
             file_contents,

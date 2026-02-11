@@ -66,6 +66,15 @@ export const PRESENTATION = {
   MAX_KEY_POINTS: 10
 } as const;
 
+// Assessment Configuration
+export const ASSESSMENT = {
+  MAX_OBJECTIVES: 5,
+  MAX_TOPICS: 7,
+  MAX_QUESTION_TYPES: 4,
+  MAX_QUESTIONS_PER_TYPE: 20,
+  MAX_POINTS_PER_QUESTION: 100
+} as const;
+
 // UI Messages
 export const UI_MESSAGES = {
   EMPTY_TOPIC: "Please enter a topic",

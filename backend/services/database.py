@@ -189,6 +189,23 @@ class DatabaseManager:
         """
         )
 
+        # ── Assessment specific table ──
+        await conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS assessments (
+                thread_id TEXT PRIMARY KEY,
+                course_title TEXT NOT NULL,
+                class_title TEXT,
+                key_topics TEXT,
+                assessment_type TEXT NOT NULL,
+                difficulty_level TEXT,
+                question_type_configs TEXT,
+                user_comment TEXT,
+                FOREIGN KEY (thread_id) REFERENCES conversations (thread_id) ON DELETE CASCADE
+            )
+        """
+        )
+
         await conn.commit()
 
         # ── Migrations for existing databases ──

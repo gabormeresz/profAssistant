@@ -11,6 +11,7 @@
     "generatingCourseOutline": "Generating course outline...",
     "generatingLessonPlan": "Generating lesson plan...",
     "generatingPresentation": "Generating presentation...",
+    "generatingAssessment": "Generating assessment...",
     "enhancingPrompt": "Enhancing your prompt...",
     "ingestingDocuments": "Processing uploaded documents...",
     "usingTool": "Using tool: {{toolName}}",
@@ -23,9 +24,11 @@
     "evaluatingOutline": "Evaluating outline quality...",
     "evaluatingLessonPlan": "Evaluating lesson plan quality...",
     "evaluatingPresentation": "Evaluating presentation quality...",
+    "evaluatingAssessment": "Evaluating assessment quality...",
     "refiningOutline": "Refining outline based on evaluation...",
     "refiningLessonPlan": "Refining lesson plan based on evaluation...",
     "refiningPresentation": "Refining presentation based on evaluation...",
+    "refiningAssessment": "Refining assessment based on evaluation...",
     "structuringResponse": "Structuring final response..."
   },
   "toolNames": {
@@ -159,6 +162,76 @@
     "invalidClassNumber": "Please enter a valid class number",
     "comingSoon": "Presentation generation is coming soon!"
   },
+  "assessment": {
+    "courseTitle": "Course Title",
+    "courseTitlePlaceholder": "e.g., Introduction to Programming",
+    "classTitle": "Class / Lesson Title",
+    "classTitlePlaceholder": "e.g., Variables and Data Types",
+    "keyTopics": "Key Topics",
+    "keyTopicsPlaceholder": "Topic, concept, or learning objective...",
+    "addTopic": "Add Topic",
+    "prefilledHint": "Pre-filled from your previous content. Feel free to edit.",
+    "language": "Language",
+    "preset": "Assessment Preset",
+    "presets": {
+      "quick_quiz": "Quick Quiz",
+      "midterm_exam": "Midterm Exam",
+      "homework": "Homework",
+      "practice_test": "Practice Test",
+      "custom": "Custom"
+    },
+    "assessmentType": "Assessment Type",
+    "types": {
+      "quiz": "Quiz",
+      "exam": "Exam",
+      "homework": "Homework",
+      "practice": "Practice"
+    },
+    "difficultyLevel": "Difficulty Level",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "mixed": "Mixed"
+    },
+    "questionTypes": "Question Types",
+    "questionTypeLabels": {
+      "multiple_choice": "Multiple Choice",
+      "true_false": "True / False",
+      "short_answer": "Short Answer",
+      "essay": "Essay"
+    },
+    "addQuestionType": "Add Question Type",
+    "count": "Count",
+    "pointsEach": "Pts each",
+    "totalQuestions": "Total questions",
+    "totalPoints": "Total points",
+    "additionalInstructions": "Additional Instructions",
+    "additionalInstructionsPlaceholder": "Any specific requirements for the assessment...",
+    "generateAssessment": "Generate Assessment",
+    "emptyCourseTitle": "Please enter a course title",
+    "emptyKeyTopics": "Please add at least one key topic"
+  },
+  "assessmentOutput": {
+    "points": "points",
+    "minutes": "minutes",
+    "question": "question",
+    "questions": "questions",
+    "pts": "pts",
+    "generalInstructions": "General Instructions",
+    "showAnswerKey": "Show Answer Key",
+    "hideAnswerKey": "Hide Answer Key",
+    "correctAnswer": "Answer",
+    "explanation": "Explanation",
+    "scoringRubric": "Scoring Rubric",
+    "keyPoints": "Key Points",
+    "suggestedWordLimit": "Suggested word limit",
+    "words": "words",
+    "gradingNotes": "Grading Notes",
+    "true": "True",
+    "false": "False",
+    "exportWithAnswers": "Export with Answer Key"
+  },
   "presentationOutput": {
     "classNumber": "Class",
     "slides": "slides",
@@ -189,7 +262,9 @@
     "exportToPptx": "Download PPTX",
     "generatingPptx": "Generating PowerPoint presentation...",
     "createLessonPlanDraft": "Create Lesson Plan Draft",
-    "createPresentationDraft": "Create Presentation Draft"
+    "createPresentationDraft": "Create Presentation Draft",
+    "createAssessmentDraft": "Create Assessment Draft",
+    "createAssessmentFromCourse": "Create Assessment for Entire Course"
   },
   "errors": {
     "title": "Something went wrong",

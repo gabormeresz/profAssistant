@@ -10,7 +10,8 @@ export interface ConversationMessage {
 export type ConversationType =
   | "course_outline"
   | "lesson_plan"
-  | "presentation";
+  | "presentation"
+  | "assessment";
 
 export interface SavedConversationBase {
   thread_id: string;
@@ -59,10 +60,23 @@ export interface SavedPresentation extends SavedConversationBase {
   language?: string;
 }
 
+export interface SavedAssessment extends SavedConversationBase {
+  conversation_type: "assessment";
+  course_title: string;
+  class_title?: string;
+  key_topics: string[];
+  assessment_type: string;
+  difficulty_level?: string;
+  question_type_configs: string; // JSON string
+  user_comment?: string;
+  language?: string;
+}
+
 export type SavedConversation =
   | SavedCourseOutline
   | SavedLessonPlan
-  | SavedPresentation;
+  | SavedPresentation
+  | SavedAssessment;
 
 export interface ConversationListResponse {
   conversations: SavedConversation[];

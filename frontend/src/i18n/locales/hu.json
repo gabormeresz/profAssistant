@@ -11,6 +11,7 @@
     "generatingCourseOutline": "Tárgytematika generálása...",
     "generatingLessonPlan": "Óraterv generálása...",
     "generatingPresentation": "Prezentáció generálása...",
+    "generatingAssessment": "Értékelés generálása...",
     "enhancingPrompt": "Prompt javítása...",
     "ingestingDocuments": "Feltöltött dokumentumok feldolgozása...",
     "usingTool": "Eszköz használata: {{toolName}}",
@@ -23,9 +24,11 @@
     "evaluatingOutline": "Tematika minőségének értékelése...",
     "evaluatingLessonPlan": "Óraterv minőségének értékelése...",
     "evaluatingPresentation": "Prezentáció minőségének értékelése...",
+    "evaluatingAssessment": "Értékelés minőségének vizsgálata...",
     "refiningOutline": "Tematika finomítása az értékelés alapján...",
     "refiningLessonPlan": "Óraterv finomítása az értékelés alapján...",
     "refiningPresentation": "Prezentáció finomítása az értékelés alapján...",
+    "refiningAssessment": "Értékelés finomítása a minőségellenőrzés alapján...",
     "structuringResponse": "Végső válasz strukturálása..."
   },
   "toolNames": {
@@ -159,6 +162,76 @@
     "invalidClassNumber": "Kérlek adj meg egy érvényes óraszámot",
     "comingSoon": "A prezentáció generálás hamarosan elérhető!"
   },
+  "assessment": {
+    "courseTitle": "Kurzus címe",
+    "courseTitlePlaceholder": "pl. Bevezetés a programozásba",
+    "classTitle": "Óra / Lecke címe",
+    "classTitlePlaceholder": "pl. Változók és adattípusok",
+    "keyTopics": "Fő témák",
+    "keyTopicsPlaceholder": "Téma, fogalom vagy tanulási cél...",
+    "addTopic": "Téma hozzáadása",
+    "prefilledHint": "Előző tartalomból kitöltve. Nyugodtan szerkesztheted.",
+    "language": "Nyelv",
+    "preset": "Értékelés sablon",
+    "presets": {
+      "quick_quiz": "Gyors kvíz",
+      "midterm_exam": "Félévi vizsga",
+      "homework": "Házi feladat",
+      "practice_test": "Gyakorló teszt",
+      "custom": "Egyéni"
+    },
+    "assessmentType": "Értékelés típusa",
+    "types": {
+      "quiz": "Kvíz",
+      "exam": "Vizsga",
+      "homework": "Házi feladat",
+      "practice": "Gyakorlat"
+    },
+    "difficultyLevel": "Nehézségi szint",
+    "difficulty": {
+      "easy": "Könnyű",
+      "medium": "Közepes",
+      "hard": "Nehéz",
+      "mixed": "Vegyes"
+    },
+    "questionTypes": "Kérdéstípusok",
+    "questionTypeLabels": {
+      "multiple_choice": "Feleletválasztós",
+      "true_false": "Igaz / Hamis",
+      "short_answer": "Rövid válasz",
+      "essay": "Esszé"
+    },
+    "addQuestionType": "Kérdéstípus hozzáadása",
+    "count": "Darab",
+    "pointsEach": "Pont/db",
+    "totalQuestions": "Összes kérdés",
+    "totalPoints": "Összes pont",
+    "additionalInstructions": "További utasítások",
+    "additionalInstructionsPlaceholder": "Az értékelésre vonatkozó egyéb követelmények...",
+    "generateAssessment": "Értékelés generálása",
+    "emptyCourseTitle": "Kérlek add meg a kurzus címét",
+    "emptyKeyTopics": "Kérlek adj meg legalább egy fő témát"
+  },
+  "assessmentOutput": {
+    "points": "pont",
+    "minutes": "perc",
+    "question": "kérdés",
+    "questions": "kérdés",
+    "pts": "pont",
+    "generalInstructions": "Általános utasítások",
+    "showAnswerKey": "Megoldókulcs mutatása",
+    "hideAnswerKey": "Megoldókulcs elrejtése",
+    "correctAnswer": "Válasz",
+    "explanation": "Magyarázat",
+    "scoringRubric": "Pontozási szempontok",
+    "keyPoints": "Kulcsfontosságú pontok",
+    "suggestedWordLimit": "Javasolt szóhatár",
+    "words": "szó",
+    "gradingNotes": "Értékelési megjegyzések",
+    "true": "Igaz",
+    "false": "Hamis",
+    "exportWithAnswers": "Exportálás megoldókulccsal"
+  },
   "presentationOutput": {
     "classNumber": "Óra",
     "slides": "dia",
@@ -189,7 +262,9 @@
     "exportToPptx": "PPTX Letöltése",
     "generatingPptx": "PowerPoint prezentáció generálása...",
     "createLessonPlanDraft": "Óraterv Vázlat Készítése",
-    "createPresentationDraft": "Prezentáció Vázlat Készítése"
+    "createPresentationDraft": "Prezentáció Vázlat Készítése",
+    "createAssessmentDraft": "Értékelés Vázlat Készítése",
+    "createAssessmentFromCourse": "Értékelés az egész kurzushoz"
   },
   "errors": {
     "title": "Valami hiba történt",

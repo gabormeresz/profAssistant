@@ -11,7 +11,8 @@ export {
   FileUpload,
   PromptEnhancer,
   LessonPlanInputSection,
-  PresentationInputSection
+  PresentationInputSection,
+  AssessmentInputSection
 } from "./input";
 
 // UI components
@@ -25,6 +26,9 @@ export { StructuredLessonPlan } from "./lesson";
 
 // Presentation components
 export { StructuredPresentation } from "./presentation";
+
+// Assessment components
+export { StructuredAssessment } from "./assessment";
 
 // Auth components
 export { default as ProtectedRoute } from "./auth/ProtectedRoute";

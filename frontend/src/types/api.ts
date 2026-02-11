@@ -40,9 +40,23 @@ export interface PresentationRequest {
   files?: File[];
 }
 
+export interface AssessmentRequest {
+  message: string;
+  course_title?: string;
+  class_title?: string;
+  key_topics?: string[];
+  assessment_type?: string;
+  difficulty_level?: string;
+  question_type_configs?: string; // JSON-serialized QuestionTypeConfig[]
+  additional_instructions?: string;
+  language?: string;
+  thread_id?: string;
+  files?: File[];
+}
+
 export interface EnhancePromptRequest {
   message: string;
-  contextType: "course_outline" | "lesson_plan" | "presentation";
+  contextType: "course_outline" | "lesson_plan" | "presentation" | "assessment";
   additionalContext?: Record<string, unknown>;
   language?: string;
 }

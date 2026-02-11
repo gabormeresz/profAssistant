@@ -15,6 +15,7 @@ class ConversationType(str, Enum):
     COURSE_OUTLINE = "course_outline"
     LESSON_PLAN = "lesson_plan"
     PRESENTATION = "presentation"
+    ASSESSMENT = "assessment"
 
 
 class ConversationBase(BaseModel):
@@ -114,9 +115,33 @@ class PresentationMetadata(ConversationBase):
     )
 
 
+class AssessmentMetadata(ConversationBase):
+    """Metadata specific to assessment conversations."""
+
+    course_title: str = Field(..., description="Title of the course")
+    class_title: Optional[str] = Field(None, description="Title of the class")
+    key_topics: List[str] = Field(
+        default_factory=list, description="List of key topics covered"
+    )
+    assessment_type: str = Field(
+        default="quiz",
+        description="Type of assessment (quiz, exam, homework, practice)",
+    )
+    difficulty_level: str = Field(
+        default="mixed", description="Difficulty level (easy, medium, hard, mixed)"
+    )
+    question_type_configs: str = Field(
+        default="[]",
+        description="JSON string of question type configurations [{question_type, count}]",
+    )
+    user_comment: Optional[str] = Field(
+        None, description="The user's original comment/instruction"
+    )
+
+
 # Union type for all conversation metadata types
 ConversationMetadata = Union[
-    CourseOutlineMetadata, LessonPlanMetadata, PresentationMetadata
+    CourseOutlineMetadata, LessonPlanMetadata, PresentationMetadata, AssessmentMetadata
 ]
 
 
@@ -166,10 +191,30 @@ class PresentationCreate(BaseModel):
     uploaded_file_names: List[str] = []
 
 
+class AssessmentCreate(BaseModel):
+    """Request model for creating an assessment conversation."""
+
+    title: str
+    course_title: str
+    class_title: Optional[str] = None
+    key_topics: List[str] = []
+    assessment_type: str = "quiz"
+    difficulty_level: str = "mixed"
+    question_type_configs: str = "[]"  # JSON string
+    language: str = "Hungarian"
+    user_comment: Optional[str] = None
+    uploaded_file_names: List[str] = []
+
+
 class ConversationList(BaseModel):
     """Response model for listing conversations."""
 
     conversations: list[
-        Union[CourseOutlineMetadata, LessonPlanMetadata, PresentationMetadata]
+        Union[
+            CourseOutlineMetadata,
+            LessonPlanMetadata,
+            PresentationMetadata,
+            AssessmentMetadata,
+        ]
     ]
     total: int

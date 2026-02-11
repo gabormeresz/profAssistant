@@ -3,5 +3,6 @@ export type { FileValidationResult } from "./fileValidation";
 export {
   lessonPlanToMarkdown,
   courseOutlineToMarkdown,
-  presentationToMarkdown
+  presentationToMarkdown,
+  assessmentToMarkdown
 } from "./exportFormatters";

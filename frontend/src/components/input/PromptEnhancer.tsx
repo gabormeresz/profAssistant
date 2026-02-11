@@ -6,7 +6,7 @@ import { PROMPT_ENHANCEMENT } from "../../utils/constants";
 
 interface PromptEnhancerProps {
   message: string;
-  contextType: "course_outline" | "lesson_plan" | "presentation";
+  contextType: "course_outline" | "lesson_plan" | "presentation" | "assessment";
   additionalContext?: Record<string, unknown>;
   language?: string;
   onMessageChange: (message: string) => void;

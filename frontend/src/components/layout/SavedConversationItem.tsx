@@ -1,7 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import type { SavedConversation } from "../../types/conversation";
-import { FileText, BookOpen, Presentation, MessageCircle } from "lucide-react";
+import {
+  FileText,
+  BookOpen,
+  Presentation,
+  MessageCircle,
+  ClipboardCheck
+} from "lucide-react";
 
 interface SavedConversationItemProps {
   conversation: SavedConversation;
@@ -22,7 +28,8 @@ export default function SavedConversationItem({
     const routes: Record<string, string> = {
       course_outline: `/course-outline-generator/${conversation.thread_id}`,
       lesson_plan: `/lesson-plan-generator/${conversation.thread_id}`,
-      presentation: `/presentation-generator/${conversation.thread_id}`
+      presentation: `/presentation-generator/${conversation.thread_id}`,
+      assessment: `/assessment-generator/${conversation.thread_id}`
     };
 
     const route = routes[conversation.conversation_type];
@@ -63,6 +70,8 @@ export default function SavedConversationItem({
         return BookOpen;
       case "presentation":
         return Presentation;
+      case "assessment":
+        return ClipboardCheck;
       default:
         return MessageCircle;
     }
@@ -92,6 +101,12 @@ export default function SavedConversationItem({
         { conversation_type: "presentation" }
       >;
       return pres.course_title;
+    } else if (conversation.conversation_type === "assessment") {
+      const assess = conversation as Extract<
+        SavedConversation,
+        { conversation_type: "assessment" }
+      >;
+      return assess.course_title;
     }
     return "";
   };

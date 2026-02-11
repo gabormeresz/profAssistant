@@ -18,9 +18,11 @@ from schemas.conversation import (
     CourseOutlineMetadata,
     LessonPlanMetadata,
     PresentationMetadata,
+    AssessmentMetadata,
     CourseOutlineCreate,
     LessonPlanCreate,
     PresentationCreate,
+    AssessmentCreate,
 )
 from services.database import DatabaseManager
 
@@ -56,6 +58,15 @@ ALLOWED_COLUMNS = {
         "activities",
         "homework",
         "extra_activities",
+        "user_comment",
+    },
+    "assessments": {
+        "course_title",
+        "class_title",
+        "key_topics",
+        "assessment_type",
+        "difficulty_level",
+        "question_type_configs",
         "user_comment",
     },
 }
@@ -302,14 +313,93 @@ class ConversationRepository:
             message_count=0,
         )
 
+    async def create_assessment(
+        self,
+        thread_id: str,
+        user_id: str,
+        conversation_type: ConversationType,
+        data: AssessmentCreate,
+    ) -> AssessmentMetadata:
+        """Create a new assessment conversation."""
+        now = datetime.now().isoformat()
+        conn = self.conn
+        uploaded_file_names_json = json.dumps(data.uploaded_file_names)
+
+        # Insert into base table
+        await conn.execute(
+            """
+            INSERT INTO conversations
+            (thread_id, user_id, conversation_type, title, language, created_at, updated_at, message_count, uploaded_file_names)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            (
+                thread_id,
+                user_id,
+                conversation_type.value,
+                data.title,
+                data.language,
+                now,
+                now,
+                0,
+                uploaded_file_names_json,
+            ),
+        )
+
+        # Serialize lists to JSON strings for storage
+        key_topics_json = json.dumps(data.key_topics)
+
+        # Insert into assessments table
+        await conn.execute(
+            """
+            INSERT INTO assessments
+            (thread_id, course_title, class_title,
+             key_topics, assessment_type, difficulty_level, question_type_configs, user_comment)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            (
+                thread_id,
+                data.course_title,
+                data.class_title,
+                key_topics_json,
+                data.assessment_type,
+                data.difficulty_level,
+                data.question_type_configs,
+                data.user_comment,
+            ),
+        )
+
+        await conn.commit()
+
+        return AssessmentMetadata(
+            thread_id=thread_id,
+            user_id=user_id,
+            conversation_type=ConversationType.ASSESSMENT,
+            title=data.title,
+            language=data.language,
+            course_title=data.course_title,
+            class_title=data.class_title,
+            key_topics=data.key_topics,
+            assessment_type=data.assessment_type,
+            difficulty_level=data.difficulty_level,
+            question_type_configs=data.question_type_configs,
+            user_comment=data.user_comment,
+            uploaded_file_names=data.uploaded_file_names,
+            created_at=datetime.fromisoformat(now),
+            updated_at=datetime.fromisoformat(now),
+            message_count=0,
+        )
+
     # =========================================================================
     # Read
     # =========================================================================
 
-    async def get_conversation(
-        self, thread_id: str
-    ) -> Optional[
-        Union[CourseOutlineMetadata, LessonPlanMetadata, PresentationMetadata]
+    async def get_conversation(self, thread_id: str) -> Optional[
+        Union[
+            CourseOutlineMetadata,
+            LessonPlanMetadata,
+            PresentationMetadata,
+            AssessmentMetadata,
+        ]
     ]:
         """Get a conversation by thread_id with type-specific data."""
         conn = self.conn
@@ -454,6 +544,42 @@ class ConversationRepository:
                 message_count=message_count,
             )
 
+        elif conversation_type == ConversationType.ASSESSMENT:
+            cursor = await conn.execute(
+                """
+                SELECT course_title, class_title,
+                       key_topics, assessment_type, difficulty_level, question_type_configs, user_comment
+                FROM assessments
+                WHERE thread_id = ?
+            """,
+                (thread_id,),
+            )
+
+            assess_row = await cursor.fetchone()
+            if not assess_row:
+                return None
+
+            key_topics = json.loads(assess_row[2]) if assess_row[2] else []
+
+            return AssessmentMetadata(
+                thread_id=thread_id,
+                user_id=user_id,
+                conversation_type=conversation_type,
+                title=title,
+                language=language or "Hungarian",
+                course_title=assess_row[0],
+                class_title=assess_row[1],
+                key_topics=key_topics,
+                assessment_type=assess_row[3],
+                difficulty_level=assess_row[4],
+                question_type_configs=assess_row[5] or "",
+                user_comment=assess_row[6],
+                uploaded_file_names=uploaded_file_names,
+                created_at=datetime.fromisoformat(created_at),
+                updated_at=datetime.fromisoformat(updated_at),
+                message_count=message_count,
+            )
+
         return None
 
     async def list_conversations(
@@ -462,7 +588,14 @@ class ConversationRepository:
         conversation_type: Optional[ConversationType] = None,
         limit: int = 100,
         offset: int = 0,
-    ) -> List[Union[CourseOutlineMetadata, LessonPlanMetadata, PresentationMetadata]]:
+    ) -> List[
+        Union[
+            CourseOutlineMetadata,
+            LessonPlanMetadata,
+            PresentationMetadata,
+            AssessmentMetadata,
+        ]
+    ]:
         """List conversations with type-specific data."""
         conn = self.conn
 
@@ -616,6 +749,42 @@ class ConversationRepository:
                             homework=pres_row[7],
                             extra_activities=pres_row[8],
                             user_comment=pres_row[9],
+                            uploaded_file_names=uploaded_file_names,
+                            created_at=datetime.fromisoformat(created_at),
+                            updated_at=datetime.fromisoformat(updated_at),
+                            message_count=message_count,
+                        )
+                    )
+
+            elif ct == ConversationType.ASSESSMENT:
+                cursor2 = await conn.execute(
+                    """
+                    SELECT course_title, class_title,
+                           key_topics, assessment_type, difficulty_level, question_type_configs, user_comment
+                    FROM assessments
+                    WHERE thread_id = ?
+                """,
+                    (thread_id,),
+                )
+
+                assess_row = await cursor2.fetchone()
+                if assess_row:
+                    key_topics = json.loads(assess_row[2]) if assess_row[2] else []
+
+                    conversations.append(
+                        AssessmentMetadata(
+                            thread_id=thread_id,
+                            user_id=row_user_id,
+                            conversation_type=ct,
+                            title=title,
+                            language=language or "Hungarian",
+                            course_title=assess_row[0],
+                            class_title=assess_row[1],
+                            key_topics=key_topics,
+                            assessment_type=assess_row[3],
+                            difficulty_level=assess_row[4],
+                            question_type_configs=assess_row[5] or "",
+                            user_comment=assess_row[6],
                             uploaded_file_names=uploaded_file_names,
                             created_at=datetime.fromisoformat(created_at),
                             updated_at=datetime.fromisoformat(updated_at),
