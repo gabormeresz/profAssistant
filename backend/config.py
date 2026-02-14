@@ -255,7 +255,6 @@ class MCPConfig:
     ]
 
     # Tavily MCP server settings (remote hosted)
-    TAVILY_ENABLED: bool = os.getenv("MCP_TAVILY_ENABLED", "true").lower() == "true"
     TAVILY_API_KEY: str = os.getenv("TAVILY_API_KEY", "")
     TAVILY_URL: str = "https://mcp.tavily.com/mcp/"
     TAVILY_TRANSPORT: str = "http"

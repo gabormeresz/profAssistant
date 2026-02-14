@@ -9,11 +9,14 @@ Configured servers:
 - Tavily (remote hosted server for web search and content extraction)
 """
 
+import logging
 from typing import Optional, List, Dict, Any
 from langchain_core.tools import BaseTool
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
 from config import MCPConfig
+
+logger = logging.getLogger(__name__)
 
 
 class MCPClientManager:
@@ -49,17 +52,16 @@ class MCPClientManager:
                 "url": MCPConfig.WIKIPEDIA_URL,
             }
 
-        if MCPConfig.TAVILY_ENABLED:
-            if not MCPConfig.TAVILY_API_KEY:
-                print("[MCP] Tavily enabled but TAVILY_API_KEY is not set — skipping")
-            else:
-                servers["tavily"] = {
-                    "transport": MCPConfig.TAVILY_TRANSPORT,
-                    "url": MCPConfig.TAVILY_URL,
-                    "headers": {
-                        "Authorization": f"Bearer {MCPConfig.TAVILY_API_KEY}",
-                    },
-                }
+        if MCPConfig.TAVILY_API_KEY:
+            servers["tavily"] = {
+                "transport": MCPConfig.TAVILY_TRANSPORT,
+                "url": MCPConfig.TAVILY_URL,
+                "headers": {
+                    "Authorization": f"Bearer {MCPConfig.TAVILY_API_KEY}",
+                },
+            }
+        else:
+            logger.info("TAVILY_API_KEY is not set — Tavily web search disabled")
 
         return servers
 
@@ -89,7 +91,7 @@ class MCPClientManager:
         servers = self._build_server_config()
 
         if not servers:
-            print("[MCP] No MCP servers enabled")
+            logger.warning("No MCP servers enabled")
             self._tools = []
             self._initialized = True
             return
@@ -102,28 +104,28 @@ class MCPClientManager:
             self._initialized = True
 
             tool_names = [t.name for t in self._tools]
-            print(f"[MCP] Initialized successfully with tools: {tool_names}")
+            logger.info("MCP initialized successfully with tools: %s", tool_names)
 
             # Log any filtered-out tools for transparency
             filtered_out = [t.name for t in all_tools if t not in self._tools]
             if filtered_out:
-                print(f"[MCP] Filtered out tools: {filtered_out}")
+                logger.info("MCP filtered out tools: %s", filtered_out)
 
         except ImportError as e:
-            print(f"[MCP] langchain-mcp-adapters not installed: {e}")
+            logger.error("langchain-mcp-adapters not installed: %s", e)
             self._tools = []
             self._initialized = True
 
         except Exception as e:
-            print(f"[MCP] Failed to initialize MCP servers: {e}")
-            print("[MCP] Continuing without MCP tools")
+            logger.error("Failed to initialize MCP servers: %s", e)
+            logger.info("Continuing without MCP tools")
             if MCPConfig.WIKIPEDIA_ENABLED:
-                print(
-                    "[MCP]   Ensure wikipedia-mcp is running: "
+                logger.info(
+                    "Ensure wikipedia-mcp is running: "
                     "uv run wikipedia-mcp --transport sse --port 8765"
                 )
-            if MCPConfig.TAVILY_ENABLED:
-                print("[MCP]   Ensure TAVILY_API_KEY is valid")
+            if MCPConfig.TAVILY_API_KEY:
+                logger.info("Ensure TAVILY_API_KEY is valid")
             self._tools = []
             self._initialized = True
 
@@ -155,12 +157,12 @@ class MCPClientManager:
                 try:
                     await self._client.close()  # type: ignore[attr-defined]
                 except Exception as e:
-                    print(f"[MCP] Error during cleanup: {e}")
+                    logger.error("Error during MCP cleanup: %s", e)
 
         self._client = None
         self._tools = None
         self._initialized = False
-        print("[MCP] Cleanup complete")
+        logger.info("MCP cleanup complete")
 
 
 # Singleton instance for use throughout the application

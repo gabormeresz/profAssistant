@@ -5,7 +5,7 @@ Provides consistent tool binding and model configuration across
 course_outline, lesson_plan, presentation, and assessment generators.
 
 Tool availability:
-- Base tools (always available): MCP tools (Tavily web search, Wikipedia, etc.)
+- Base tools (always available): MCP tools (Wikipedia; Tavily web search if API key is set)
 - Document search: only available when user has uploaded documents
 """
 
