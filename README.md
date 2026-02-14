@@ -33,7 +33,7 @@ The system uses a **generate → evaluate → refine** loop powered by specializ
 - **Course Outline Generator** — Produces structured semester-long course outlines with topics, learning objectives, and activities
 - **Lesson Plan Generator** — Creates detailed lesson plans for individual classes with timing, exercises, and assessments
 - **Presentation Generator** — Generates slide decks with exportable PowerPoint (.pptx) download
-- **Assessment Generator** — _(In progress)_ Creates quizzes, exams, and evaluation materials
+- **Assessment Generator** — Creates quizzes, exams, and evaluation materials
 
 ### 🔄 Quality Assurance Loop
 
