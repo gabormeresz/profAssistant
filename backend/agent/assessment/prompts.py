@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from agent.input_sanitizer import SYSTEM_PROMPT_INJECTION_GUARD
 from schemas.assessment import QUESTION_TYPE_LABELS
 
 # One-shot example snippets keyed by question type
@@ -205,7 +206,8 @@ You have access to the following tools to gather information for building the as
 {_build_dynamic_example(question_type_configs or [])}
 ```
 
-Generate comprehensive, well-structured assessments that educators can use directly."""
+Generate comprehensive, well-structured assessments that educators can use directly.
+{SYSTEM_PROMPT_INJECTION_GUARD}"""
 
 
 def get_evaluator_system_prompt(

@@ -4,6 +4,7 @@ from langchain_core.tools import StructuredTool
 from langgraph.prebuilt import InjectedState
 from dotenv import load_dotenv
 
+from agent.input_sanitizer import sanitize_tool_output
 from services.rag_pipeline import get_rag_pipeline
 
 load_dotenv()
@@ -69,4 +70,5 @@ async def search_uploaded_documents(
             f"[{i}] Source: {source} (relevance: {similarity:.2f})\n{content}"
         )
 
-    return "\n\n---\n\n".join(formatted_chunks)
+    raw_output = "\n\n---\n\n".join(formatted_chunks)
+    return sanitize_tool_output("search_uploaded_documents", raw_output)

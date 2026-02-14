@@ -5,6 +5,8 @@ This module centralizes all system prompts used in the course outline
 generation process, making them easy to maintain and modify.
 """
 
+from agent.input_sanitizer import SYSTEM_PROMPT_INJECTION_GUARD
+
 
 def get_system_prompt(language: str, has_ingested_documents: bool = False) -> str:
     """
@@ -135,7 +137,8 @@ Activities:
 - Quiz: Data structure selection scenarios
 ```
 
-Generate thoughtful, pedagogically sound content that a real instructor would be proud to use."""
+Generate thoughtful, pedagogically sound content that a real instructor would be proud to use.
+{SYSTEM_PROMPT_INJECTION_GUARD}"""
 
 
 def get_evaluator_system_prompt(language: str) -> str:

@@ -6,6 +6,7 @@ import logging
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from agent.input_sanitizer import check_prompt_injection, wrap_user_input
 from ..state import CourseOutlineState
 from ..prompts import get_system_prompt
 
@@ -64,10 +65,23 @@ def _build_first_call_messages(state: CourseOutlineState) -> dict:
     topic = state["topic"]
     num_classes = state["number_of_classes"]
 
+    user_message = state.get("message") or ""
+
+    # Pre-screen user input for prompt injection attempts
+    if user_message.strip() and check_prompt_injection(user_message):
+        logger.warning("Prompt injection pattern detected in course outline request")
+
+    # Wrap user-supplied fields in XML delimiters so the LLM can
+    # distinguish pedagogical directives from system instructions
+    user_input_block = f"""Topic: {topic}
+Number of Classes: {num_classes}"""
+    if user_message.strip():
+        user_input_block += f"\nAdditional Instructions: {user_message}"
+
     user_content = f"""## Course Outline Request
 
-**Topic:** {topic}
-**Number of Classes:** {num_classes}
+{wrap_user_input(user_input_block)}
+
 **Output Language:** {state['language']}
 
 Please generate a complete course outline with exactly {num_classes} classes.
@@ -77,10 +91,6 @@ Requirements:
 - Topics should progress logically from foundational to advanced
 - Include specific, varied activities for each class
 - Ensure comprehensive coverage of the topic"""
-
-    user_message = state.get("message") or ""
-    if user_message.strip():
-        user_content += f"\n\n**Additional Instructions from User:**\n{user_message}"
 
     messages.append(HumanMessage(content=user_content))
 
@@ -109,6 +119,10 @@ def _build_follow_up_messages(state: CourseOutlineState) -> dict:
 
     user_message = state.get("message") or ""
     if user_message.strip() or has_new_documents:
+        # Pre-screen follow-up input for injection attempts
+        if user_message.strip() and check_prompt_injection(user_message):
+            logger.warning("Prompt injection pattern detected in follow-up request")
+
         # Build the follow-up content
         follow_up_content = "## Follow-up Request\n\n"
 
@@ -121,7 +135,7 @@ You MUST use the `search_uploaded_documents` tool before responding to search th
 """
 
         if user_message.strip():
-            follow_up_content += user_message
+            follow_up_content += wrap_user_input(user_message)
         else:
             follow_up_content += (
                 "Please incorporate the information from the newly "

@@ -6,6 +6,7 @@ import logging
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from agent.input_sanitizer import check_prompt_injection, wrap_user_input
 from ..state import LessonPlanState
 from ..prompts import get_system_prompt
 
@@ -73,21 +74,30 @@ def _build_first_call_messages(state: LessonPlanState) -> dict:
     topics_str = "\n".join(f"  - {topic}" for topic in key_topics)
     activities_str = "\n".join(f"  - {act}" for act in activities_projects)
 
+    user_message = state.get("message") or ""
+
+    # Pre-screen user input for prompt injection attempts
+    if user_message.strip() and check_prompt_injection(user_message):
+        logger.warning("Prompt injection pattern detected in lesson plan request")
+
+    # Wrap user-supplied fields in XML delimiters
+    user_input_block = f"""Course Title: {course_title}
+Class Number: {class_number}
+Class Title: {class_title}
+Learning Objectives:
+{objectives_str}
+Key Topics to Cover:
+{topics_str}
+Suggested Activities/Projects:
+{activities_str}"""
+    if user_message.strip():
+        user_input_block += f"\nAdditional Instructions: {user_message}"
+
     user_content = f"""## Lesson Plan Request
 
-**Course Title:** {course_title}
-**Class Number:** {class_number}
-**Class Title:** {class_title}
+{wrap_user_input(user_input_block)}
+
 **Output Language:** {state['language']}
-
-### Learning Objectives:
-{objectives_str}
-
-### Key Topics to Cover:
-{topics_str}
-
-### Suggested Activities/Projects:
-{activities_str}
 
 Please generate a complete, detailed lesson plan for this class.
 
@@ -97,10 +107,6 @@ Requirements:
 - Ensure all content directly supports the learning objectives
 - Include meaningful homework and extension activities
 - Identify the essential key points students must understand"""
-
-    user_message = state.get("message") or ""
-    if user_message.strip():
-        user_content += f"\n\n**Additional Instructions from User:**\n{user_message}"
 
     messages.append(HumanMessage(content=user_content))
 
@@ -129,6 +135,10 @@ def _build_follow_up_messages(state: LessonPlanState) -> dict:
 
     user_message = state.get("message") or ""
     if user_message.strip() or has_new_documents:
+        # Pre-screen follow-up input for injection attempts
+        if user_message.strip() and check_prompt_injection(user_message):
+            logger.warning("Prompt injection pattern detected in follow-up request")
+
         # Build the follow-up content
         follow_up_content = "## Follow-up Request\n\n"
 
@@ -141,7 +151,7 @@ You MUST use the `search_uploaded_documents` tool before responding to search th
 """
 
         if user_message.strip():
-            follow_up_content += user_message
+            follow_up_content += wrap_user_input(user_message)
         else:
             follow_up_content += (
                 "Please incorporate the information from the newly "

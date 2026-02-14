@@ -7,6 +7,7 @@ import logging
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from agent.input_sanitizer import check_prompt_injection, wrap_user_input
 from ..state import AssessmentState
 from ..prompts import get_system_prompt
 from schemas.assessment import QUESTION_TYPE_LABELS
@@ -92,20 +93,32 @@ def _build_first_call_messages(state: AssessmentState) -> dict:
         "\n".join(qtc_lines) if qtc_lines else "  - (let AI decide the distribution)"
     )
 
-    user_content = f"""## Assessment Generation Request
+    additional = state.get("additional_instructions") or state.get("message") or ""
 
-**Course Title:** {course_title}
-**Assessment Type:** {assessment_type}
-**Difficulty Level:** {difficulty_level}
-**Output Language:** {state['language']}"""
+    # Pre-screen user input for prompt injection attempts
+    if additional.strip() and check_prompt_injection(additional):
+        logger.warning("Prompt injection pattern detected in assessment request")
+
+    # Wrap user-supplied fields in XML delimiters
+    user_input_block = f"""Course Title: {course_title}
+Assessment Type: {assessment_type}
+Difficulty Level: {difficulty_level}"""
 
     if class_title:
-        user_content += f"\n**Class Title:** {class_title}"
+        user_input_block += f"\nClass Title: {class_title}"
 
-    user_content += f"""
+    user_input_block += f"""
+Key Topics to Cover:
+{topics_str}"""
 
-### Key Topics to Cover:
-{topics_str}
+    if additional.strip():
+        user_input_block += f"\nAdditional Instructions: {additional}"
+
+    user_content = f"""## Assessment Generation Request
+
+**Output Language:** {state['language']}
+
+{wrap_user_input(user_input_block)}
 
 ### ⚠️ REQUIRED Question Distribution (MANDATORY — follow exactly):
 {qtc_str}
@@ -126,10 +139,6 @@ Please generate a complete assessment following these constraints:
 - Include an explanation for every question (for the answer key)
 - Set appropriate point values and estimate realistic completion time
 - Follow the difficulty level: {difficulty_level}"""
-
-    additional = state.get("additional_instructions") or state.get("message") or ""
-    if additional.strip():
-        user_content += f"\n\n**Additional Instructions from User:**\n{additional}"
 
     messages.append(HumanMessage(content=user_content))
 
@@ -157,6 +166,10 @@ def _build_follow_up_messages(state: AssessmentState) -> dict:
 
     user_message = state.get("message") or ""
     if user_message.strip() or has_new_documents:
+        # Pre-screen follow-up input for injection attempts
+        if user_message.strip() and check_prompt_injection(user_message):
+            logger.warning("Prompt injection pattern detected in follow-up request")
+
         follow_up_content = "## Follow-up Request\n\n"
 
         if has_new_documents:
@@ -167,7 +180,7 @@ You MUST use the `search_uploaded_documents` tool before responding to search th
 """
 
         if user_message.strip():
-            follow_up_content += user_message
+            follow_up_content += wrap_user_input(user_message)
         else:
             follow_up_content += (
                 "Please incorporate the information from the newly "

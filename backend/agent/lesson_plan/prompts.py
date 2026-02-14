@@ -5,6 +5,8 @@ This module centralizes all system prompts used in the lesson plan
 generation process, making them easy to maintain and modify.
 """
 
+from agent.input_sanitizer import SYSTEM_PROMPT_INJECTION_GUARD
+
 
 def get_system_prompt(language: str, has_ingested_documents: bool = False) -> str:
     """
@@ -154,7 +156,8 @@ Homework: "Create a program that manages a to-do list with add, remove, and disp
 Extra Activities: "Advanced: Implement a nested dictionary to store contact details (name, phone, email, address)"
 ```
 
-Generate thoughtful, pedagogically sound lesson plans that teachers can use directly in their classrooms."""
+Generate thoughtful, pedagogically sound lesson plans that teachers can use directly in their classrooms.
+{SYSTEM_PROMPT_INJECTION_GUARD}"""
 
 
 def get_evaluator_system_prompt(language: str) -> str:

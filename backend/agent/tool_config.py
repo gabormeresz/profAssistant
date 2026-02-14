@@ -7,6 +7,10 @@ course_outline, lesson_plan, presentation, and assessment generators.
 Tool availability:
 - Base tools (always available): MCP tools (Wikipedia; Tavily web search if API key is set)
 - Document search: only available when user has uploaded documents
+
+All external tool outputs (MCP tools) are wrapped with sanitization
+to defend against indirect prompt injection via adversarial content
+in web search results, Wikipedia articles, or uploaded documents.
 """
 
 import logging
@@ -14,6 +18,7 @@ from typing import List, Optional
 
 from langchain_core.tools import BaseTool
 
+from .input_sanitizer import sanitize_tool_output
 from .model import ModelPurpose, get_model
 from .tools import search_uploaded_documents
 from services.mcp_client import mcp_manager
@@ -21,14 +26,53 @@ from services.mcp_client import mcp_manager
 logger = logging.getLogger(__name__)
 
 
+def _wrap_mcp_tool(tool: BaseTool) -> BaseTool:
+    """
+    Wrap an MCP tool so its output is sanitized before reaching the LLM.
+
+    This defends against indirect prompt injection by marking tool output
+    as external reference data and truncating overly long payloads.
+
+    Args:
+        tool: The original MCP tool.
+
+    Returns:
+        A new tool with the same interface but sanitized output.
+    """
+    original_func = tool.coroutine or tool.func
+
+    if tool.coroutine:
+        original_coroutine = tool.coroutine
+
+        async def sanitized_coroutine(*args, **kwargs):
+            result = await original_coroutine(*args, **kwargs)
+            return sanitize_tool_output(tool.name, str(result))
+
+        tool.coroutine = sanitized_coroutine
+    else:
+        original_func = tool.func
+
+        def sanitized_func(*args, **kwargs):
+            result = original_func(*args, **kwargs)
+            return sanitize_tool_output(tool.name, str(result))
+
+        tool.func = sanitized_func
+
+    return tool
+
+
 def get_base_tools() -> List[BaseTool]:
     """
     Get base tools that are always available.
 
+    MCP tool outputs are wrapped with sanitization to defend
+    against indirect prompt injection from external content.
+
     Returns:
         List of base tools: MCP tools (Tavily web search, Wikipedia, etc.)
     """
-    return mcp_manager.get_tools()
+    raw_tools = mcp_manager.get_tools()
+    return [_wrap_mcp_tool(tool) for tool in raw_tools]
 
 
 def get_available_tools(has_documents: bool = False) -> List[BaseTool]:

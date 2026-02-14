@@ -6,6 +6,7 @@ import logging
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from agent.input_sanitizer import check_prompt_injection, wrap_user_input
 from ..state import PresentationState
 from ..prompts import get_system_prompt
 
@@ -75,46 +76,44 @@ def _build_first_call_messages(state: PresentationState) -> dict:
         else "  (none provided)"
     )
 
-    user_content = f"""## Presentation Request
+    user_msg = state.get("message") or ""
 
-**Course Title:** {course_title}
-**Class Number:** {class_number}
-**Class Title:** {class_title}
-**Output Language:** {state['language']}"""
+    # Pre-screen user input for prompt injection attempts
+    if user_msg.strip() and check_prompt_injection(user_msg):
+        logger.warning("Prompt injection pattern detected in presentation request")
+
+    # Build user input block and wrap in XML delimiters
+    user_input_block = f"""Course Title: {course_title}
+Class Number: {class_number}
+Class Title: {class_title}"""
 
     if learning_objective:
-        user_content += f"\n**Learning Objective:** {learning_objective}"
+        user_input_block += f"\nLearning Objective: {learning_objective}"
 
-    user_content += f"""
-
-### Key Points to Cover:
+    user_input_block += f"""
+Key Points to Cover:
 {key_points_str}"""
 
     if lesson_breakdown:
-        user_content += f"""
-
-### Lesson Breakdown (for reference):
-{lesson_breakdown}"""
+        user_input_block += f"\nLesson Breakdown (for reference):\n{lesson_breakdown}"
 
     if activities:
-        user_content += f"""
-
-### Activities (for reference):
-{activities}"""
+        user_input_block += f"\nActivities (for reference):\n{activities}"
 
     if homework:
-        user_content += f"""
-
-### Homework:
-{homework}"""
+        user_input_block += f"\nHomework:\n{homework}"
 
     if extra_activities:
-        user_content += f"""
+        user_input_block += f"\nExtra Activities:\n{extra_activities}"
 
-### Extra Activities:
-{extra_activities}"""
+    if user_msg.strip():
+        user_input_block += f"\nAdditional Instructions: {user_msg}"
 
-    user_content += """
+    user_content = f"""## Presentation Request
+
+{wrap_user_input(user_input_block)}
+
+**Output Language:** {state['language']}
 
 Please generate a complete educational presentation (5–15 slides) for this lesson.
 
@@ -125,10 +124,6 @@ Requirements:
 - Include at least one activity/practice slide with clear instructions
 - Suggest visuals (diagrams, charts, images) where they would enhance understanding
 - Keep bullet points concise and slide-friendly"""
-
-    user_msg = state.get("message") or ""
-    if user_msg.strip():
-        user_content += f"\n\n**Additional Instructions from User:**\n{user_msg}"
 
     messages.append(HumanMessage(content=user_content))
 
@@ -157,6 +152,10 @@ def _build_follow_up_messages(state: PresentationState) -> dict:
 
     user_message = state.get("message") or ""
     if user_message.strip() or has_new_documents:
+        # Pre-screen follow-up input for injection attempts
+        if user_message.strip() and check_prompt_injection(user_message):
+            logger.warning("Prompt injection pattern detected in follow-up request")
+
         follow_up_content = "## Follow-up Request\n\n"
 
         if has_new_documents:
@@ -167,7 +166,7 @@ You MUST use the `search_uploaded_documents` tool before responding to search th
 """
 
         if user_message.strip():
-            follow_up_content += user_message
+            follow_up_content += wrap_user_input(user_message)
         else:
             follow_up_content += (
                 "Please incorporate the information from the newly "

@@ -5,6 +5,8 @@ This module centralizes all system prompts used in the presentation
 generation process, making them easy to maintain and modify.
 """
 
+from agent.input_sanitizer import SYSTEM_PROMPT_INJECTION_GUARD
+
 
 def get_system_prompt(language: str, has_ingested_documents: bool = False) -> str:
     """
@@ -135,7 +137,8 @@ Visual Suggestion: "Diagram showing labeled boxes (x, name) with values inside, 
 and an arrow illustrating reassignment."
 ```
 
-Generate clear, visually-oriented presentations that instructors can use directly in their classrooms."""
+Generate clear, visually-oriented presentations that instructors can use directly in their classrooms.
+{SYSTEM_PROMPT_INJECTION_GUARD}"""
 
 
 def get_evaluator_system_prompt(language: str) -> str:

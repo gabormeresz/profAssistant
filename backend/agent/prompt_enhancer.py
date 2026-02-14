@@ -2,6 +2,7 @@ from typing import Optional, Dict, Any, List, Literal
 
 from langchain_core.messages import HumanMessage, SystemMessage
 
+from agent.input_sanitizer import check_prompt_injection, SYSTEM_PROMPT_INJECTION_GUARD
 from agent.model import get_model
 
 
@@ -40,6 +41,8 @@ def _build_system_prompt(language: Optional[str], context_text: str) -> str:
         "Output ONLY the enhanced prompt. No explanations, headers, or additional text.\n\n"
         f"## Context (for understanding only - do NOT include in output):\n{context_text}\n"
     )
+
+    base_prompt += SYSTEM_PROMPT_INJECTION_GUARD
 
     return base_prompt
 
@@ -134,6 +137,14 @@ async def prompt_enhancer(
         Exception: If enhancement fails
     """
     additional_context = additional_context or {}
+
+    # Pre-screen user input for prompt injection attempts
+    if check_prompt_injection(message):
+        import logging
+
+        logging.getLogger(__name__).warning(
+            "Prompt injection pattern detected in prompt enhancer input"
+        )
 
     context_text = _build_context_text(context_type, additional_context)
     messages = _build_messages(message, context_type, context_text, language)
