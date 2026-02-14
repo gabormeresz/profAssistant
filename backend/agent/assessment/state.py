@@ -25,14 +25,18 @@ class QuestionTypeConfig(TypedDict):
     points_each: int
 
 
+AssessmentType = Literal["quiz", "exam", "homework", "practice"]
+DifficultyLevel = Literal["easy", "medium", "hard", "mixed"]
+
+
 class AssessmentInput(BaseGenerationInput):
     """Input fields specific to assessment generation."""
 
     course_title: str
     class_title: Optional[str]
     key_topics: List[str]
-    assessment_type: str  # quiz, exam, homework, practice
-    difficulty_level: str  # easy, medium, hard, mixed
+    assessment_type: AssessmentType
+    difficulty_level: DifficultyLevel
     question_type_configs: List[QuestionTypeConfig]
     additional_instructions: Optional[str]
 
@@ -43,8 +47,8 @@ class AssessmentState(BaseGenerationState):
     course_title: str
     class_title: Optional[str]
     key_topics: List[str]
-    assessment_type: str
-    difficulty_level: str
+    assessment_type: AssessmentType
+    difficulty_level: DifficultyLevel
     question_type_configs: List[QuestionTypeConfig]
     additional_instructions: Optional[str]
 

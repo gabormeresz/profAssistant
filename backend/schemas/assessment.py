@@ -12,7 +12,13 @@ OpenAPI/JSON Schema generation.
 
 from typing import Any, List, Literal, Optional, Union
 from collections.abc import Sequence, Mapping
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, model_validator, field_validator
+
+# ── Allowed enum values (single source of truth) ──
+
+ALLOWED_QUESTION_TYPES = {"multiple_choice", "true_false", "short_answer", "essay"}
+ALLOWED_ASSESSMENT_TYPES = {"quiz", "exam", "homework", "practice"}
+ALLOWED_DIFFICULTY_LEVELS = {"easy", "medium", "hard", "mixed"}
 
 # Human-readable labels for question types
 QUESTION_TYPE_LABELS = {
@@ -21,6 +27,64 @@ QUESTION_TYPE_LABELS = {
     "short_answer": "Short Answer",
     "essay": "Essay",
 }
+
+
+# ── Input validation model for question_type_configs (Audit #4) ──
+
+
+class QuestionTypeConfigInput(BaseModel):
+    """Validates a single question-type configuration from the frontend."""
+
+    question_type: str = Field(..., max_length=50)
+    count: int = Field(..., ge=1, le=50)
+    points_each: int = Field(default=5, ge=1, le=100)
+
+    @field_validator("question_type")
+    @classmethod
+    def validate_question_type(cls, v: str) -> str:
+        if v not in ALLOWED_QUESTION_TYPES:
+            raise ValueError(
+                f"Invalid question_type '{v}'. "
+                f"Allowed: {', '.join(sorted(ALLOWED_QUESTION_TYPES))}"
+            )
+        return v
+
+
+def validate_assessment_type(value: str) -> str:
+    """Validate assessment_type against allowed values."""
+    if value not in ALLOWED_ASSESSMENT_TYPES:
+        raise ValueError(
+            f"Invalid assessment_type '{value}'. "
+            f"Allowed: {', '.join(sorted(ALLOWED_ASSESSMENT_TYPES))}"
+        )
+    return value
+
+
+def validate_difficulty_level(value: str) -> str:
+    """Validate difficulty_level against allowed values."""
+    if value not in ALLOWED_DIFFICULTY_LEVELS:
+        raise ValueError(
+            f"Invalid difficulty_level '{value}'. "
+            f"Allowed: {', '.join(sorted(ALLOWED_DIFFICULTY_LEVELS))}"
+        )
+    return value
+
+
+def validate_question_type_configs(
+    raw_configs: List[dict],
+) -> List[dict]:
+    """Validate a list of question_type_configs using the Pydantic model.
+
+    Returns validated dicts (with defaults applied) or raises ValueError.
+    """
+    validated = []
+    for i, cfg in enumerate(raw_configs):
+        try:
+            parsed = QuestionTypeConfigInput(**cfg)
+            validated.append(parsed.model_dump())
+        except Exception as e:
+            raise ValueError(f"Invalid question_type_configs[{i}]: {e}") from e
+    return validated
 
 
 class QuestionOption(BaseModel):
@@ -306,6 +370,12 @@ def _make_constrained_section(qt: str, count: int, pts_each: int, label: str) ->
     A helper function is used (instead of a loop body) so that each
     invocation gets its own closure over *qt*, *count*, etc.
     """
+    # Guard: only allow known question types into Literal construction
+    if qt not in ALLOWED_QUESTION_TYPES:
+        raise ValueError(
+            f"Cannot construct section for unknown question_type '{qt}'. "
+            f"Allowed: {', '.join(sorted(ALLOWED_QUESTION_TYPES))}"
+        )
     SectionTypeLiteral = Literal.__getitem__(qt)  # type: ignore[attr-defined]
 
     class _Section(AssessmentSection):

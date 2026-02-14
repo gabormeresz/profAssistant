@@ -6,14 +6,19 @@ generation, handling streaming progress updates and error management.
 """
 
 import uuid
-from typing import Any, Dict, List, AsyncGenerator, Optional
+from typing import Any, Dict, List, AsyncGenerator, Optional, cast
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from config import DBConfig
+from schemas.assessment import (
+    ALLOWED_QUESTION_TYPES,
+    ALLOWED_ASSESSMENT_TYPES,
+    ALLOWED_DIFFICULTY_LEVELS,
+)
 from .graph import build_assessment_graph
-from .state import AssessmentInput
+from .state import AssessmentInput, AssessmentType, DifficultyLevel
 from schemas.assessment import Assessment
 
 
@@ -24,7 +29,7 @@ async def run_assessment_generator(
     key_topics: List[str] | None = None,
     assessment_type: str | None = None,
     difficulty_level: str | None = None,
-    question_type_configs: List[Dict[str, object]] | None = None,
+    question_type_configs: List[dict] | None = None,
     additional_instructions: str | None = None,
     thread_id: str | None = None,
     file_contents: List[Dict[str, str]] | None = None,
@@ -71,6 +76,28 @@ async def run_assessment_generator(
                 }
                 for cfg in question_type_configs
             ]
+
+            # Validate enum values (defense-in-depth: endpoint also validates)
+            at = assessment_type or "quiz"
+            if at not in ALLOWED_ASSESSMENT_TYPES:
+                raise ValueError(
+                    f"Invalid assessment_type '{at}'. "
+                    f"Allowed: {', '.join(sorted(ALLOWED_ASSESSMENT_TYPES))}"
+                )
+            dl = difficulty_level or "mixed"
+            if dl not in ALLOWED_DIFFICULTY_LEVELS:
+                raise ValueError(
+                    f"Invalid difficulty_level '{dl}'. "
+                    f"Allowed: {', '.join(sorted(ALLOWED_DIFFICULTY_LEVELS))}"
+                )
+            for cfg in question_type_configs:
+                qt = cfg.get("question_type", "")
+                if qt not in ALLOWED_QUESTION_TYPES:
+                    raise ValueError(
+                        f"Invalid question_type '{qt}'. "
+                        f"Allowed: {', '.join(sorted(ALLOWED_QUESTION_TYPES))}"
+                    )
+
             if language is None:
                 raise ValueError("language is required for the first call")
             # Generate thread_id BEFORE running the graph so checkpointer can use it
@@ -80,21 +107,24 @@ async def run_assessment_generator(
         yield {"type": "thread_id", "thread_id": thread_id}
 
         # Build input state with the thread_id and is_first_call flag
-        input_state: AssessmentInput = {
-            "course_title": course_title or "",
-            "class_title": class_title,
-            "key_topics": key_topics or [],
-            "assessment_type": assessment_type or "quiz",
-            "difficulty_level": difficulty_level or "mixed",
-            "question_type_configs": question_type_configs or [],
-            "additional_instructions": additional_instructions,
-            "message": message,
-            "file_contents": file_contents,
-            "language": language or "English",
-            "thread_id": thread_id,
-            "is_first_call": is_first_call,
-            "user_id": user_id,
-        }
+        input_state = cast(
+            AssessmentInput,
+            {
+                "course_title": course_title or "",
+                "class_title": class_title,
+                "key_topics": key_topics or [],
+                "assessment_type": assessment_type or "quiz",
+                "difficulty_level": difficulty_level or "mixed",
+                "question_type_configs": question_type_configs or [],
+                "additional_instructions": additional_instructions,
+                "message": message,
+                "file_contents": file_contents,
+                "language": language or "English",
+                "thread_id": thread_id,
+                "is_first_call": is_first_call,
+                "user_id": user_id,
+            },
+        )
 
         # Build and compile graph with checkpointer
         workflow = build_assessment_graph()

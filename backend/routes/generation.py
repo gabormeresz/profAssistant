@@ -505,6 +505,34 @@ async def generate_assessment(
             status_code=400, detail=f"Invalid JSON in form fields: {str(e)}"
         )
 
+    # Validate assessment_type and difficulty_level against allowed enums
+    if assessment_type is not None:
+        from schemas.assessment import validate_assessment_type
+
+        try:
+            validate_assessment_type(assessment_type)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+    if difficulty_level is not None:
+        from schemas.assessment import validate_difficulty_level
+
+        try:
+            validate_difficulty_level(difficulty_level)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+    # Validate question_type_configs with Pydantic schema
+    if question_type_configs_list is not None:
+        from schemas.assessment import validate_question_type_configs
+
+        try:
+            question_type_configs_list = validate_question_type_configs(
+                question_type_configs_list
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
     file_contents = []
 
     if files:
