@@ -55,7 +55,7 @@ Each generation workflow follows a multi-step agentic pipeline:
 ### 🌐 External Knowledge (MCP)
 
 - Integrated **Wikipedia MCP server** for real-time factual research
-- **Web Search** tool (Google Serper) for current information
+- **Web Search** tool (Tavily) for current information and content extraction
 - Extensible MCP architecture — add more knowledge sources easily
 
 ### 🎨 Smart Prompt Enhancement
@@ -115,7 +115,7 @@ Each generation workflow follows a multi-step agentic pipeline:
 │  │   └────┬─────┘                      └────┬─────┘          │  │
 │  │        │          ┌────────────┐         │                │  │
 │  │        ├─────────▶│ Web Search │◀───────┤                │  │
-│  │        │          │  (Serper)  │         │                │  │
+│  │        │          │  (Tavily)  │         │                │  │
 │  │        │          └────────────┘         │                │  │
 │  │        │          ┌────────────┐         │                │  │
 │  │        ├─────────▶│ Wikipedia  │◀───────┤                │  │
@@ -213,10 +213,10 @@ profassistant/
 
 ### API Keys Required
 
-| Service                                                | Required    | Purpose                     |
-| ------------------------------------------------------ | ----------- | --------------------------- |
-| [OpenAI API Key](https://platform.openai.com/api-keys) | ✅ Yes      | LLM generation & embeddings |
-| [Google Serper API Key](https://serper.dev/)           | ⚡ Optional | Web search tool             |
+| Service                                                | Required    | Purpose                      |
+| ------------------------------------------------------ | ----------- | ---------------------------- |
+| [OpenAI API Key](https://platform.openai.com/api-keys) | ✅ Yes      | LLM generation & embeddings  |
+| [Tavily API Key](https://tavily.com/)                  | ⚡ Optional | Web search & extraction tool |
 
 ---
 
@@ -246,7 +246,7 @@ Edit `backend/.env` and fill in your values. The example file is fully commented
 - **`OPENAI_API_KEY`** — Your OpenAI API key (required for all generation)
 - **`JWT_SECRET`** & **`ENCRYPTION_KEY`** — Auth secrets (the `.env.example` includes a one-liner to generate both)
 - **`ADMIN_EMAIL`** & **`ADMIN_PASSWORD`** — Seed admin account created on first startup
-- **`SERPER_API_KEY`** — _(optional)_ Enables the web search tool
+- **`TAVILY_API_KEY`** — _(optional)_ Enables the web search & extraction tools via Tavily MCP
 
 > 💡 **Tip:** Generate secure auth keys in one command:
 >
