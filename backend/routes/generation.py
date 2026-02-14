@@ -22,7 +22,7 @@ from config import DebugConfig
 from schemas.presentation import Presentation as PresentationSchema
 from services.auth_service import get_current_user
 from services.pptx_service import generate_pptx
-from utils.api_helpers import resolve_api_key, classify_error
+from utils.api_helpers import resolve_api_key, classify_error, validate_thread_ownership
 from utils.file_processor import file_processor
 from utils.sse import format_sse_event, format_sse_error
 
@@ -178,6 +178,9 @@ async def generate_course_outline(
     if files:
         file_contents += await file_processor(files)
 
+    # Validate thread ownership for follow-up requests (fail-fast before streaming)
+    await validate_thread_ownership(thread_id, current_user)
+
     # Validate that the user has an API key (fail-fast before streaming)
     await resolve_api_key(current_user)
 
@@ -280,6 +283,9 @@ async def generate_lesson_plan(
 
     if files:
         file_contents += await file_processor(files)
+
+    # Validate thread ownership for follow-up requests (fail-fast before streaming)
+    await validate_thread_ownership(thread_id, current_user)
 
     # Validate that the user has an API key (fail-fast before streaming)
     await resolve_api_key(current_user)
@@ -391,6 +397,9 @@ async def generate_presentation(
     if files:
         file_contents += await file_processor(files)
 
+    # Validate thread ownership for follow-up requests (fail-fast before streaming)
+    await validate_thread_ownership(thread_id, current_user)
+
     # Validate that the user has an API key (fail-fast before streaming)
     await resolve_api_key(current_user)
 
@@ -500,6 +509,9 @@ async def generate_assessment(
 
     if files:
         file_contents += await file_processor(files)
+
+    # Validate thread ownership for follow-up requests (fail-fast before streaming)
+    await validate_thread_ownership(thread_id, current_user)
 
     # Validate that the user has an API key (fail-fast before streaming)
     await resolve_api_key(current_user)
