@@ -9,7 +9,16 @@ import json
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, UploadFile
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Request,
+    UploadFile,
+)
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 
 from agent.course_outline import run_course_outline_generator
@@ -23,6 +32,7 @@ from schemas.presentation import Presentation as PresentationSchema
 from services.auth_service import get_current_user
 from services.pptx_service import generate_pptx
 from utils.api_helpers import resolve_api_key, classify_error, validate_thread_ownership
+from rate_limit import limiter
 from utils.file_processor import file_processor
 from utils.sse import format_sse_event, format_sse_error
 
@@ -37,7 +47,9 @@ router = APIRouter(tags=["Generation"])
 
 
 @router.post("/enhance-prompt")
+@limiter.limit("10/minute")
 async def enhance_prompt(
+    request: Request,
     message: str = Form(..., max_length=5000),
     context_type: str = Form("course_outline", max_length=50),
     additional_context: Optional[str] = Form(None, max_length=10000),
@@ -157,7 +169,9 @@ async def _course_outline_event_generator(
 
 
 @router.post("/course-outline-generator")
+@limiter.limit("10/minute")
 async def generate_course_outline(
+    request: Request,
     message: str = Form("", max_length=5000),
     topic: Optional[str] = Form(None, max_length=500),
     number_of_classes: Optional[int] = Form(None),
@@ -246,7 +260,9 @@ async def _lesson_plan_event_generator(
 
 
 @router.post("/lesson-plan-generator")
+@limiter.limit("10/minute")
 async def generate_lesson_plan(
+    request: Request,
     message: str = Form("", max_length=5000),
     course_title: Optional[str] = Form(None, max_length=500),
     class_number: Optional[int] = Form(None),
@@ -362,7 +378,9 @@ async def _presentation_event_generator(
 
 
 @router.post("/presentation-generator")
+@limiter.limit("10/minute")
 async def generate_presentation(
+    request: Request,
     message: str = Form("", max_length=5000),
     course_title: Optional[str] = Form(None, max_length=500),
     class_number: Optional[int] = Form(None),
@@ -474,7 +492,9 @@ async def _assessment_event_generator(
 
 
 @router.post("/assessment-generator")
+@limiter.limit("10/minute")
 async def generate_assessment(
+    request: Request,
     message: str = Form("", max_length=5000),
     course_title: Optional[str] = Form(None, max_length=500),
     class_title: Optional[str] = Form(None, max_length=500),
