@@ -78,6 +78,63 @@ class MCPClientManager:
         filtered = [t for t in tools if t.name in allowed]
         return filtered
 
+    def _validate_tool_schemas(self, tools: List[BaseTool]) -> List[BaseTool]:
+        """
+        Validate that MCP tool schemas match expected constraints.
+
+        Defends against a compromised MCP server injecting prompt payloads
+        via altered tool descriptions or adding unexpected parameters.
+        Tools that fail validation are logged and excluded.
+        """
+        expected_schemas = MCPConfig.EXPECTED_TOOL_SCHEMAS
+        validated: List[BaseTool] = []
+
+        for tool in tools:
+            schema = expected_schemas.get(tool.name)
+            if schema is None:
+                # No schema expectation defined — accept with a warning
+                logger.warning(
+                    "MCP tool '%s' has no expected schema defined — accepting as-is",
+                    tool.name,
+                )
+                validated.append(tool)
+                continue
+
+            # Check description length
+            max_desc_len = schema.get("max_description_length", 500)
+            if tool.description and len(tool.description) > max_desc_len:
+                logger.warning(
+                    "MCP tool '%s' description length (%d) exceeds expected max (%d) "
+                    "— possible prompt injection in schema. Tool rejected.",
+                    tool.name,
+                    len(tool.description),
+                    max_desc_len,
+                )
+                continue
+
+            # Check required parameters are present
+            required_params = schema.get("required_params", set())
+            if required_params:
+                tool_params = set()
+                if hasattr(tool, "args_schema") and tool.args_schema:
+                    tool_params = set(tool.args_schema.model_fields.keys())
+                elif hasattr(tool, "args") and isinstance(tool.args, dict):
+                    tool_params = set(tool.args.keys())
+
+                missing = required_params - tool_params
+                if missing:
+                    logger.warning(
+                        "MCP tool '%s' is missing expected params %s "
+                        "— schema may have been altered. Tool rejected.",
+                        tool.name,
+                        missing,
+                    )
+                    continue
+
+            validated.append(tool)
+
+        return validated
+
     async def initialize(self) -> None:
         """
         Initialize MCP client connections.
@@ -100,7 +157,8 @@ class MCPClientManager:
             self._client = MultiServerMCPClient(servers)  # type: ignore[arg-type]
 
             all_tools = await self._client.get_tools()
-            self._tools = self._filter_tools(all_tools)
+            filtered = self._filter_tools(all_tools)
+            self._tools = self._validate_tool_schemas(filtered)
             self._initialized = True
 
             tool_names = [t.name for t in self._tools]

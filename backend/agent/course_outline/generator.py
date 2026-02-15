@@ -14,7 +14,7 @@ from langchain_core.runnables import RunnableConfig
 logger = logging.getLogger(__name__)
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
-from config import DBConfig
+from config import DBConfig, EvaluationConfig
 from .graph import build_course_outline_graph
 from .state import CourseOutlineInput
 from schemas.course_outline import CourseOutline
@@ -86,7 +86,10 @@ async def run_course_outline_generator(
             graph = workflow.compile(checkpointer=memory)
 
             # Configuration for the graph execution - use the actual thread_id
-            config: RunnableConfig = {"configurable": {"thread_id": thread_id}}
+            config: RunnableConfig = {
+                "configurable": {"thread_id": thread_id},
+                "recursion_limit": EvaluationConfig.GRAPH_RECURSION_LIMIT,
+            }
 
             # Track output for final response
             final_response = None

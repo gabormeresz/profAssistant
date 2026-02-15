@@ -14,7 +14,7 @@ from langchain_core.runnables import RunnableConfig
 logger = logging.getLogger(__name__)
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
-from config import DBConfig
+from config import DBConfig, EvaluationConfig
 from schemas.assessment import (
     ALLOWED_QUESTION_TYPES,
     ALLOWED_ASSESSMENT_TYPES,
@@ -136,7 +136,10 @@ async def run_assessment_generator(
             graph = workflow.compile(checkpointer=memory)
 
             # Configuration for the graph execution
-            config: RunnableConfig = {"configurable": {"thread_id": thread_id}}
+            config: RunnableConfig = {
+                "configurable": {"thread_id": thread_id},
+                "recursion_limit": EvaluationConfig.GRAPH_RECURSION_LIMIT,
+            }
 
             # Track output for final response
             final_response = None

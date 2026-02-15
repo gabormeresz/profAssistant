@@ -217,6 +217,11 @@ class EvaluationConfig:
     # If score improves by less than this, consider it a plateau
     MIN_IMPROVEMENT_THRESHOLD: float = 0.05
 
+    # Explicit recursion limit for graph compilation (defense-in-depth).
+    # Normal execution uses ~10–15 steps (generate + eval + refine cycles).
+    # Set above that to allow headroom but cap runaway tool-call loops.
+    GRAPH_RECURSION_LIMIT: int = 40
+
     # Dimension weights for overall score calculation
     DIMENSION_WEIGHTS: dict = {
         "learning_objectives": 0.25,
@@ -266,6 +271,33 @@ class MCPConfig:
     TAVILY_TRANSPORT: str = "http"
     # Only expose these tools from the Tavily MCP server
     TAVILY_ALLOWED_TOOLS: list[str] = ["tavily_search", "tavily_extract"]
+
+    # Expected tool schemas for validation (defense-in-depth).
+    # If a remote MCP server is compromised, it could alter tool descriptions
+    # to inject prompts or add unexpected parameters. These constraints
+    # catch deviations from expected schemas.
+    EXPECTED_TOOL_SCHEMAS: dict[str, dict] = {
+        "search_wikipedia": {
+            "max_description_length": 500,
+            "required_params": {"query"},
+        },
+        "get_article": {
+            "max_description_length": 500,
+            "required_params": {"title"},
+        },
+        "get_summary": {
+            "max_description_length": 500,
+            "required_params": {"title"},
+        },
+        "tavily_search": {
+            "max_description_length": 500,
+            "required_params": {"query"},
+        },
+        "tavily_extract": {
+            "max_description_length": 500,
+            "required_params": {"urls"},
+        },
+    }
 
 
 # =============================================================================

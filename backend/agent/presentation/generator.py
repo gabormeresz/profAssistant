@@ -14,7 +14,7 @@ from langchain_core.runnables import RunnableConfig
 logger = logging.getLogger(__name__)
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
-from config import DBConfig
+from config import DBConfig, EvaluationConfig
 from .graph import build_presentation_graph
 from .state import PresentationInput
 from schemas.presentation import Presentation
@@ -108,7 +108,10 @@ async def run_presentation_generator(
         async with AsyncSqliteSaver.from_conn_string(DBConfig.CHECKPOINTS_DB) as memory:
             graph = workflow.compile(checkpointer=memory)
 
-            config: RunnableConfig = {"configurable": {"thread_id": thread_id}}
+            config: RunnableConfig = {
+                "configurable": {"thread_id": thread_id},
+                "recursion_limit": EvaluationConfig.GRAPH_RECURSION_LIMIT,
+            }
 
             final_response = None
 
