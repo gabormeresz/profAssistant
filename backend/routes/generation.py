@@ -290,10 +290,8 @@ async def generate_lesson_plan(
         activities_projects_list = (
             json.loads(activities_projects) if activities_projects else None
         )
-    except json.JSONDecodeError as e:
-        raise HTTPException(
-            status_code=400, detail=f"Invalid JSON in form fields: {str(e)}"
-        )
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON in form fields")
 
     file_contents = []
 
@@ -405,10 +403,8 @@ async def generate_presentation(
     """
     try:
         key_points_list = json.loads(key_points) if key_points else None
-    except json.JSONDecodeError as e:
-        raise HTTPException(
-            status_code=400, detail=f"Invalid JSON in key_points: {str(e)}"
-        )
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON in key_points")
 
     file_contents = []
 
@@ -520,10 +516,8 @@ async def generate_assessment(
         question_type_configs_list = (
             json.loads(question_type_configs) if question_type_configs else None
         )
-    except json.JSONDecodeError as e:
-        raise HTTPException(
-            status_code=400, detail=f"Invalid JSON in form fields: {str(e)}"
-        )
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON in form fields")
 
     # Validate assessment_type and difficulty_level against allowed enums
     if assessment_type is not None:

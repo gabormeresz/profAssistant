@@ -72,5 +72,5 @@ async def generate_structured_response(state: CourseOutlineState) -> dict:
         return {"final_response": response, "messages": [clean_ai_message]}
 
     except Exception as e:
-        logger.error(f"Failed to generate structured output: {e}")
-        return {"error": f"Failed to generate structured output: {str(e)}"}
+        logger.error("Failed to generate structured output: %s", e, exc_info=True)
+        return {"error": "Failed to generate structured output"}

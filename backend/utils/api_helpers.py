@@ -94,22 +94,28 @@ def classify_error(exc: Exception) -> dict:
     Map common OpenAI / API-key errors to frontend-translatable message keys.
 
     Returns a dict suitable for ``json.dumps`` inside an SSE error event,
-    containing both ``message`` (raw) and ``message_key`` (i18n key).
+    containing only a ``message_key`` (i18n key).  Raw exception details
+    are logged server-side and **never** sent to the client to prevent
+    leaking internal paths, API key fragments, or library versions
+    (see Security Audit finding #7).
     """
     import openai
+
+    # Log full details server-side for debugging
+    logger.error("Generation error: %s", exc, exc_info=True)
 
     raw = str(exc)
 
     if isinstance(exc, openai.AuthenticationError):
-        return {"message": raw, "message_key": "errors.invalidApiKey"}
+        return {"message_key": "errors.invalidApiKey"}
     if isinstance(exc, openai.RateLimitError):
         lower = raw.lower()
         if "quota" in lower or "billing" in lower or "exceeded" in lower:
-            return {"message": raw, "message_key": "errors.insufficientQuota"}
-        return {"message": raw, "message_key": "errors.rateLimited"}
+            return {"message_key": "errors.insufficientQuota"}
+        return {"message_key": "errors.rateLimited"}
     if isinstance(exc, openai.APIStatusError) and exc.status_code >= 500:
-        return {"message": raw, "message_key": "errors.openaiUnavailable"}
+        return {"message_key": "errors.openaiUnavailable"}
     if isinstance(exc, ValueError) and "API key" in raw:
-        return {"message": raw, "message_key": "errors.apiKeyRequired"}
+        return {"message_key": "errors.apiKeyRequired"}
 
-    return {"message": raw, "message_key": "errors.generationFailed"}
+    return {"message_key": "errors.generationFailed"}

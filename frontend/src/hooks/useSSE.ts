@@ -202,8 +202,14 @@ export const useSSE = <T>(): UseSSEReturn<T> => {
                   finalData = completedData;
                   setProgressMessage("overlay.complete");
                   handlers?.onComplete?.(completedData);
-                } else if (currentEvent === "error" && parsed.message) {
-                  logger.error("Stream error:", parsed.message);
+                } else if (
+                  currentEvent === "error" &&
+                  (parsed.message_key || parsed.message)
+                ) {
+                  logger.error(
+                    "Stream error:",
+                    parsed.message_key || parsed.message
+                  );
                   const errorMsg = parsed.message_key || parsed.message;
                   setError(errorMsg);
                   setProgressMessage("");

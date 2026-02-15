@@ -5,10 +5,13 @@ This module provides the main async generator function for course outline
 generation, handling streaming progress updates and error management.
 """
 
+import logging
 import uuid
 from typing import Any, Dict, List, AsyncGenerator
 
 from langchain_core.runnables import RunnableConfig
+
+logger = logging.getLogger(__name__)
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from config import DBConfig
@@ -159,7 +162,11 @@ async def run_course_outline_generator(
                             final_response = response
 
                     if "error" in output and output["error"]:
-                        yield {"type": "error", "message": output["error"]}
+                        logger.error("Graph returned error: %s", output["error"])
+                        yield {
+                            "type": "error",
+                            "message_key": "errors.generationFailed",
+                        }
                         return
 
             # Yield the final result
@@ -168,13 +175,12 @@ async def run_course_outline_generator(
             else:
                 yield {
                     "type": "error",
-                    "message": "Could not extract structured output from agent response",
+                    "message_key": "errors.generationFailed",
                 }
 
     except ValueError as e:
-        yield {"type": "error", "message": str(e)}
+        logger.error("Course outline validation error: %s", e)
+        yield {"type": "error", "message_key": "errors.generationFailed"}
     except Exception as e:
-        yield {
-            "type": "error",
-            "message": f"Error while generating course outline: {str(e)}",
-        }
+        logger.error("Course outline generation error: %s", e, exc_info=True)
+        yield {"type": "error", "message_key": "errors.generationFailed"}

@@ -114,5 +114,5 @@ async def generate_structured_response(state: AssessmentState) -> dict:
         }
 
     except Exception as e:
-        logger.error(f"Failed to generate structured response: {e}", exc_info=True)
-        return {"error": f"Failed to generate structured assessment: {str(e)}"}
+        logger.error("Failed to generate structured assessment: %s", e, exc_info=True)
+        return {"error": "Failed to generate structured assessment"}

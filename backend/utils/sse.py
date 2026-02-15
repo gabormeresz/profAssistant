@@ -42,7 +42,13 @@ def format_sse_event(event: Any) -> str:
         return f"event: complete\ndata: {json.dumps(event['data'])}\n\n"
 
     if event_type == "error":
-        return f"event: error\ndata: {json.dumps({'message': event['message']})}\n\n"
+        error_data = {}
+        if "message_key" in event:
+            error_data["message_key"] = event["message_key"]
+        else:
+            # Fallback: use a generic key — never forward raw messages
+            error_data["message_key"] = "errors.generationFailed"
+        return f"event: error\ndata: {json.dumps(error_data)}\n\n"
 
     # Fallback for unknown event types
     return f"data: {json.dumps(event)}\n\n"

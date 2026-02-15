@@ -11,9 +11,12 @@ incurring LLM costs or waiting for real generation.
 Toggle via config.py -> DebugConfig.USE_DUMMY_GRAPH = True
 """
 
-import uuid
 import asyncio
+import logging
+import uuid
 from typing import AsyncGenerator, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 # Hardcoded realistic course outline data
@@ -194,9 +197,8 @@ async def run_dummy_course_outline_generator(
         yield {"type": "complete", "data": outline}
 
     except ValueError as e:
-        yield {"type": "error", "message": str(e)}
+        logger.error("Dummy generator validation error: %s", e)
+        yield {"type": "error", "message_key": "errors.generationFailed"}
     except Exception as e:
-        yield {
-            "type": "error",
-            "message": f"Error in dummy generator: {str(e)}",
-        }
+        logger.error("Dummy generator error: %s", e, exc_info=True)
+        yield {"type": "error", "message_key": "errors.generationFailed"}
