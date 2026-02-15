@@ -85,6 +85,10 @@ class LLMConfig:
     #   • temperature / max_tokens  → used by non-reasoning models only
     #   • reasoning_effort           → used by reasoning models only
     # Incompatible params are stripped automatically in model.py.
+    #
+    # max_tokens caps output length for non-reasoning models to prevent
+    # unbounded output cost.
+
     MODEL_PRESETS: dict[str, dict] = {
         "enhancer": {
             "temperature": 0.5,
@@ -93,10 +97,12 @@ class LLMConfig:
         },
         "generator": {
             "temperature": 0.5,
+            "max_tokens": 16000,
             "reasoning_effort": "medium",
         },
         "evaluator": {
             "temperature": 0.3,
+            "max_tokens": 2000,
             "reasoning_effort": "low",
         },
     }
