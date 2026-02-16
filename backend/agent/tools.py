@@ -48,6 +48,9 @@ async def search_uploaded_documents(
         Relevant excerpts from the uploaded documents with source information.
         Returns "No relevant information found" if nothing matches.
     """
+    # Hard cap on results
+    n_results = min(max(n_results, 1), 10)
+
     # Extract thread_id from state (injected by LangGraph ToolNode)
     session_id = None
     if state:
