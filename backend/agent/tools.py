@@ -5,6 +5,7 @@ from langgraph.prebuilt import InjectedState
 from dotenv import load_dotenv
 
 from agent.input_sanitizer import sanitize_tool_output
+from services.api_key_service import get_api_key_for_user
 from services.rag_pipeline import get_rag_pipeline
 
 load_dotenv()
@@ -53,12 +54,19 @@ async def search_uploaded_documents(
 
     # Extract thread_id from state (injected by LangGraph ToolNode)
     session_id = None
+    user_id = None
     if state:
         session_id = state.get("thread_id")
+        user_id = state.get("user_id")
     print(f"[Tool] State thread_id: {session_id}")
 
+    # Resolve per-user API key (admin → server key, regular → own key)
+    embedding_api_key = await get_api_key_for_user(user_id) if user_id else None
+
     rag = get_rag_pipeline()
-    results = await rag.query(query, n_results=n_results, session_id=session_id)
+    results = await rag.query(
+        query, n_results=n_results, session_id=session_id, api_key=embedding_api_key
+    )
 
     if not results:
         return "No relevant information found in the uploaded documents."

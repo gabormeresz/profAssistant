@@ -85,8 +85,8 @@ class RAGPipeline:
             ),
         )
 
-        # Initialize embeddings with configured model
-        self.embeddings = OpenAIEmbeddings(model=RAGConfig.EMBEDDING_MODEL)
+        # Default embeddings instance (server-side key from env)
+        self._default_embeddings = OpenAIEmbeddings(model=RAGConfig.EMBEDDING_MODEL)
 
         # Get or create the collection
         self.collection = self.client.get_or_create_collection(
@@ -97,6 +97,20 @@ class RAGPipeline:
     # ------------------------------------------------------------------
     #  Private helpers (sync — only called inside to_thread)
     # ------------------------------------------------------------------
+
+    def _get_embeddings(self, api_key: Optional[str] = None) -> OpenAIEmbeddings:
+        """Return an OpenAIEmbeddings instance for the given API key.
+
+        If *api_key* is provided, a fresh instance scoped to that key is
+        created (so that non-admin users consume their own OpenAI budget).
+        Otherwise the default server-side instance is returned.
+        """
+        if api_key:
+            return OpenAIEmbeddings(
+                model=RAGConfig.EMBEDDING_MODEL,
+                api_key=api_key,
+            )
+        return self._default_embeddings
 
     def _generate_document_id(self, content: str, filename: str) -> str:
         """Generate a unique document ID based on content hash and filename."""
@@ -117,6 +131,7 @@ class RAGPipeline:
         filename: str,
         session_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
+        api_key: Optional[str] = None,
     ) -> IngestedDocument:
         """Synchronous core of ingest_document (runs inside to_thread)."""
         if not content.strip():
@@ -167,7 +182,8 @@ class RAGPipeline:
             base_metadata.update(metadata)
 
         # Generate embeddings for all chunks (sync OpenAI call)
-        chunk_embeddings = self.embeddings.embed_documents(chunks)
+        embeddings_model = self._get_embeddings(api_key)
+        chunk_embeddings = embeddings_model.embed_documents(chunks)
 
         # Prepare data for ChromaDB
         ids = []
@@ -209,6 +225,7 @@ class RAGPipeline:
         n_results: int = 5,
         session_id: Optional[str] = None,
         min_similarity: float = 0.3,
+        api_key: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """Synchronous core of query (runs inside to_thread)."""
         if not session_id:
@@ -222,7 +239,8 @@ class RAGPipeline:
         )
 
         where_filter = {"session_id": session_id}
-        query_embedding = self.embeddings.embed_query(query_text)
+        embeddings_model = self._get_embeddings(api_key)
+        query_embedding = embeddings_model.embed_query(query_text)
 
         results = self.collection.query(
             query_embeddings=[query_embedding],
@@ -379,10 +397,11 @@ class RAGPipeline:
         filename: str,
         session_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
+        api_key: Optional[str] = None,
     ) -> IngestedDocument:
         """Ingest a single document into the vector store (async)."""
         return await asyncio.to_thread(
-            self._ingest_document_sync, content, filename, session_id, metadata
+            self._ingest_document_sync, content, filename, session_id, metadata, api_key
         )
 
     async def ingest_documents(
@@ -390,6 +409,7 @@ class RAGPipeline:
         documents: List[Dict[str, str]],
         session_id: Optional[str] = None,
         metadata: Optional[Dict[str, Any]] = None,
+        api_key: Optional[str] = None,
     ) -> List[IngestedDocument]:
         """Ingest multiple documents into the vector store (async)."""
         results = []
@@ -400,6 +420,7 @@ class RAGPipeline:
                     filename=doc["filename"],
                     session_id=session_id,
                     metadata=metadata,
+                    api_key=api_key,
                 )
                 results.append(result)
             except Exception as e:
@@ -412,10 +433,11 @@ class RAGPipeline:
         n_results: int = 5,
         session_id: Optional[str] = None,
         min_similarity: float = 0.3,
+        api_key: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """Query the vector store for relevant document chunks (async)."""
         return await asyncio.to_thread(
-            self._query_sync, query_text, n_results, session_id, min_similarity
+            self._query_sync, query_text, n_results, session_id, min_similarity, api_key
         )
 
     async def delete_document(self, document_id: str) -> bool:

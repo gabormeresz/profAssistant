@@ -15,6 +15,7 @@ subsequent graph step.
 
 import logging
 
+from services.api_key_service import get_api_key_for_user
 from services.rag_pipeline import get_rag_pipeline
 
 from ..state import BaseGenerationState
@@ -37,7 +38,11 @@ async def ingest_documents(state: BaseGenerationState) -> dict:
     """
     file_contents = state.get("file_contents")
     thread_id = state["thread_id"]
+    user_id = state.get("user_id", "")
     rag = get_rag_pipeline()
+
+    # Resolve per-user API key (admin → server key, regular → own key)
+    embedding_api_key = await get_api_key_for_user(user_id) if user_id else None
 
     if not file_contents:
         # No new files - check if documents were previously ingested for this session
@@ -64,6 +69,7 @@ async def ingest_documents(state: BaseGenerationState) -> dict:
             results = await rag.ingest_documents(
                 documents=documents,
                 session_id=thread_id,
+                api_key=embedding_api_key,
             )
             logger.info(
                 f"Ingested {len(results)} documents "
