@@ -4,6 +4,13 @@ Document ingestion node shared across all generation workflows.
 Processes uploaded file contents and stores them in ChromaDB for
 retrieval during generation. Uses thread_id as session_id to scope
 queries to the current conversation.
+
+After successful ingestion the full document text is stripped from
+``file_contents`` — only filenames are retained in state so that
+downstream nodes (``build_messages``, ``initialize_conversation``)
+can still reference them.  This avoids serialising potentially
+megabytes of raw text into the SQLite checkpointer at every
+subsequent graph step.
 """
 
 import logging
@@ -62,7 +69,12 @@ async def ingest_documents(state: BaseGenerationState) -> dict:
                 f"Ingested {len(results)} documents "
                 f"({sum(r.chunk_count for r in results)} chunks) for thread {thread_id}"
             )
-            return {"has_ingested_documents": True}
+            # Strip full document text from state — only keep filenames.
+            # Content is now in ChromaDB; downstream nodes only need filenames.
+            stripped = [
+                {"filename": f.get("filename", "unknown")} for f in file_contents
+            ]
+            return {"has_ingested_documents": True, "file_contents": stripped}
         else:
             # No valid new content - check for existing documents
             existing_docs = await rag.list_documents(session_id=thread_id)
