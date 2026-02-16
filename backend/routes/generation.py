@@ -5,9 +5,11 @@ and lesson-plan SSE.
 All endpoints are mounted under the root prefix in ``main.py``.
 """
 
+import asyncio
 import json
 import logging
-from typing import List, Optional
+import time
+from typing import AsyncIterator, List, Optional
 
 from fastapi import (
     APIRouter,
@@ -39,6 +41,62 @@ from utils.sse import format_sse_event, format_sse_error
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Generation"])
+
+# ---------------------------------------------------------------------------
+# Per-user concurrent generation limiter
+# ---------------------------------------------------------------------------
+# Tracks active SSE generation streams per user to prevent a single user from
+# spawning many parallel generations (each costing 7+ LLM calls).
+# Timestamps are stored instead of a plain counter so that slots auto-expire
+# after MAX_GENERATION_DURATION_SECONDS — this guards against a stuck counter
+# if a generator hangs and its ``finally`` block never executes.
+
+_active_generations: dict[str, list[float]] = {}
+_active_generations_lock = asyncio.Lock()
+MAX_CONCURRENT_GENERATIONS = 2
+MAX_GENERATION_DURATION_SECONDS = 600  # 10 min auto-expiry
+
+
+async def _acquire_generation_slot(user_id: str) -> None:
+    """Reserve a generation slot or raise HTTP 429."""
+    async with _active_generations_lock:
+        now = time.monotonic()
+        # Evict expired entries so a stuck counter never blocks a user forever
+        _active_generations[user_id] = [
+            t
+            for t in _active_generations.get(user_id, [])
+            if now - t < MAX_GENERATION_DURATION_SECONDS
+        ]
+        if len(_active_generations[user_id]) >= MAX_CONCURRENT_GENERATIONS:
+            raise HTTPException(
+                status_code=429,
+                detail="Too many concurrent generation requests",
+            )
+        _active_generations[user_id].append(now)
+
+
+async def _release_generation_slot(user_id: str, start_time: float) -> None:
+    """Release the exact slot identified by *start_time*."""
+    async with _active_generations_lock:
+        slots = _active_generations.get(user_id, [])
+        try:
+            slots.remove(start_time)
+        except ValueError:
+            pass  # already expired / removed
+
+
+async def _guarded_sse_stream(
+    user_id: str,
+    inner: AsyncIterator[str],
+) -> AsyncIterator[str]:
+    """Wrap an SSE event generator with concurrency tracking."""
+    await _acquire_generation_slot(user_id)
+    start_time = _active_generations[user_id][-1]
+    try:
+        async for event in inner:
+            yield event
+    finally:
+        await _release_generation_slot(user_id, start_time)
 
 
 # ============================================================================
@@ -198,15 +256,20 @@ async def generate_course_outline(
     # Validate that the user has an API key (fail-fast before streaming)
     await resolve_api_key(current_user)
 
+    user_id = current_user["user_id"]
+
     return StreamingResponse(
-        _course_outline_event_generator(
-            message,
-            topic,
-            number_of_classes,
-            language,
-            thread_id,
-            file_contents,
-            user_id=current_user["user_id"],
+        _guarded_sse_stream(
+            user_id,
+            _course_outline_event_generator(
+                message,
+                topic,
+                number_of_classes,
+                language,
+                thread_id,
+                file_contents,
+                user_id=user_id,
+            ),
         ),
         media_type="text/event-stream",
         headers={
@@ -304,19 +367,24 @@ async def generate_lesson_plan(
     # Validate that the user has an API key (fail-fast before streaming)
     await resolve_api_key(current_user)
 
+    user_id = current_user["user_id"]
+
     return StreamingResponse(
-        _lesson_plan_event_generator(
-            message,
-            course_title,
-            class_number,
-            class_title,
-            learning_objectives_list,
-            key_topics_list,
-            activities_projects_list,
-            language,
-            thread_id,
-            file_contents,
-            user_id=current_user["user_id"],
+        _guarded_sse_stream(
+            user_id,
+            _lesson_plan_event_generator(
+                message,
+                course_title,
+                class_number,
+                class_title,
+                learning_objectives_list,
+                key_topics_list,
+                activities_projects_list,
+                language,
+                thread_id,
+                file_contents,
+                user_id=user_id,
+            ),
         ),
         media_type="text/event-stream",
         headers={
@@ -417,22 +485,27 @@ async def generate_presentation(
     # Validate that the user has an API key (fail-fast before streaming)
     await resolve_api_key(current_user)
 
+    user_id = current_user["user_id"]
+
     return StreamingResponse(
-        _presentation_event_generator(
-            message,
-            course_title,
-            class_number,
-            class_title,
-            learning_objective,
-            key_points_list,
-            lesson_breakdown,
-            activities,
-            homework,
-            extra_activities,
-            language,
-            thread_id,
-            file_contents,
-            user_id=current_user["user_id"],
+        _guarded_sse_stream(
+            user_id,
+            _presentation_event_generator(
+                message,
+                course_title,
+                class_number,
+                class_title,
+                learning_objective,
+                key_points_list,
+                lesson_breakdown,
+                activities,
+                homework,
+                extra_activities,
+                language,
+                thread_id,
+                file_contents,
+                user_id=user_id,
+            ),
         ),
         media_type="text/event-stream",
         headers={
@@ -558,20 +631,25 @@ async def generate_assessment(
     # Validate that the user has an API key (fail-fast before streaming)
     await resolve_api_key(current_user)
 
+    user_id = current_user["user_id"]
+
     return StreamingResponse(
-        _assessment_event_generator(
-            message,
-            course_title,
-            class_title,
-            key_topics_list,
-            assessment_type,
-            difficulty_level,
-            question_type_configs_list,
-            additional_instructions,
-            language,
-            thread_id,
-            file_contents,
-            user_id=current_user["user_id"],
+        _guarded_sse_stream(
+            user_id,
+            _assessment_event_generator(
+                message,
+                course_title,
+                class_title,
+                key_topics_list,
+                assessment_type,
+                difficulty_level,
+                question_type_configs_list,
+                additional_instructions,
+                language,
+                thread_id,
+                file_contents,
+                user_id=user_id,
+            ),
         ),
         media_type="text/event-stream",
         headers={
