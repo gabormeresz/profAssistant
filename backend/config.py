@@ -101,7 +101,7 @@ class LLMConfig:
             "reasoning_effort": "medium",
         },
         "evaluator": {
-            "temperature": 0.3,
+            "temperature": 0,
             "max_tokens": 2000,
             "reasoning_effort": "low",
         },
