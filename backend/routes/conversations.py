@@ -8,6 +8,7 @@ import json
 import logging
 from typing import Optional
 
+import aiosqlite
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from schemas.conversation import ConversationType, ConversationList
@@ -17,6 +18,26 @@ from services.conversation_manager import conversation_manager
 from services.rag_pipeline import get_rag_pipeline
 
 logger = logging.getLogger(__name__)
+
+
+async def _delete_checkpoint_data(thread_id: str) -> int:
+    """Delete all checkpoint data for a thread from checkpoints.db.
+
+    Removes rows from both the ``checkpoints`` and ``writes`` tables.
+    Returns the total number of rows deleted.
+    """
+    total = 0
+    async with aiosqlite.connect(DBConfig.CHECKPOINTS_DB) as conn:
+        cursor = await conn.execute(
+            "DELETE FROM writes WHERE thread_id = ?", (thread_id,)
+        )
+        total += cursor.rowcount
+        cursor = await conn.execute(
+            "DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,)
+        )
+        total += cursor.rowcount
+        await conn.commit()
+    return total
 
 router = APIRouter(prefix="/conversations", tags=["Conversations"])
 
@@ -82,9 +103,7 @@ async def delete_conversation(
     current_user: dict = Depends(get_current_user),
 ):
     """
-    Delete a conversation and its metadata.
-    Also deletes associated RAG documents for this session.
-    Note: The checkpoint data remains in checkpoints.db.
+    Delete a conversation, its metadata, checkpoint data, and RAG documents.
     Non-admin users can only delete their own conversations.
     """
     conversation = await conversation_manager.get_conversation(thread_id)
@@ -108,6 +127,16 @@ async def delete_conversation(
             logger.info(f"Deleted {chunks_deleted} RAG chunks for session {thread_id}")
     except Exception as e:
         logger.warning(f"Failed to delete RAG session {thread_id}: {e}")
+
+    # Delete checkpoint data (graph state, messages, file_contents, etc.)
+    try:
+        rows_deleted = await _delete_checkpoint_data(thread_id)
+        if rows_deleted > 0:
+            logger.info(
+                "Deleted %d checkpoint rows for thread %s", rows_deleted, thread_id
+            )
+    except Exception as e:
+        logger.warning("Failed to delete checkpoint data for %s: %s", thread_id, e)
 
     return {"success": True, "message": "Conversation deleted"}
 
