@@ -117,8 +117,19 @@ class MCPClientManager:
             if required_params:
                 tool_params = set()
                 if hasattr(tool, "args_schema") and tool.args_schema:
-                    tool_params = set(tool.args_schema.model_fields.keys())
-                elif hasattr(tool, "args") and isinstance(tool.args, dict):
+                    args_schema = tool.args_schema
+                    if hasattr(args_schema, "model_fields"):
+                        # Pydantic v2 model class
+                        tool_params = set(args_schema.model_fields.keys())
+                    elif isinstance(args_schema, dict):
+                        # MCP-adapted tools may expose schema as a plain dict
+                        props = args_schema.get("properties", args_schema)
+                        tool_params = set(props.keys())
+                if (
+                    not tool_params
+                    and hasattr(tool, "args")
+                    and isinstance(tool.args, dict)
+                ):
                     tool_params = set(tool.args.keys())
 
                 missing = required_params - tool_params
