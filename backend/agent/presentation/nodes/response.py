@@ -8,6 +8,7 @@ import logging
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
+from agent.input_sanitizer import EXTRACTION_SYSTEM_PROMPT
 from agent.model import get_structured_output_model
 from agent.base.nodes.helpers import extract_content
 from schemas.presentation import Presentation
@@ -16,22 +17,6 @@ from services.api_key_service import resolve_user_llm_config
 from ..state import PresentationState
 
 logger = logging.getLogger(__name__)
-
-# System prompt for structured output extraction
-EXTRACTION_SYSTEM_PROMPT = """You are a JSON extraction assistant. Your task is to extract presentation information from the provided content and format it as a structured JSON object.
-
-Extract the following fields:
-- course_title: String (title of the course)
-- lesson_title: String (title of this lesson/class)
-- class_number: Integer (the class number)
-- slides: List of slide objects, each with:
-  - slide_number: Integer (sequential, starting from 1)
-  - title: String (slide heading)
-  - bullet_points: List of strings (1-6 concise bullet points)
-  - speaker_notes: String or null (expanded explanation for the instructor)
-  - visual_suggestion: String or null (description of a recommended visual)
-
-Be concise and extract only the essential information. If some information is missing, provide reasonable defaults based on the content."""
 
 
 async def generate_structured_response(state: PresentationState) -> dict:
@@ -63,7 +48,11 @@ async def generate_structured_response(state: PresentationState) -> dict:
         messages = [
             SystemMessage(content=EXTRACTION_SYSTEM_PROMPT),
             HumanMessage(
-                content=f"Extract the presentation from the following content:\n\n{context_content}"
+                content=(
+                    "Extract the presentation from the content "
+                    "inside <generated_content> tags below.\n\n"
+                    f"<generated_content>\n{context_content}\n</generated_content>"
+                )
             ),
         ]
 

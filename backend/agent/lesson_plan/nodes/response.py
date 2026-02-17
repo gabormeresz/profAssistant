@@ -8,6 +8,7 @@ import logging
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
+from agent.input_sanitizer import EXTRACTION_SYSTEM_PROMPT
 from agent.model import get_structured_output_model
 from agent.base.nodes.helpers import extract_content
 from schemas.lesson_plan import LessonPlan
@@ -16,21 +17,6 @@ from services.api_key_service import resolve_user_llm_config
 from ..state import LessonPlanState
 
 logger = logging.getLogger(__name__)
-
-# System prompt for structured output extraction
-EXTRACTION_SYSTEM_PROMPT = """You are a JSON extraction assistant. Your task is to extract lesson plan information from the provided content and format it as a structured JSON object.
-
-Extract the following fields:
-- class_number: Integer (the class/lesson number)
-- class_title: String (title of this lesson)
-- learning_objective: String (main learning goal)
-- key_points: List of strings (2-10 essential concepts)
-- lesson_breakdown: List of objects with section_title and description
-- activities: List of objects with name, objective, and instructions
-- homework: String (homework assignment)
-- extra_activities: String (optional enrichment activities)
-
-Be concise and extract only the essential information. If some information is missing, provide reasonable defaults based on the content."""
 
 
 async def generate_structured_response(state: LessonPlanState) -> dict:
@@ -65,7 +51,11 @@ async def generate_structured_response(state: LessonPlanState) -> dict:
         messages = [
             SystemMessage(content=EXTRACTION_SYSTEM_PROMPT),
             HumanMessage(
-                content=f"Extract the lesson plan from the following content:\n\n{context_content}"
+                content=(
+                    "Extract the lesson plan from the content "
+                    "inside <generated_content> tags below.\n\n"
+                    f"<generated_content>\n{context_content}\n</generated_content>"
+                )
             ),
         ]
 

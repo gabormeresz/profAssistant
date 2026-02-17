@@ -6,8 +6,9 @@ Contains nodes for generating final structured output.
 
 import logging
 
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
+from agent.input_sanitizer import EXTRACTION_SYSTEM_PROMPT
 from agent.model import get_structured_output_model
 from agent.base.nodes.helpers import extract_content
 from schemas.course_outline import CourseOutline
@@ -44,8 +45,18 @@ async def generate_structured_response(state: CourseOutlineState) -> dict:
         if not context_content:
             return {"error": "No context available for generating response"}
 
-        # Generate structured output - the schema enforces the structure,
-        # so we just need to pass the content for parsing
+        # Generate structured output with hardened extraction prompt
+        messages = [
+            SystemMessage(content=EXTRACTION_SYSTEM_PROMPT),
+            HumanMessage(
+                content=(
+                    "Extract the course outline from the content "
+                    "inside <generated_content> tags below.\n\n"
+                    f"<generated_content>\n{context_content}\n</generated_content>"
+                )
+            ),
+        ]
+
         api_key, model_name = await resolve_user_llm_config(state.get("user_id", ""))
         structured_model = get_structured_output_model(
             CourseOutline,
@@ -53,9 +64,7 @@ async def generate_structured_response(state: CourseOutlineState) -> dict:
             model_name=model_name,
             purpose="generator",
         )
-        response = await structured_model.ainvoke(
-            [HumanMessage(content=context_content)]
-        )
+        response = await structured_model.ainvoke(messages)
 
         # Ensure we have a CourseOutline object
         if not isinstance(response, CourseOutline):
