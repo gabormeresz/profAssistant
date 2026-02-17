@@ -10,6 +10,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from agent.model import get_structured_output_model
 from agent.base.nodes.helpers import extract_content
+from agent.input_sanitizer import wrap_user_input
 from config import EvaluationConfig
 from schemas.evaluation import EvaluationResult
 from services.api_key_service import resolve_user_llm_config
@@ -65,10 +66,12 @@ async def evaluate_outline(state: CourseOutlineState) -> dict:
     topic = state.get("topic", "Unknown")
     num_classes = state.get("number_of_classes", 0)
 
+    user_context = f"""Expected Topic: {topic}
+Expected Number of Classes: {num_classes}"""
+
     evaluation_request = f"""## Course Outline Evaluation Request
 
-**Expected Topic:** {topic}
-**Expected Number of Classes:** {num_classes}
+{wrap_user_input(user_context)}
 
 Please evaluate the following course outline against the rubric.
 Score each dimension independently, then provide the overall weighted score.
@@ -77,7 +80,9 @@ Score each dimension independently, then provide the overall weighted score.
 
 ## Course Outline to Evaluate
 
+<content_to_evaluate>
 {content_to_evaluate}
+</content_to_evaluate>
 
 ---
 

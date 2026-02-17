@@ -10,6 +10,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from agent.model import get_structured_output_model
 from agent.base.nodes.helpers import extract_content
+from agent.input_sanitizer import wrap_user_input
 from config import EvaluationConfig
 from schemas.evaluation import EvaluationResult
 from services.api_key_service import resolve_user_llm_config
@@ -63,12 +64,14 @@ async def evaluate_assessment(state: AssessmentState) -> dict:
 
     topics_str = "\n".join(f"  - {t}" for t in key_topics)
 
+    user_context = f"""Course Title: {course_title}
+Assessment Type: {assessment_type}
+Key Topics:
+{topics_str}"""
+
     evaluation_request = f"""## Assessment Evaluation Request
 
-**Course Title:** {course_title}
-**Assessment Type:** {assessment_type}
-**Key Topics:**
-{topics_str}
+{wrap_user_input(user_context)}
 
 Please evaluate the following assessment against the rubric.
 Score each dimension independently, then provide the overall weighted score.
@@ -77,7 +80,9 @@ Score each dimension independently, then provide the overall weighted score.
 
 ## Assessment to Evaluate
 
+<content_to_evaluate>
 {content_to_evaluate}
+</content_to_evaluate>
 
 ---
 

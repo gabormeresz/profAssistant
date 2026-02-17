@@ -5,7 +5,10 @@ This module centralizes all system prompts used in the lesson plan
 generation process, making them easy to maintain and modify.
 """
 
-from agent.input_sanitizer import SYSTEM_PROMPT_INJECTION_GUARD
+from agent.input_sanitizer import (
+    EVALUATOR_INJECTION_GUARD,
+    SYSTEM_PROMPT_INJECTION_GUARD,
+)
 
 
 def get_system_prompt(language: str, has_ingested_documents: bool = False) -> str:
@@ -302,7 +305,8 @@ When score < 0.8, provide 1-3 suggestions that are:
 **Bad suggestion example:**
 "Improve the activities."
 
-Provide all feedback (reasoning and suggestions) in {language}."""
+Provide all feedback (reasoning and suggestions) in {language}.
+{EVALUATOR_INJECTION_GUARD}"""
 
 
 def get_refinement_prompt(

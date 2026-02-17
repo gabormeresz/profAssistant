@@ -10,7 +10,10 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from agent.input_sanitizer import SYSTEM_PROMPT_INJECTION_GUARD
+from agent.input_sanitizer import (
+    EVALUATOR_INJECTION_GUARD,
+    SYSTEM_PROMPT_INJECTION_GUARD,
+)
 from schemas.assessment import QUESTION_TYPE_LABELS
 
 # One-shot example snippets keyed by question type
@@ -393,7 +396,8 @@ When score < 0.8, provide 1-3 suggestions that are:
 **Bad suggestion example:**
 "Improve the questions."
 
-Provide all feedback (reasoning and suggestions) in {language}."""
+Provide all feedback (reasoning and suggestions) in {language}.
+{EVALUATOR_INJECTION_GUARD}"""
 
 
 def get_refinement_prompt(

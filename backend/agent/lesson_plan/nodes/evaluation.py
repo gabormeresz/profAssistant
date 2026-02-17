@@ -10,6 +10,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from agent.model import get_structured_output_model
 from agent.base.nodes.helpers import extract_content
+from agent.input_sanitizer import wrap_user_input
 from config import EvaluationConfig
 from schemas.evaluation import EvaluationResult
 from services.api_key_service import resolve_user_llm_config
@@ -68,12 +69,14 @@ async def evaluate_lesson_plan(state: LessonPlanState) -> dict:
 
     objectives_str = "\n".join(f"  - {obj}" for obj in learning_objectives)
 
+    user_context = f"""Class Number: {class_number}
+Class Title: {class_title}
+Learning Objectives:
+{objectives_str}"""
+
     evaluation_request = f"""## Lesson Plan Evaluation Request
 
-**Class Number:** {class_number}
-**Class Title:** {class_title}
-**Learning Objectives:**
-{objectives_str}
+{wrap_user_input(user_context)}
 
 Please evaluate the following lesson plan against the rubric.
 Score each dimension independently, then provide the overall weighted score.
@@ -82,7 +85,9 @@ Score each dimension independently, then provide the overall weighted score.
 
 ## Lesson Plan to Evaluate
 
+<content_to_evaluate>
 {content_to_evaluate}
+</content_to_evaluate>
 
 ---
 
