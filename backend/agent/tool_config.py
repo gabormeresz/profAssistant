@@ -33,19 +33,27 @@ def _wrap_mcp_tool(tool: BaseTool) -> BaseTool:
     This defends against indirect prompt injection by marking tool output
     as external reference data and truncating overly long payloads.
 
+    Handles tools with response_format='content_and_artifact' by preserving
+    the (content, artifact) tuple structure expected by LangChain.
+
     Args:
         tool: The original MCP tool.
 
     Returns:
         A new tool with the same interface but sanitized output.
     """
-    original_func = tool.coroutine or tool.func
+    is_content_and_artifact = (
+        getattr(tool, "response_format", None) == "content_and_artifact"
+    )
 
     if tool.coroutine:
         original_coroutine = tool.coroutine
 
         async def sanitized_coroutine(*args, **kwargs):
             result = await original_coroutine(*args, **kwargs)
+            if is_content_and_artifact and isinstance(result, tuple):
+                content, artifact = result
+                return sanitize_tool_output(tool.name, str(content)), artifact
             return sanitize_tool_output(tool.name, str(result))
 
         tool.coroutine = sanitized_coroutine
@@ -54,6 +62,9 @@ def _wrap_mcp_tool(tool: BaseTool) -> BaseTool:
 
         def sanitized_func(*args, **kwargs):
             result = original_func(*args, **kwargs)
+            if is_content_and_artifact and isinstance(result, tuple):
+                content, artifact = result
+                return sanitize_tool_output(tool.name, str(content)), artifact
             return sanitize_tool_output(tool.name, str(result))
 
         tool.func = sanitized_func
