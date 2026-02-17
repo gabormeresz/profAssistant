@@ -35,25 +35,13 @@ function parseUserMessage(content: string): {
     }
   }
 
-  // Strip backend-generated follow-up prompt boilerplate so only the
-  // user's actual text remains visible in the chat UI.
-  if (userContent.startsWith("## Follow-up Request")) {
-    userContent = userContent.replace(/^## Follow-up Request\s*/, "");
-
-    // Remove the document upload instruction block
-    userContent = userContent.replace(
-      /\*\*IMPORTANT: New documents have been uploaded with this request\.\*\*[\s\S]*?incorporate the findings into your response\.\s*/,
-      ""
-    );
-
-    // Remove the default placeholder when user sent no text (only files)
-    userContent = userContent.replace(
-      /^Please incorporate the information from the newly uploaded documents into your response\.?\s*$/,
-      ""
-    );
-
-    userContent = userContent.trim();
-  }
+  // Extract user text from <user_input> tags, stripping the header,
+  // security instruction boilerplate, and any other scaffolding the
+  // backend wraps around the user's actual message.
+  const userInputMatch = userContent.match(
+    /<user_input>\s*([\s\S]*?)\s*<\/user_input>/
+  );
+  userContent = userInputMatch ? userInputMatch[1].trim() : "";
 
   return { userContent, files };
 }
