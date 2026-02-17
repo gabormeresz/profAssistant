@@ -681,10 +681,20 @@ async def export_presentation_pptx(
         )
         filename = f"presentation_class_{presentation.class_number}_{safe_title}.pptx"
 
+        # Use ASCII-safe fallback + RFC 5987 filename* for Unicode support
+        from urllib.parse import quote
+
+        ascii_fallback = f"presentation_class_{presentation.class_number}.pptx"
+        encoded_filename = quote(filename)
+        content_disposition = (
+            f'attachment; filename="{ascii_fallback}"; '
+            f"filename*=UTF-8''{encoded_filename}"
+        )
+
         return Response(
             content=pptx_bytes,
             media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+            headers={"Content-Disposition": content_disposition},
         )
     except Exception as e:
         logger.error("PPTX export error: %s", e, exc_info=True)
