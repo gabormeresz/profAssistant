@@ -52,7 +52,7 @@ export interface AssessmentStreamEvent {
  * Question type configuration used in the input form
  */
 export interface QuestionTypeConfig {
-  type: "multiple_choice" | "true_false" | "short_answer" | "essay";
+  question_type: "multiple_choice" | "true_false" | "short_answer" | "essay";
   count: number;
   points_each: number;
 }

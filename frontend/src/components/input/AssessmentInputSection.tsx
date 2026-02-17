@@ -43,40 +43,40 @@ export const PRESET_CONFIGS: Record<
     type: "quiz",
     difficulty: "mixed",
     configs: [
-      { type: "multiple_choice", count: 5, points_each: 2 },
-      { type: "true_false", count: 5, points_each: 1 }
+      { question_type: "multiple_choice", count: 5, points_each: 2 },
+      { question_type: "true_false", count: 5, points_each: 1 }
     ]
   },
   midterm_exam: {
     type: "exam",
     difficulty: "mixed",
     configs: [
-      { type: "multiple_choice", count: 10, points_each: 2 },
-      { type: "true_false", count: 5, points_each: 1 },
-      { type: "short_answer", count: 5, points_each: 4 },
-      { type: "essay", count: 1, points_each: 15 }
+      { question_type: "multiple_choice", count: 10, points_each: 2 },
+      { question_type: "true_false", count: 5, points_each: 1 },
+      { question_type: "short_answer", count: 5, points_each: 4 },
+      { question_type: "essay", count: 1, points_each: 15 }
     ]
   },
   homework: {
     type: "homework",
     difficulty: "medium",
     configs: [
-      { type: "short_answer", count: 5, points_each: 4 },
-      { type: "essay", count: 1, points_each: 10 }
+      { question_type: "short_answer", count: 5, points_each: 4 },
+      { question_type: "essay", count: 1, points_each: 10 }
     ]
   },
   practice_test: {
     type: "practice",
     difficulty: "easy",
     configs: [
-      { type: "multiple_choice", count: 8, points_each: 2 },
-      { type: "true_false", count: 4, points_each: 1 },
-      { type: "short_answer", count: 3, points_each: 3 }
+      { question_type: "multiple_choice", count: 8, points_each: 2 },
+      { question_type: "true_false", count: 4, points_each: 1 },
+      { question_type: "short_answer", count: 3, points_each: 3 }
     ]
   }
 };
 
-const QUESTION_TYPES: QuestionTypeConfig["type"][] = [
+const QUESTION_TYPES: QuestionTypeConfig["question_type"][] = [
   "multiple_choice",
   "true_false",
   "short_answer",
@@ -169,12 +169,12 @@ export function AssessmentInputSection({
 
   const addQuestionType = () => {
     // Find a type not yet in configs
-    const usedTypes = questionTypeConfigs.map((c) => c.type);
+    const usedTypes = questionTypeConfigs.map((c) => c.question_type);
     const available = QUESTION_TYPES.find((t) => !usedTypes.includes(t));
     if (available) {
       setQuestionTypeConfigs([
         ...questionTypeConfigs,
-        { type: available, count: 3, points_each: 2 }
+        { question_type: available, count: 3, points_each: 2 }
       ]);
       setPreset("custom");
     }
@@ -422,9 +422,9 @@ export function AssessmentInputSection({
                 className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg"
               >
                 <select
-                  value={config.type}
+                  value={config.question_type}
                   onChange={(e) =>
-                    handleConfigChange(index, "type", e.target.value)
+                    handleConfigChange(index, "question_type", e.target.value)
                   }
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-600 text-gray-900 dark:text-white"
                 >

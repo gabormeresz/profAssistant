@@ -43,8 +43,8 @@ function createUserMessage(
 }
 
 const DEFAULT_QUESTION_TYPE_CONFIGS: QuestionTypeConfig[] = [
-  { type: "multiple_choice", count: 5, points_each: 2 },
-  { type: "true_false", count: 5, points_each: 1 }
+  { question_type: "multiple_choice", count: 5, points_each: 2 },
+  { question_type: "true_false", count: 5, points_each: 1 }
 ];
 
 // ============================================================================
@@ -128,11 +128,10 @@ function AssessmentGenerator() {
         try {
           const raw = JSON.parse(conversation.question_type_configs);
           if (Array.isArray(raw) && raw.length > 0) {
-            // Normalize: backend stores "question_type", frontend uses "type"
             restoredConfigs = raw.map((c: Record<string, unknown>) => ({
-              type: (c.type ||
-                c.question_type ||
-                "multiple_choice") as QuestionTypeConfig["type"],
+              question_type: (c.question_type ||
+                c.type ||
+                "multiple_choice") as QuestionTypeConfig["question_type"],
               count: (c.count as number) || 1,
               points_each: (c.points_each as number) || 5
             }));
