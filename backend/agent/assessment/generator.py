@@ -159,12 +159,13 @@ async def run_assessment_generator(
                 event_type = event.get("event")
                 event_name = event.get("name", "")
 
-                # Progress: ingesting documents to vector DB
+                # Progress: ingesting documents to vector DB (only show when there are files)
                 if event_type == "on_chain_start" and event_name == "ingest_documents":
-                    yield {
-                        "type": "progress",
-                        "message_key": "overlay.ingestingDocuments",
-                    }
+                    if file_contents:
+                        yield {
+                            "type": "progress",
+                            "message_key": "overlay.ingestingDocuments",
+                        }
 
                 # Progress: generating assessment (main LLM call)
                 elif event_type == "on_chain_start" and event_name == "generate":
