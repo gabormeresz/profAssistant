@@ -36,12 +36,20 @@ def _wrap_mcp_tool(tool: BaseTool) -> BaseTool:
     Handles tools with response_format='content_and_artifact' by preserving
     the (content, artifact) tuple structure expected by LangChain.
 
+    Idempotent: if the tool has already been wrapped, it is returned as-is
+    to prevent nested sanitization layers (mcp_manager.get_tools() returns
+    shallow list copies that share the same tool object references).
+
     Args:
         tool: The original MCP tool.
 
     Returns:
         A new tool with the same interface but sanitized output.
     """
+    # Guard against re-wrapping the same tool object on repeated calls
+    if getattr(tool, "_sanitize_wrapped", False):
+        return tool
+
     is_content_and_artifact = (
         getattr(tool, "response_format", None) == "content_and_artifact"
     )
@@ -69,6 +77,7 @@ def _wrap_mcp_tool(tool: BaseTool) -> BaseTool:
 
         tool.func = sanitized_func  # type: ignore[attr-defined]
 
+    tool._sanitize_wrapped = True  # type: ignore[attr-defined]
     return tool
 
 
