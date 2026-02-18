@@ -268,10 +268,9 @@
     "exportToDocx": "Exportálás DOCX-ként",
     "exportToPptx": "PPTX Letöltése",
     "generatingPptx": "PowerPoint prezentáció generálása...",
-    "createLessonPlanDraft": "Óraterv Vázlat Készítése",
-    "createPresentationDraft": "Prezentáció Vázlat Készítése",
-    "createAssessmentDraft": "Értékelés Vázlat Készítése",
-    "createAssessmentFromCourse": "Értékelés az egész kurzushoz"
+    "createLessonPlanDraft": "Óraterv Készítése",
+    "createPresentationDraft": "Prezentáció Készítése",
+    "createAssessmentDraft": "Értékelés Készítése"
   },
   "errors": {
     "title": "Valami hiba történt",

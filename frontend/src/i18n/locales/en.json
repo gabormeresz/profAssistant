@@ -268,10 +268,9 @@
     "exportToDocx": "Export to DOCX",
     "exportToPptx": "Download PPTX",
     "generatingPptx": "Generating PowerPoint presentation...",
-    "createLessonPlanDraft": "Create Lesson Plan Draft",
-    "createPresentationDraft": "Create Presentation Draft",
-    "createAssessmentDraft": "Create Assessment Draft",
-    "createAssessmentFromCourse": "Create Assessment for Entire Course"
+    "createLessonPlanDraft": "Create Lesson Plan",
+    "createPresentationDraft": "Create Presentation",
+    "createAssessmentDraft": "Create Assessment"
   },
   "errors": {
     "title": "Something went wrong",
