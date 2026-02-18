@@ -9,7 +9,8 @@ import {
   LoadingOverlay,
   FollowUpInput,
   UserMessage,
-  ErrorBanner
+  ErrorBanner,
+  ForkButton
 } from "../components";
 import { useCourseOutlineSSE, useConversationManager } from "../hooks";
 import { COURSE_OUTLINE } from "../utils/constants";
@@ -208,6 +209,40 @@ function CourseOutlineGenerator() {
     i18n.language
   ]);
 
+  const handleFork = useCallback(() => {
+    // Save current form values before resetting
+    const savedTopic = topic;
+    const savedNumberOfClasses = numberOfClasses;
+    const savedLanguage = language;
+    const savedComment = userComment;
+
+    // Reset conversation state
+    resetThread();
+    setOutlineHistory([]);
+    setUserMessages([]);
+    setHasStarted(false);
+    setUploadedFiles([]);
+
+    // Navigate to base route
+    navigate("/course-outline-generator", { replace: true });
+
+    // Re-apply saved form values
+    setTopic(savedTopic);
+    setNumberOfClasses(savedNumberOfClasses);
+    setLanguage(savedLanguage);
+    setUserComment(savedComment);
+  }, [
+    topic,
+    numberOfClasses,
+    language,
+    userComment,
+    resetThread,
+    setOutlineHistory,
+    setUserMessages,
+    setHasStarted,
+    navigate
+  ]);
+
   // ============================================================================
   // Render
   // ============================================================================
@@ -253,6 +288,7 @@ function CourseOutlineGenerator() {
           }
         />
       </div>
+      {hasStarted && <ForkButton onClick={handleFork} />}
 
       {/* Display conversation: user messages and course outline responses */}
       <div className="space-y-6">

@@ -9,7 +9,8 @@ import {
   LoadingOverlay,
   FollowUpInput,
   UserMessage,
-  ErrorBanner
+  ErrorBanner,
+  ForkButton
 } from "../components";
 import { usePresentationSSE, useConversationManager } from "../hooks";
 import { PRESENTATION } from "../utils/constants";
@@ -323,6 +324,63 @@ function PresentationGenerator() {
     i18n.language
   ]);
 
+  const handleFork = useCallback(() => {
+    // Save current form values before resetting
+    const saved = {
+      courseTitle,
+      classNumber,
+      classTitle,
+      learningObjective,
+      keyPoints: [...keyPoints],
+      lessonBreakdown,
+      activities,
+      homework,
+      extraActivities,
+      userComment,
+      language
+    };
+
+    // Reset conversation state
+    resetThread();
+    setPresentationHistory([]);
+    setUserMessages([]);
+    setHasStarted(false);
+    setUploadedFiles([]);
+
+    // Navigate to base route
+    navigate("/presentation-generator", { replace: true });
+
+    // Re-apply saved form values
+    setCourseTitle(saved.courseTitle);
+    setClassNumber(saved.classNumber);
+    setClassTitle(saved.classTitle);
+    setLearningObjective(saved.learningObjective);
+    setKeyPoints(saved.keyPoints);
+    setLessonBreakdown(saved.lessonBreakdown);
+    setActivities(saved.activities);
+    setHomework(saved.homework);
+    setExtraActivities(saved.extraActivities);
+    setUserComment(saved.userComment);
+    setLanguage(saved.language);
+  }, [
+    courseTitle,
+    classNumber,
+    classTitle,
+    learningObjective,
+    keyPoints,
+    lessonBreakdown,
+    activities,
+    homework,
+    extraActivities,
+    userComment,
+    language,
+    resetThread,
+    setPresentationHistory,
+    setUserMessages,
+    setHasStarted,
+    navigate
+  ]);
+
   // ============================================================================
   // Render
   // ============================================================================
@@ -382,6 +440,7 @@ function PresentationGenerator() {
           }
         />
       </div>
+      {hasStarted && <ForkButton onClick={handleFork} />}
 
       {/* Display conversation: user messages and presentation responses */}
       <div className="space-y-6">

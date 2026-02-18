@@ -9,7 +9,8 @@ import {
   LoadingOverlay,
   FollowUpInput,
   UserMessage,
-  ErrorBanner
+  ErrorBanner,
+  ForkButton
 } from "../components";
 import { useLessonPlanSSE, useConversationManager } from "../hooks";
 import { LESSON_PLAN } from "../utils/constants";
@@ -284,6 +285,54 @@ function LessonPlanGenerator() {
     i18n.language
   ]);
 
+  const handleFork = useCallback(() => {
+    // Save current form values before resetting
+    const saved = {
+      courseTitle,
+      classNumber,
+      classTitle,
+      learningObjectives: [...learningObjectives],
+      keyTopics: [...keyTopics],
+      activitiesProjects: [...activitiesProjects],
+      userComment,
+      language
+    };
+
+    // Reset conversation state
+    resetThread();
+    setLessonHistory([]);
+    setUserMessages([]);
+    setHasStarted(false);
+    setUploadedFiles([]);
+
+    // Navigate to base route
+    navigate("/lesson-plan-generator", { replace: true });
+
+    // Re-apply saved form values
+    setCourseTitle(saved.courseTitle);
+    setClassNumber(saved.classNumber);
+    setClassTitle(saved.classTitle);
+    setLearningObjectives(saved.learningObjectives);
+    setKeyTopics(saved.keyTopics);
+    setActivitiesProjects(saved.activitiesProjects);
+    setUserComment(saved.userComment);
+    setLanguage(saved.language);
+  }, [
+    courseTitle,
+    classNumber,
+    classTitle,
+    learningObjectives,
+    keyTopics,
+    activitiesProjects,
+    userComment,
+    language,
+    resetThread,
+    setLessonHistory,
+    setUserMessages,
+    setHasStarted,
+    navigate
+  ]);
+
   // ============================================================================
   // Render
   // ============================================================================
@@ -337,8 +386,7 @@ function LessonPlanGenerator() {
           }
         />
       </div>
-
-      {/* Display conversation: user messages and lesson plan responses */}
+      {hasStarted && <ForkButton onClick={handleFork} />}
       <div className="space-y-6">
         {userMessages.map((userMsg, index) => (
           <div key={userMsg.id}>

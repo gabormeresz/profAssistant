@@ -2,7 +2,9 @@
   "common": {
     "processing": "Feldolgozás...",
     "scrollToBottom": "Görgetés az aljára",
-    "scrollToTop": "Görgetés a tetejére"
+    "scrollToTop": "Görgetés a tetejére",
+    "fork": "Másolás új generáláshoz",
+    "forkTooltip": "Új generálás indítása az űrlap jelenlegi tartalmával"
   },
   "overlay": {
     "doNotNavigate": "Kérjük, ne navigálj el és ne zárd be az oldalt feldolgozás közben.",

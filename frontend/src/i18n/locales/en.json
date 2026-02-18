@@ -2,7 +2,9 @@
   "common": {
     "processing": "Processing...",
     "scrollToBottom": "Scroll to Bottom",
-    "scrollToTop": "Scroll to Top"
+    "scrollToTop": "Scroll to Top",
+    "fork": "Reuse form",
+    "forkTooltip": "Start a new generation with the same content from the form"
   },
   "overlay": {
     "doNotNavigate": "Please do not navigate away or close this page while processing.",

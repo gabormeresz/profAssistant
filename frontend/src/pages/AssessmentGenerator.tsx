@@ -9,7 +9,8 @@ import {
   LoadingOverlay,
   FollowUpInput,
   UserMessage,
-  ErrorBanner
+  ErrorBanner,
+  ForkButton
 } from "../components";
 import { PRESET_CONFIGS } from "../components/input/AssessmentInputSection";
 import { useAssessmentSSE, useConversationManager } from "../hooks";
@@ -304,6 +305,57 @@ function AssessmentGenerator() {
     i18n.language
   ]);
 
+  const handleFork = useCallback(() => {
+    // Save current form values before resetting
+    const saved = {
+      courseTitle,
+      classTitle,
+      keyTopics: [...keyTopics],
+      assessmentType,
+      difficultyLevel,
+      questionTypeConfigs: questionTypeConfigs.map((c) => ({ ...c })),
+      preset,
+      additionalInstructions,
+      language
+    };
+
+    // Reset conversation state
+    resetThread();
+    setAssessmentHistory([]);
+    setUserMessages([]);
+    setHasStarted(false);
+    setUploadedFiles([]);
+
+    // Navigate to base route
+    navigate("/assessment-generator", { replace: true });
+
+    // Re-apply saved form values
+    setCourseTitle(saved.courseTitle);
+    setClassTitle(saved.classTitle);
+    setKeyTopics(saved.keyTopics);
+    setAssessmentType(saved.assessmentType);
+    setDifficultyLevel(saved.difficultyLevel);
+    setQuestionTypeConfigs(saved.questionTypeConfigs);
+    setPreset(saved.preset);
+    setAdditionalInstructions(saved.additionalInstructions);
+    setLanguage(saved.language);
+  }, [
+    courseTitle,
+    classTitle,
+    keyTopics,
+    assessmentType,
+    difficultyLevel,
+    questionTypeConfigs,
+    preset,
+    additionalInstructions,
+    language,
+    resetThread,
+    setAssessmentHistory,
+    setUserMessages,
+    setHasStarted,
+    navigate
+  ]);
+
   // ============================================================================
   // Render
   // ============================================================================
@@ -360,6 +412,7 @@ function AssessmentGenerator() {
           }
         />
       </div>
+      {hasStarted && <ForkButton onClick={handleFork} />}
 
       {/* Display conversation: user messages and assessment responses */}
       <div className="space-y-6">

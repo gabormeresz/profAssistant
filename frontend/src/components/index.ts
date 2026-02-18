@@ -30,5 +30,8 @@ export { StructuredPresentation } from "./presentation";
 // Assessment components
 export { StructuredAssessment } from "./assessment";
 
+// Form components
+export { ForkButton } from "./form";
+
 // Auth components
 export { default as ProtectedRoute } from "./auth/ProtectedRoute";
