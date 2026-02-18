@@ -18,6 +18,7 @@ from fastapi import (
     File,
     Form,
     HTTPException,
+    Query,
     Request,
     UploadFile,
 )
@@ -668,13 +669,14 @@ async def generate_assessment(
 @router.post("/export-presentation-pptx")
 async def export_presentation_pptx(
     presentation: PresentationSchema = Body(...),
+    language: str = Query(default="en"),
     current_user: dict = Depends(get_current_user),
 ):
     """
     Accept a Presentation JSON payload and return a .pptx file.
     """
     try:
-        pptx_bytes = generate_pptx(presentation)
+        pptx_bytes = generate_pptx(presentation, language=language)
 
         safe_title = (
             presentation.lesson_title.replace(" ", "_").replace("/", "-").lower()[:60]

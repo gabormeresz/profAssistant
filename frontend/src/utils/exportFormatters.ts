@@ -4,52 +4,54 @@ import type {
   Presentation,
   Assessment
 } from "../types";
+import i18n from "../i18n/config";
 
 /**
  * Convert a lesson plan to markdown format
  */
 export function lessonPlanToMarkdown(lessonPlan: LessonPlan): string {
+  const t = i18n.t.bind(i18n);
   const sections: string[] = [];
 
   // Title
   sections.push(
-    `# Class ${lessonPlan.class_number}: ${lessonPlan.class_title}\n`
+    `# ${t('lessonPlanOutput.classNumber')} ${lessonPlan.class_number}: ${lessonPlan.class_title}\n`
   );
 
   // Learning Objective
-  sections.push(`## Learning Objective\n`);
+  sections.push(`## ${t('lessonPlanOutput.learningObjective')}\n`);
   sections.push(`${lessonPlan.learning_objective}\n`);
 
   // Key Points
-  sections.push(`## Key Points\n`);
+  sections.push(`## ${t('lessonPlanOutput.keyPoints')}\n`);
   lessonPlan.key_points.forEach((point) => {
     sections.push(`- ${point}`);
   });
   sections.push("");
 
   // Lesson Breakdown
-  sections.push(`## Lesson Breakdown\n`);
+  sections.push(`## ${t('lessonPlanOutput.lessonBreakdown')}\n`);
   lessonPlan.lesson_breakdown.forEach((section) => {
     sections.push(`### ${section.section_title}\n`);
     sections.push(`${section.description}\n`);
   });
 
   // Activities
-  sections.push(`## Activities\n`);
+  sections.push(`## ${t('lessonPlanOutput.activities')}\n`);
   lessonPlan.activities.forEach((activity, idx) => {
-    sections.push(`### Activity ${idx + 1}: ${activity.name}\n`);
-    sections.push(`**Objective:** ${activity.objective}\n`);
+    sections.push(`### ${t('lessonPlanOutput.activity')} ${idx + 1}: ${activity.name}\n`);
+    sections.push(`**${t('lessonPlanOutput.objective')}:** ${activity.objective}\n`);
     sections.push(
-      `**Instructions:** ${activity.instructions.replace(/\n/g, " ")}\n`
+      `**${t('lessonPlanOutput.instructions')}:** ${activity.instructions.replace(/\n/g, " ")}\n`
     );
   });
 
   // Homework
-  sections.push(`## Homework\n`);
+  sections.push(`## ${t('lessonPlanOutput.homework')}\n`);
   sections.push(`${lessonPlan.homework}\n`);
 
   // Extra Activities
-  sections.push(`## Extra Activities\n`);
+  sections.push(`## ${t('lessonPlanOutput.extraActivities')}\n`);
   sections.push(`${lessonPlan.extra_activities}`);
 
   return sections.join("\n");
@@ -59,6 +61,7 @@ export function lessonPlanToMarkdown(lessonPlan: LessonPlan): string {
  * Convert a course outline to markdown format
  */
 export function courseOutlineToMarkdown(outline: CourseOutline): string {
+  const t = i18n.t.bind(i18n);
   const sections: string[] = [];
 
   // Course Title
@@ -67,25 +70,25 @@ export function courseOutlineToMarkdown(outline: CourseOutline): string {
   // Classes
   outline.classes.forEach((courseClass) => {
     sections.push(
-      `## Class ${courseClass.class_number}: ${courseClass.class_title}\n`
+      `## ${t('lessonPlanOutput.classNumber')} ${courseClass.class_number}: ${courseClass.class_title}\n`
     );
 
     // Learning Objectives
-    sections.push(`### Learning Objectives\n`);
+    sections.push(`### ${t('courseOutline.learningObjectives')}\n`);
     courseClass.learning_objectives.forEach((objective) => {
       sections.push(`- ${objective}`);
     });
     sections.push("");
 
     // Key Topics
-    sections.push(`### Key Topics\n`);
+    sections.push(`### ${t('courseOutline.keyTopics')}\n`);
     courseClass.key_topics.forEach((topic) => {
       sections.push(`- ${topic}`);
     });
     sections.push("");
 
     // Activities & Projects
-    sections.push(`### Activities & Projects\n`);
+    sections.push(`### ${t('courseOutline.activitiesProjects')}\n`);
     courseClass.activities_projects.forEach((activity) => {
       sections.push(`- ${activity}`);
     });
@@ -99,17 +102,18 @@ export function courseOutlineToMarkdown(outline: CourseOutline): string {
  * Convert a presentation to markdown format
  */
 export function presentationToMarkdown(presentation: Presentation): string {
+  const t = i18n.t.bind(i18n);
   const sections: string[] = [];
 
   // Title
   sections.push(`# ${presentation.course_title}\n`);
   sections.push(
-    `## Class ${presentation.class_number}: ${presentation.lesson_title}\n`
+    `## ${t('presentationOutput.classNumber')} ${presentation.class_number}: ${presentation.lesson_title}\n`
   );
 
   // Slides
   presentation.slides.forEach((slide) => {
-    sections.push(`### Slide ${slide.slide_number}: ${slide.title}\n`);
+    sections.push(`### ${t('presentationOutput.slide')} ${slide.slide_number}: ${slide.title}\n`);
 
     // Bullet points
     slide.bullet_points.forEach((point) => {
@@ -119,12 +123,12 @@ export function presentationToMarkdown(presentation: Presentation): string {
 
     // Speaker notes
     if (slide.speaker_notes) {
-      sections.push(`**Speaker Notes:** ${slide.speaker_notes}\n`);
+      sections.push(`**${t('presentationOutput.speakerNotes')}:** ${slide.speaker_notes}\n`);
     }
 
     // Visual suggestion
     if (slide.visual_suggestion) {
-      sections.push(`**Visual Suggestion:** ${slide.visual_suggestion}\n`);
+      sections.push(`**${t('presentationOutput.visualSuggestion')}:** ${slide.visual_suggestion}\n`);
     }
   });
 
@@ -140,21 +144,22 @@ export function assessmentToMarkdown(
   assessment: Assessment,
   includeAnswerKey: boolean = false
 ): string {
+  const t = i18n.t.bind(i18n);
   const sections: string[] = [];
 
   // Title
   sections.push(`# ${assessment.assessment_title}\n`);
   sections.push(
-    `**Course:** ${assessment.course_title}${
+    `**${t('assessmentOutput.course')}:** ${assessment.course_title}${
       assessment.class_title ? ` — ${assessment.class_title}` : ""
     }`
   );
   sections.push(
-    `**Type:** ${assessment.assessment_type} | **Total Points:** ${assessment.total_points} | **Duration:** ${assessment.estimated_duration_minutes} minutes\n`
+    `**${t('assessmentOutput.type')}:** ${assessment.assessment_type} | **${t('assessmentOutput.totalPoints')}:** ${assessment.total_points} | **${t('assessmentOutput.duration')}:** ${assessment.estimated_duration_minutes} ${t('assessmentOutput.minutes')}\n`
   );
 
   // General instructions
-  sections.push(`## General Instructions\n`);
+  sections.push(`## ${t('assessmentOutput.generalInstructions')}\n`);
   sections.push(`${assessment.general_instructions}\n`);
 
   // Sections
@@ -164,7 +169,7 @@ export function assessmentToMarkdown(
 
     section.questions.forEach((question) => {
       sections.push(
-        `**${question.question_number}.** ${question.question_text} *(${question.points} pts)*\n`
+        `**${question.question_number}.** ${question.question_text} *(${question.points} ${t('assessmentOutput.pts')})*\n`
       );
 
       // Multiple choice options
@@ -179,7 +184,7 @@ export function assessmentToMarkdown(
       // Essay word limit
       if (section.section_type === "essay" && question.suggested_word_limit) {
         sections.push(
-          `   *Suggested word limit: ${question.suggested_word_limit} words*\n`
+          `   *${t('assessmentOutput.suggestedWordLimit')}: ${question.suggested_word_limit} ${t('assessmentOutput.words')}*\n`
         );
       }
 
@@ -189,16 +194,16 @@ export function assessmentToMarkdown(
           const answer =
             section.section_type === "true_false"
               ? question.correct_answer === "true"
-                ? "True"
-                : "False"
+                ? t('assessmentOutput.true')
+                : t('assessmentOutput.false')
               : question.correct_answer;
-          sections.push(`   > **Answer:** ${answer}`);
+          sections.push(`   > **${t('assessmentOutput.correctAnswer')}:** ${answer}`);
         }
         if (question.explanation) {
-          sections.push(`   > **Explanation:** ${question.explanation}`);
+          sections.push(`   > **${t('assessmentOutput.explanation')}:** ${question.explanation}`);
         }
         if (question.scoring_rubric) {
-          let rubricText = question.scoring_rubric;
+          const rubricText = question.scoring_rubric;
           try {
             const parsed = JSON.parse(rubricText);
             if (typeof parsed === "object" && parsed !== null) {
@@ -217,20 +222,20 @@ export function assessmentToMarkdown(
                 parts.push(`   >   - *${scale}*`);
               }
               if (parts.length > 0) {
-                sections.push(`   > **Scoring Rubric:**`);
+                sections.push(`   > **${t('assessmentOutput.scoringRubric')}:**`);
                 parts.forEach((p) => sections.push(p));
               } else {
-                sections.push(`   > **Scoring Rubric:** ${rubricText}`);
+                sections.push(`   > **${t('assessmentOutput.scoringRubric')}:** ${rubricText}`);
               }
             } else {
-              sections.push(`   > **Scoring Rubric:** ${rubricText}`);
+              sections.push(`   > **${t('assessmentOutput.scoringRubric')}:** ${rubricText}`);
             }
           } catch {
-            sections.push(`   > **Scoring Rubric:** ${rubricText}`);
+            sections.push(`   > **${t('assessmentOutput.scoringRubric')}:** ${rubricText}`);
           }
         }
         if (question.key_points && question.key_points.length > 0) {
-          sections.push(`   > **Key Points:**`);
+          sections.push(`   > **${t('assessmentOutput.keyPoints')}:**`);
           question.key_points.forEach((point) => {
             sections.push(`   > - ${point}`);
           });
@@ -242,7 +247,7 @@ export function assessmentToMarkdown(
 
   // Grading notes
   if (assessment.grading_notes) {
-    sections.push(`## Grading Notes\n`);
+    sections.push(`## ${t('assessmentOutput.gradingNotes')}\n`);
     sections.push(`${assessment.grading_notes}\n`);
   }
 

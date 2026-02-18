@@ -31,7 +31,25 @@ _GRAY_300 = RGBColor(0xD1, 0xD5, 0xDB)  # separator line
 _GRAY_500 = RGBColor(0x6B, 0x72, 0x80)  # secondary text
 _GRAY_800 = RGBColor(0x1F, 0x2A, 0x37)  # primary text
 _GRAY_900 = RGBColor(0x11, 0x18, 0x27)  # title text
+# ── i18n for PPTX labels ──────────────────────────────────────────────────────────────
+_PPTX_TRANSLATIONS: dict[str, dict[str, str]] = {
+    "en": {
+        "class": "Class",
+        "slides": "slides",
+        "visual_suggestion": "Visual suggestion",
+    },
+    "hu": {
+        "class": "Óra",
+        "slides": "dia",
+        "visual_suggestion": "Vizuális javaslat",
+    },
+}
 
+
+def _pptx_t(language: str, key: str) -> str:
+    """Look up a translated PPTX label; falls back to English."""
+    lang = language if language in _PPTX_TRANSLATIONS else "en"
+    return _PPTX_TRANSLATIONS[lang].get(key, _PPTX_TRANSLATIONS["en"][key])
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -114,7 +132,7 @@ def _add_slide_number_footer(slide_obj, slide_number: int, total: int) -> None:
 
 
 def _build_title_slide(
-    prs: PptxPresentationType, presentation: PresentationModel
+    prs: PptxPresentationType, presentation: PresentationModel, language: str = "en"
 ) -> None:
     """Clean white title slide with centred text."""
     slide_layout = prs.slide_layouts[6]  # Blank
@@ -153,7 +171,7 @@ def _build_title_slide(
     _, tf = _add_textbox(slide_obj, Inches(3.0), Inches(4.1), Inches(4), Inches(0.5))
     _set_paragraph(
         tf,
-        f"Class {presentation.class_number}  ·  {len(presentation.slides)} slides",
+        f"{_pptx_t(language, 'class')} {presentation.class_number}  ·  {len(presentation.slides)} {_pptx_t(language, 'slides')}",
         font_size=12,
         color=_GRAY_500,
         alignment=PP_ALIGN.CENTER,
@@ -164,6 +182,7 @@ def _build_content_slide(
     prs: PptxPresentationType,
     slide: SlideModel,
     total_slides: int,
+    language: str = "en",
 ) -> None:
     """Clean content slide — title, separator, bullets, notes."""
     slide_layout = prs.slide_layouts[6]  # Blank
@@ -206,7 +225,7 @@ def _build_content_slide(
             slide_obj, Inches(0.6), Inches(4.7), Inches(8.0), Inches(0.5)
         )
         para = tf.paragraphs[0]
-        para.text = f"Visual suggestion: {slide.visual_suggestion}"
+        para.text = f"{_pptx_t(language, 'visual_suggestion')}: {slide.visual_suggestion}"
         para.font.size = Pt(10)
         para.font.italic = True
         para.font.color.rgb = _GRAY_500
@@ -226,7 +245,7 @@ def _build_content_slide(
 # ── Public API ──────────────────────────────────────────────────────────────
 
 
-def generate_pptx(presentation: PresentationModel) -> bytes:
+def generate_pptx(presentation: PresentationModel, language: str = "en") -> bytes:
     """
     Build a .pptx file from a *PresentationModel* schema and return the raw bytes.
 
@@ -245,11 +264,11 @@ def generate_pptx(presentation: PresentationModel) -> bytes:
     prs.slide_width = Inches(10)
     prs.slide_height = Inches(5.625)  # 16:9
 
-    _build_title_slide(prs, presentation)
+    _build_title_slide(prs, presentation, language)
 
     total = len(presentation.slides)
     for slide in presentation.slides:
-        _build_content_slide(prs, slide, total)
+        _build_content_slide(prs, slide, total, language)
 
     buf = io.BytesIO()
     prs.save(buf)

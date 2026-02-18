@@ -6,6 +6,7 @@
 import type { Presentation } from "../types";
 import { API_ENDPOINTS } from "../utils/constants";
 import { authFetch } from "./authService";
+import i18n from "../i18n/config";
 
 /**
  * Send presentation data to the backend and receive a .pptx blob.
@@ -13,7 +14,10 @@ import { authFetch } from "./authService";
 export async function exportPresentationToPptx(
   presentation: Presentation
 ): Promise<Blob> {
-  const response = await authFetch(API_ENDPOINTS.EXPORT_PRESENTATION_PPTX, {
+  const lang = i18n.language || "en";
+  const response = await authFetch(
+    `${API_ENDPOINTS.EXPORT_PRESENTATION_PPTX}?language=${lang}`,
+    {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(presentation)
