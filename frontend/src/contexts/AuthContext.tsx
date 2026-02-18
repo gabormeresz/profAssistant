@@ -48,7 +48,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // On mount, attempt a silent token refresh via the httpOnly cookie.
   // If the cookie is valid the backend returns a new access token,
   // which we then use to load user + settings.
+  //
+  // The `cancelled` flag handles React 18 StrictMode, which
+  // double-invokes effects in development.  Without it, two
+  // concurrent tryRefresh() calls would race and the loser
+  // would wipe auth state (token rotation = single-use tokens).
   useEffect(() => {
+    let cancelled = false;
+
     const init = async () => {
       // If we already have an in-memory access token (e.g. after SPA
       // navigation), skip the refresh.
@@ -59,14 +66,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hasToken = await tryRefresh();
       }
 
+      // If the component was unmounted while we were awaiting (StrictMode),
+      // bail out so we don't set state on the stale instance.
+      if (cancelled) return;
+
       if (hasToken) {
         await refreshUser();
+        if (cancelled) return;
         await refreshSettings();
       }
+
+      if (cancelled) return;
       setIsLoading(false);
       setIsLoadingSettings(false);
     };
     init();
+
+    return () => {
+      cancelled = true;
+    };
   }, [refreshUser, refreshSettings]);
 
   return (

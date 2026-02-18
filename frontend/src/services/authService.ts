@@ -23,6 +23,14 @@ import { API_BASE_URL } from "../utils/constants";
 
 let _accessToken: string | null = null;
 
+/**
+ * Guard against concurrent tryRefresh() calls.
+ * Token rotation makes each refresh token single-use, so concurrent
+ * refresh attempts would invalidate each other. This promise acts as
+ * a mutex so that only one refresh request is in-flight at a time.
+ */
+let _refreshPromise: Promise<boolean> | null = null;
+
 export function getAccessToken(): string | null {
   return _accessToken;
 }
@@ -36,9 +44,6 @@ export function setAccessToken(token: string | null): void {
  */
 export function clearTokens(): void {
   _accessToken = null;
-  // Clean up legacy localStorage entries from before the migration
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
 }
 
 // ---------------------------------------------------------------------------
@@ -60,22 +65,34 @@ function authHeaders(): HeadersInit {
  * Returns true on success (new access token stored in memory), false otherwise.
  */
 export async function tryRefresh(): Promise<boolean> {
-  try {
-    const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
-      method: "POST",
-      credentials: "include" // send httpOnly cookie
-    });
-    if (!res.ok) {
+  // If a refresh is already in-flight, piggy-back on it instead of
+  // starting a second request (which would fail due to token rotation).
+  if (_refreshPromise) {
+    return _refreshPromise;
+  }
+
+  _refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: "POST",
+        credentials: "include" // send httpOnly cookie
+      });
+      if (!res.ok) {
+        clearTokens();
+        return false;
+      }
+      const data: AccessTokenResponse = await res.json();
+      setAccessToken(data.access_token);
+      return true;
+    } catch {
       clearTokens();
       return false;
+    } finally {
+      _refreshPromise = null;
     }
-    const data: AccessTokenResponse = await res.json();
-    setAccessToken(data.access_token);
-    return true;
-  } catch {
-    clearTokens();
-    return false;
-  }
+  })();
+
+  return _refreshPromise;
 }
 
 /**

@@ -7,6 +7,7 @@ All configurable constants and settings should be defined here.
 import base64
 import logging
 import os
+from typing import Literal
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -167,8 +168,8 @@ class AuthConfig:
 
     # Cookie settings for refresh tokens
     COOKIE_SECURE: bool = os.getenv("COOKIE_SECURE", "false").lower() == "true"
-    COOKIE_SAMESITE: str = os.getenv(
-        "COOKIE_SAMESITE", "lax"
+    COOKIE_SAMESITE: Literal["lax", "strict", "none"] = (
+        os.getenv("COOKIE_SAMESITE", "lax") or "lax"  # type: ignore[assignment]
     )  # "lax" for dev, "strict" for prod
     COOKIE_DOMAIN: str | None = os.getenv("COOKIE_DOMAIN") or None
 

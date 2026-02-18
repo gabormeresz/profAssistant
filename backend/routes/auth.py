@@ -53,7 +53,9 @@ def _set_refresh_cookie(response: Response, refresh_token: str) -> None:
         samesite=AuthConfig.COOKIE_SAMESITE,
         domain=AuthConfig.COOKIE_DOMAIN,
         max_age=AuthConfig.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
-        path="/auth",  # Only sent to /auth/* endpoints
+        path="/",  # Use root path so the cookie is sent regardless of
+        # reverse-proxy prefix (e.g. /api/auth/* via nginx).
+        # The cookie is httpOnly so JS cannot read it anyway.
     )
 
 
@@ -65,7 +67,7 @@ def _clear_refresh_cookie(response: Response) -> None:
         secure=AuthConfig.COOKIE_SECURE,
         samesite=AuthConfig.COOKIE_SAMESITE,
         domain=AuthConfig.COOKIE_DOMAIN,
-        path="/auth",
+        path="/",
     )
 
 
