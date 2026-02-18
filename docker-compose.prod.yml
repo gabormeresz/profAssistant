@@ -25,7 +25,6 @@ services:
       # Secure cookie settings for production (HTTPS)
       COOKIE_SECURE: "true"
       COOKIE_SAMESITE: "strict"
-      # COOKIE_DOMAIN: "yourdomain.com"  # Uncomment and set for your domain
     restart: always
 
   frontend:

@@ -330,7 +330,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 | Application     | http://localhost (port 80) |
 | API (via proxy) | http://localhost/api/      |
 
-> **Security note:** The production compose file already sets `COOKIE_SECURE=true` and `COOKIE_SAMESITE=strict` for secure refresh-token cookies. If you're deploying under a custom domain, also set `COOKIE_DOMAIN=yourdomain.com` in your `.env.docker` or uncomment it in `docker-compose.prod.yml`.
+> **Security note:** The production compose file already sets `COOKIE_SECURE=true` and `COOKIE_SAMESITE=strict` for secure refresh-token cookies.
 
 ### 4. Stop & Clean Up
 
@@ -415,18 +415,25 @@ npm run preview
 
 ## 📡 API Endpoints
 
-| Method | Endpoint                   | Description                              |
-| ------ | -------------------------- | ---------------------------------------- |
-| `POST` | `/auth/register`           | Register a new user                      |
-| `POST` | `/auth/login`              | Login and receive tokens                 |
-| `POST` | `/auth/refresh`            | Refresh access token                     |
-| `POST` | `/enhance-prompt`          | Enhance a user prompt with AI            |
-| `POST` | `/generate-course-outline` | Generate course outline (SSE stream)     |
-| `POST` | `/generate-lesson-plan`    | Generate lesson plan (SSE stream)        |
-| `POST` | `/generate-presentation`   | Generate presentation (SSE stream)       |
-| `POST` | `/download-pptx`           | Download generated presentation as .pptx |
-| `GET`  | `/conversations`           | List saved conversations                 |
-| `GET`  | `/conversations/{id}`      | Load a specific conversation             |
+| Method   | Endpoint                      | Description                              |
+| -------- | ----------------------------- | ---------------------------------------- |
+| `POST`   | `/auth/register`              | Register a new user                      |
+| `POST`   | `/auth/login`                 | Login and receive tokens                 |
+| `POST`   | `/auth/refresh`               | Refresh access token                     |
+| `POST`   | `/auth/logout`                | Logout and invalidate refresh token      |
+| `GET`    | `/auth/me`                    | Get current user profile                 |
+| `GET`    | `/auth/settings`              | Get current user's settings              |
+| `PATCH`  | `/auth/settings`              | Update user settings (API key, model)    |
+| `POST`   | `/enhance-prompt`             | Enhance a user prompt with AI            |
+| `POST`   | `/course-outline-generator`   | Generate course outline (SSE stream)     |
+| `POST`   | `/lesson-plan-generator`      | Generate lesson plan (SSE stream)        |
+| `POST`   | `/presentation-generator`     | Generate presentation (SSE stream)       |
+| `POST`   | `/assessment-generator`       | Generate assessment (SSE stream)         |
+| `POST`   | `/export-presentation-pptx`   | Download generated presentation as .pptx |
+| `GET`    | `/conversations`              | List saved conversations                 |
+| `GET`    | `/conversations/{id}`         | Load a specific conversation             |
+| `GET`    | `/conversations/{id}/history` | Load full message history                |
+| `DELETE` | `/conversations/{id}`         | Delete a conversation                    |
 
 > Full interactive API docs available at **http://localhost:8000/docs** when running locally.
 >
