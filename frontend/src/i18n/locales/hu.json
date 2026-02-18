@@ -333,6 +333,7 @@
       "placeholder": "sk-...",
       "keyStored": "API kulcs tárolva",
       "noKey": "Nincs API kulcs beállítva",
+      "serverManaged": "Adminisztrátorként az API kulcs a szerver környezetében van kezelve",
       "save": "Kulcs Mentése",
       "remove": "Eltávolítás"
     },

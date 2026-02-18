@@ -31,15 +31,17 @@ export default function ProfilePage() {
   const [keySaveSuccess, setKeySaveSuccess] = useState(false);
   const [keySaveError, setKeySaveError] = useState("");
 
+  const isAdmin = user?.role === "admin";
+
   useEffect(() => {
-    if (!isLoadingSettings && user?.role !== "admin") {
+    if (!isLoadingSettings && !isAdmin) {
       if (!settings || !settings.has_api_key) {
         setShowSetupBanner(true);
       } else {
         setShowSetupBanner(false);
       }
     }
-  }, [isLoadingSettings, settings, user?.role]);
+  }, [isLoadingSettings, settings, isAdmin]);
 
   const handleSaveApiKey = async () => {
     setKeySaveError("");
@@ -123,7 +125,7 @@ export default function ProfilePage() {
         </div>
 
         {/* API Key Setup Banner (shown on first login for non-admin users) */}
-        {showSetupBanner && (
+        {!isAdmin && showSetupBanner && (
           <div className="bg-amber-50 dark:bg-amber-900/30 border-2 border-amber-400 dark:border-amber-600 rounded-2xl p-6 mb-6 animate-pulse-once">
             <div className="flex items-start gap-3 mb-4">
               <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
@@ -153,65 +155,80 @@ export default function ProfilePage() {
             </h3>
           </div>
 
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            {t("profile.apiKey.description")}
-          </p>
-
-          {/* Current status */}
-          {!isLoadingSettings && (
-            <div className="flex items-center gap-2 mb-4">
-              {settings?.has_api_key ? (
-                <>
-                  <ShieldCheck className="w-4 h-4 text-green-600 dark:text-green-400" />
-                  <span className="text-sm text-green-700 dark:text-green-400 font-medium">
-                    {t("profile.apiKey.keyStored")}
-                  </span>
-                  <button
-                    onClick={handleRemoveApiKey}
-                    disabled={isSavingKey}
-                    className="ml-auto text-sm text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
-                  >
-                    {t("profile.apiKey.remove")}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <ShieldX className="w-4 h-4 text-amber-500 dark:text-amber-400" />
-                  <span className="text-sm text-amber-600 dark:text-amber-400 font-medium">
-                    {t("profile.apiKey.noKey")}
-                  </span>
-                </>
-              )}
+          {isAdmin ? (
+            /* Admin: server-side key info */
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-sm text-blue-700 dark:text-blue-400 font-medium">
+                {t("profile.apiKey.serverManaged")}
+              </span>
             </div>
-          )}
+          ) : (
+            /* Regular user: API key management */
+            <>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                {t("profile.apiKey.description")}
+              </p>
 
-          {/* API key input */}
-          <div className="flex gap-3">
-            <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder={t("profile.apiKey.placeholder")}
-              className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-sm"
-            />
-            <button
-              onClick={handleSaveApiKey}
-              disabled={isSavingKey || !apiKey.trim()}
-              className="px-5 py-2.5 bg-blue-600 dark:bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2"
-            >
-              {isSavingKey ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : keySaveSuccess ? (
-                <Check className="w-4 h-4" />
-              ) : null}
-              {keySaveSuccess ? t("profile.saved") : t("profile.apiKey.save")}
-            </button>
-          </div>
+              {/* Current status */}
+              {!isLoadingSettings && (
+                <div className="flex items-center gap-2 mb-4">
+                  {settings?.has_api_key ? (
+                    <>
+                      <ShieldCheck className="w-4 h-4 text-green-600 dark:text-green-400" />
+                      <span className="text-sm text-green-700 dark:text-green-400 font-medium">
+                        {t("profile.apiKey.keyStored")}
+                      </span>
+                      <button
+                        onClick={handleRemoveApiKey}
+                        disabled={isSavingKey}
+                        className="ml-auto text-sm text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
+                      >
+                        {t("profile.apiKey.remove")}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldX className="w-4 h-4 text-amber-500 dark:text-amber-400" />
+                      <span className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+                        {t("profile.apiKey.noKey")}
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
 
-          {keySaveError && (
-            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-              {keySaveError}
-            </p>
+              {/* API key input */}
+              <div className="flex gap-3">
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder={t("profile.apiKey.placeholder")}
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-sm"
+                />
+                <button
+                  onClick={handleSaveApiKey}
+                  disabled={isSavingKey || !apiKey.trim()}
+                  className="px-5 py-2.5 bg-blue-600 dark:bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-700 dark:hover:bg-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2"
+                >
+                  {isSavingKey ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : keySaveSuccess ? (
+                    <Check className="w-4 h-4" />
+                  ) : null}
+                  {keySaveSuccess
+                    ? t("profile.saved")
+                    : t("profile.apiKey.save")}
+                </button>
+              </div>
+
+              {keySaveError && (
+                <p className="mt-2 text-sm text-red-600 dark:text-red-400">
+                  {keySaveError}
+                </p>
+              )}
+            </>
           )}
         </div>
 

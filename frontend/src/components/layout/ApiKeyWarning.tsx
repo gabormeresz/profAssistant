@@ -5,9 +5,10 @@ import { useAuth } from "../../hooks/useAuth";
 
 export default function ApiKeyWarning() {
   const { t } = useTranslation();
-  const { settings, isLoadingSettings } = useAuth();
+  const { user, settings, isLoadingSettings } = useAuth();
 
-  if (isLoadingSettings || settings?.has_api_key) return null;
+  if (isLoadingSettings || user?.role === "admin" || settings?.has_api_key)
+    return null;
 
   return (
     <Link

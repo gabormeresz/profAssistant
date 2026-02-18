@@ -5,9 +5,10 @@ import { useAuth } from "../../hooks/useAuth";
 
 export default function UserStatusBadge() {
   const { t } = useTranslation();
-  const { settings } = useAuth();
+  const { user, settings } = useAuth();
 
-  const hasApiKey = settings?.has_api_key ?? false;
+  const isAdmin = user?.role === "admin";
+  const hasApiKey = isAdmin || (settings?.has_api_key ?? false);
   const modelLabel =
     settings?.available_models.find((m) => m.id === settings.preferred_model)
       ?.label ?? settings?.preferred_model;

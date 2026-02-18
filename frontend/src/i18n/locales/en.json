@@ -333,6 +333,7 @@
       "placeholder": "sk-...",
       "keyStored": "API key is stored",
       "noKey": "No API key configured",
+      "serverManaged": "As an admin, the API key is managed via the server environment",
       "save": "Save Key",
       "remove": "Remove"
     },
