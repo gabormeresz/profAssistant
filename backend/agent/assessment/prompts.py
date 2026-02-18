@@ -195,6 +195,14 @@ You have access to the following tools to gather information for building the as
 - Use `search_wikipedia` first to discover relevant articles, then `get_summary` or `get_article` for details
 - Use `tavily_search` for current facts and practical examples for questions
 - Use `search_uploaded_documents` to base questions on the user's specific course materials
+
+**CRITICAL — Tool Failure Handling**:
+Tools are supplementary research aids. If ANY tool call fails, returns an error, returns empty results, or an article is not found:
+- **NEVER** output the error message (e.g. "article not found") as your response
+- **NEVER** let a failed lookup prevent you from generating a complete assessment
+- **Instead**: Fall back to your own expert knowledge and generate high-quality content without the tool result
+- You may try an alternative tool or query, but if that also fails, proceed with generation immediately
+- Your output must ALWAYS be a complete, well-structured assessment regardless of tool availability
 {document_search_instruction}
 
 ## Output Specifications
