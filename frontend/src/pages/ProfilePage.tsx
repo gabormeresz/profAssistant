@@ -201,10 +201,15 @@ export default function ProfilePage() {
               {/* API key input */}
               <div className="flex gap-3">
                 <input
-                  type="password"
+                  type="text"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder={t("profile.apiKey.placeholder")}
+                  autoComplete="off"
+                  data-1p-ignore
+                  data-lpignore="true"
+                  data-form-type="other"
+                  style={{ WebkitTextSecurity: "disc" } as React.CSSProperties}
                   className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors text-sm"
                 />
                 <button
