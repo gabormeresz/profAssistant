@@ -175,10 +175,10 @@ class MCPClientManager:
             tool_names = [t.name for t in self._tools]
             logger.info("MCP initialized successfully with tools: %s", tool_names)
 
-            # Log any filtered-out tools for transparency
-            filtered_out = [t.name for t in all_tools if t not in self._tools]
-            if filtered_out:
-                logger.info("MCP filtered out tools: %s", filtered_out)
+            # # Log any filtered-out tools for transparency
+            # filtered_out = [t.name for t in all_tools if t not in self._tools]
+            # if filtered_out:
+            #     logger.info("MCP filtered out tools: %s", filtered_out)
 
         except ImportError as e:
             logger.error("langchain-mcp-adapters not installed: %s", e)
