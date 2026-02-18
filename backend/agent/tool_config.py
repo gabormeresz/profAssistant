@@ -46,8 +46,8 @@ def _wrap_mcp_tool(tool: BaseTool) -> BaseTool:
         getattr(tool, "response_format", None) == "content_and_artifact"
     )
 
-    if tool.coroutine:
-        original_coroutine = tool.coroutine
+    if tool.coroutine:  # type: ignore[attr-defined]
+        original_coroutine = tool.coroutine  # type: ignore[attr-defined]
 
         async def sanitized_coroutine(*args, **kwargs):
             result = await original_coroutine(*args, **kwargs)
@@ -56,9 +56,9 @@ def _wrap_mcp_tool(tool: BaseTool) -> BaseTool:
                 return sanitize_tool_output(tool.name, str(content)), artifact
             return sanitize_tool_output(tool.name, str(result))
 
-        tool.coroutine = sanitized_coroutine
+        tool.coroutine = sanitized_coroutine  # type: ignore[attr-defined]
     else:
-        original_func = tool.func
+        original_func = tool.func  # type: ignore[attr-defined]
 
         def sanitized_func(*args, **kwargs):
             result = original_func(*args, **kwargs)
@@ -67,7 +67,7 @@ def _wrap_mcp_tool(tool: BaseTool) -> BaseTool:
                 return sanitize_tool_output(tool.name, str(content)), artifact
             return sanitize_tool_output(tool.name, str(result))
 
-        tool.func = sanitized_func
+        tool.func = sanitized_func  # type: ignore[attr-defined]
 
     return tool
 

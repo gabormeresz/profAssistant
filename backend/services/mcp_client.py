@@ -120,7 +120,7 @@ class MCPClientManager:
                     args_schema = tool.args_schema
                     if hasattr(args_schema, "model_fields"):
                         # Pydantic v2 model class
-                        tool_params = set(args_schema.model_fields.keys())
+                        tool_params = set(args_schema.model_fields.keys())  # type: ignore[union-attr]
                     elif isinstance(args_schema, dict):
                         # MCP-adapted tools may expose schema as a plain dict
                         props = args_schema.get("properties", args_schema)
