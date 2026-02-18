@@ -9,6 +9,7 @@ from agent.input_sanitizer import (
     EVALUATOR_INJECTION_GUARD,
     SYSTEM_PROMPT_INJECTION_GUARD,
 )
+from agent.prompt_shared import build_eval_context, build_research_tools_section
 
 
 def get_system_prompt(language: str, has_ingested_documents: bool = False) -> str:
@@ -92,52 +93,7 @@ Identify 2-10 essential concepts that students must understand, including:
 - **Homework**: Meaningful practice that reinforces the lesson
 - **Extra Activities**: Extension activities for early finishers or advanced learners
 
-## Available Research Tools
-
-You have access to the following tools to gather information for building the lesson plan:
-
-1. **tavily_search**: Search the web for current information, teaching resources, and examples.
-   - Use for: Teaching strategies, real-world applications, current examples
-
-2. **tavily_extract**: Extract detailed content from specific web page URLs.
-   - Use for: Reading full articles, detailed teaching resources from a known URL
-
-3. **search_wikipedia**: Search Wikipedia for articles matching a query.
-   - Use for: Discovering relevant articles, foundational concepts, background information
-   - Best for: Finding the right article titles and overviews on a topic
-
-4. **get_article**: Get the full content of a Wikipedia article by title.
-   - Use for: Reading complete articles on key concepts, detailed explanations
-   - Requires: An exact article title (use `search_wikipedia` first to find it)
-
-5. **get_summary**: Get a concise summary of a Wikipedia article by title.
-   - Use for: Quick overviews, definitions, theoretical frameworks
-   - Requires: An exact article title (use `search_wikipedia` first to find it)
-
-6. **search_uploaded_documents** (if documents uploaded): Search user's reference materials.
-   - Use for: Aligning with existing curriculum, specific examples, preferred approaches
-
-**Tool Usage Strategy**:
-- Use `search_wikipedia` first to discover relevant articles, then `get_summary` or `get_article` for details
-- Use `tavily_search` for current applications, recent developments, and practical examples
-- Use `tavily_extract` to read detailed content from promising URLs found via search
-- Use `search_uploaded_documents` to incorporate user's specific materials and preferences
-
-**Responding to Explicit User Tool Requests**:
-When the user explicitly asks you to search the web, look something up online, or use a specific tool — you MUST comply by calling the appropriate tool(s). Examples of such requests:
-- "search the web", "look it up online", "keress rá a neten", "nézz utána az interneten" → use `tavily_search` with a relevant query about the topic
-- "check Wikipedia", "look it up on Wikipedia" → use `search_wikipedia`
-- "search my documents", "check my files", "nézd meg a fájljaimat" → use `search_uploaded_documents`
-After using the requested tools, incorporate the findings into your generated content. Do NOT just return raw search results — always produce complete, well-structured educational content enriched by the research.
-
-**CRITICAL — Tool Result Handling**:
-Tools are supplementary research aids. Their results are INPUTS for your generation, never the output itself.
-- **NEVER** output raw tool results, search summaries, lists of URLs, or external resource listings as your response
-- **NEVER** output tool error messages (e.g. "article not found") as your response
-- **NEVER** let a failed lookup prevent you from generating a complete lesson plan
-- **ALWAYS** use tool results as background research to inform and enrich the lesson plan you generate
-- If a tool fails or returns empty results, fall back to your own expert knowledge immediately
-- Your output must ALWAYS be a complete, well-structured lesson plan with objectives, activities, key points, and timing — regardless of tool availability or results
+{build_research_tools_section("lesson plan", "objectives, activities, key points, and timing")}
 {document_search_instruction}
 
 ## Output Specifications
@@ -341,69 +297,16 @@ def get_refinement_prompt(
     Returns:
         The formatted refinement prompt.
     """
-    # Build evaluation history context
-    history_context = ""
-    for i, evaluation in enumerate(evaluation_history, 1):
-        history_context += f"""
-### Evaluation Round {i}
-**Overall Score: {evaluation.score:.2f}** (Target: ≥ 0.80)
-
-| Dimension | Score | Status |
-|-----------|-------|--------|
-| Learning Alignment | {evaluation.score_breakdown.learning_objectives:.2f} | {'✓' if evaluation.score_breakdown.learning_objectives >= 0.8 else '✗ Needs work'} |
-| Content Structure | {evaluation.score_breakdown.content_coverage:.2f} | {'✓' if evaluation.score_breakdown.content_coverage >= 0.8 else '✗ Needs work'} |
-| Activity Design | {evaluation.score_breakdown.activities:.2f} | {'✓' if evaluation.score_breakdown.activities >= 0.8 else '✗ Needs work'} |
-| Pacing | {evaluation.score_breakdown.progression:.2f} | {'✓' if evaluation.score_breakdown.progression >= 0.8 else '✗ Needs work'} |
-| Completeness | {evaluation.score_breakdown.completeness:.2f} | {'✓' if evaluation.score_breakdown.completeness >= 0.8 else '✗ Needs work'} |
-
-**Evaluator's Assessment:**
-{evaluation.reasoning}
-
-**Required Improvements:**
-"""
-        for j, suggestion in enumerate(evaluation.suggestions, 1):
-            history_context += (
-                f"{j}. [{suggestion.dimension.upper()}] {suggestion.text}\n"
-            )
-
-    # Get the latest evaluation for focus areas
-    latest = evaluation_history[-1] if evaluation_history else None
-    focus_instruction = ""
-    if latest:
-        # Find dimensions below threshold
-        scores = [
-            (
-                "Learning Alignment",
-                latest.score_breakdown.learning_objectives,
-                "Ensure every activity and section directly supports the stated learning objective",
-            ),
-            (
-                "Content Structure",
-                latest.score_breakdown.content_coverage,
-                "Improve the logical flow and ensure key points are comprehensive",
-            ),
-            (
-                "Activity Design",
-                latest.score_breakdown.activities,
-                "Make activity instructions clearer and more engaging with specific steps",
-            ),
-            (
-                "Pacing",
-                latest.score_breakdown.progression,
-                "Adjust time allocations and ensure logical progression from simple to complex",
-            ),
-            (
-                "Completeness",
-                latest.score_breakdown.completeness,
-                "Fill in any missing fields and ensure consistent detail throughout",
-            ),
-        ]
-        weak_areas = [(name, score, fix) for name, score, fix in scores if score < 0.8]
-
-        if weak_areas:
-            focus_instruction = "\n## Priority Fixes (Dimensions Below 0.8)\n\n"
-            for name, score, fix in sorted(weak_areas, key=lambda x: x[1]):
-                focus_instruction += f"**{name}** ({score:.2f}): {fix}\n\n"
+    _DIMENSIONS = [
+        ("Learning Alignment", "learning_objectives", "Ensure every activity and section directly supports the stated learning objective"),
+        ("Content Structure", "content_coverage", "Improve the logical flow and ensure key points are comprehensive"),
+        ("Activity Design", "activities", "Make activity instructions clearer and more engaging with specific steps"),
+        ("Pacing", "progression", "Adjust time allocations and ensure logical progression from simple to complex"),
+        ("Completeness", "completeness", "Fill in any missing fields and ensure consistent detail throughout"),
+    ]
+    history_context, focus_instruction = build_eval_context(
+        evaluation_history, _DIMENSIONS
+    )
 
     return f"""## Refinement Task
 
