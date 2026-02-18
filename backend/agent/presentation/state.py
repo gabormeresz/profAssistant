@@ -6,7 +6,7 @@ the presentation-specific fields (course_title, class details,
 lesson context, etc.).
 """
 
-from typing import List, Optional
+from typing import List, Optional  # noqa: F401
 
 from agent.base.state import (
     BaseGenerationInput,
@@ -19,7 +19,7 @@ class PresentationInput(BaseGenerationInput):
     """Input fields specific to presentation generation."""
 
     course_title: str
-    class_number: int
+    class_number: Optional[int]
     class_title: str
     learning_objective: Optional[str]
     key_points: List[str]
@@ -33,7 +33,7 @@ class PresentationState(BaseGenerationState):
     """State for presentation generation — adds lesson-context fields."""
 
     course_title: str
-    class_number: int
+    class_number: Optional[int]
     class_title: str
     learning_objective: Optional[str]
     key_points: List[str]

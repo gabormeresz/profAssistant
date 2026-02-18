@@ -21,7 +21,11 @@ export function StructuredPresentation({
 
   const handleExportDocx = async () => {
     const markdown = presentationToMarkdown(presentation);
-    const filename = `presentation_class_${presentation.class_number}_${presentation.lesson_title
+    const classNumPart =
+      presentation.class_number != null
+        ? `_class_${presentation.class_number}`
+        : "";
+    const filename = `presentation${classNumPart}_${presentation.lesson_title
       .replace(/\s+/g, "_")
       .toLowerCase()}.docx`;
     await exportToDocx(markdown, { filename });
@@ -35,7 +39,11 @@ export function StructuredPresentation({
       const safeTitle = presentation.lesson_title
         .replace(/\s+/g, "_")
         .toLowerCase();
-      const filename = `presentation_class_${presentation.class_number}_${safeTitle}.pptx`;
+      const classNumPart =
+        presentation.class_number != null
+          ? `_class_${presentation.class_number}`
+          : "";
+      const filename = `presentation${classNumPart}_${safeTitle}.pptx`;
       saveAs(blob, filename);
     } catch (err) {
       setPptxError(
@@ -54,9 +62,11 @@ export function StructuredPresentation({
       {/* Presentation Header */}
       <div className="mb-8 border-b-2 border-purple-500 dark:border-purple-400 pb-4">
         <div className="flex items-baseline gap-3 mb-2">
-          <span className="text-sm font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/40 px-3 py-1 rounded">
-            {t("presentationOutput.classNumber")} {presentation.class_number}
-          </span>
+          {presentation.class_number != null && (
+            <span className="text-sm font-semibold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/40 px-3 py-1 rounded">
+              {t("presentationOutput.classNumber")} {presentation.class_number}
+            </span>
+          )}
           <h1 className="text-3xl font-bold text-dark flex-1">
             {presentation.lesson_title}
           </h1>

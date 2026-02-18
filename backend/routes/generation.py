@@ -467,7 +467,7 @@ async def generate_presentation(
     Handle presentation generation with structured output and optional file uploads.
     Returns a streaming SSE response with progress updates and structured data.
 
-    For initial requests: course_title, class_number, class_title, and language are required.
+    For initial requests: course_title, class_title, and language are required. class_number is optional.
     For follow-up requests (with thread_id): only message and files are needed.
     """
     try:
@@ -681,12 +681,13 @@ async def export_presentation_pptx(
         safe_title = (
             presentation.lesson_title.replace(" ", "_").replace("/", "-").lower()[:60]
         )
-        filename = f"presentation_class_{presentation.class_number}_{safe_title}.pptx"
+        class_num_part = f"_class_{presentation.class_number}" if presentation.class_number is not None else ""
+        filename = f"presentation{class_num_part}_{safe_title}.pptx"
 
         # Use ASCII-safe fallback + RFC 5987 filename* for Unicode support
         from urllib.parse import quote
 
-        ascii_fallback = f"presentation_class_{presentation.class_number}.pptx"
+        ascii_fallback = f"presentation{class_num_part}.pptx"
         encoded_filename = quote(filename)
         content_disposition = (
             f'attachment; filename="{ascii_fallback}"; '

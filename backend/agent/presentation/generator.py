@@ -72,8 +72,7 @@ async def run_presentation_generator(
         if is_first_call:
             if course_title is None:
                 raise ValueError("course_title is required for the first call")
-            if class_number is None:
-                raise ValueError("class_number is required for the first call")
+            # class_number is optional — no validation needed
             if class_title is None:
                 raise ValueError("class_title is required for the first call")
             if language is None:
@@ -86,7 +85,7 @@ async def run_presentation_generator(
         # Build input state
         input_state: PresentationInput = {
             "course_title": course_title or "",
-            "class_number": class_number or 0,
+            "class_number": class_number,
             "class_title": class_title or "",
             "learning_objective": learning_objective,
             "key_points": key_points or [],

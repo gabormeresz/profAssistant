@@ -48,7 +48,7 @@ export interface SavedLessonPlan extends SavedConversationBase {
 export interface SavedPresentation extends SavedConversationBase {
   conversation_type: "presentation";
   course_title: string;
-  class_number: number;
+  class_number?: number | null;
   class_title: string;
   learning_objective?: string;
   key_points: string[];

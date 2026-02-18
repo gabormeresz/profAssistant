@@ -88,8 +88,8 @@ class PresentationMetadata(ConversationBase):
     """Metadata specific to presentation conversations."""
 
     course_title: str = Field(..., description="Title of the course")
-    class_number: int = Field(
-        ..., description="The class number in the course sequence"
+    class_number: Optional[int] = Field(
+        None, description="The class number in the course sequence"
     )
     class_title: str = Field(..., description="Title of the class")
     learning_objective: Optional[str] = Field(
@@ -178,7 +178,7 @@ class PresentationCreate(BaseModel):
 
     title: str
     course_title: str
-    class_number: int
+    class_number: Optional[int] = None
     class_title: str
     learning_objective: Optional[str] = None
     key_points: List[str] = []

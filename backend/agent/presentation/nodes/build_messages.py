@@ -60,7 +60,7 @@ def _build_first_call_messages(state: PresentationState) -> dict:
 
     # Build user message content with clear structure
     course_title = state["course_title"]
-    class_number = state["class_number"]
+    class_number = state.get("class_number")
     class_title = state["class_title"]
     learning_objective = state.get("learning_objective") or ""
     key_points = state.get("key_points", [])
@@ -84,8 +84,10 @@ def _build_first_call_messages(state: PresentationState) -> dict:
 
     # Build user input block and wrap in XML delimiters
     user_input_block = f"""Course Title: {course_title}
-Class Number: {class_number}
 Class Title: {class_title}"""
+
+    if class_number is not None:
+        user_input_block += f"\nClass Number: {class_number}"
 
     if learning_objective:
         user_input_block += f"\nLearning Objective: {learning_objective}"

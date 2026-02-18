@@ -59,7 +59,7 @@ async def evaluate_presentation(state: PresentationState) -> dict:
     # Build evaluation messages with clear context
     language = state.get("language", "English")
     class_title = state.get("class_title", "Unknown")
-    class_number = state.get("class_number", 0)
+    class_number = state.get("class_number")
     learning_objective = state.get("learning_objective") or "Not specified"
     key_points = state.get("key_points", [])
 
@@ -67,8 +67,10 @@ async def evaluate_presentation(state: PresentationState) -> dict:
         "\n".join(f"  - {kp}" for kp in key_points) if key_points else "  (none)"
     )
 
-    user_context = f"""Class Number: {class_number}
-Class Title: {class_title}
+    class_number_line = (
+        f"Class Number: {class_number}\n" if class_number is not None else ""
+    )
+    user_context = f"""{class_number_line}Class Title: {class_title}
 Learning Objective: {learning_objective}
 Key Points:
 {key_points_str}"""

@@ -13,7 +13,7 @@ export interface Slide {
 export interface Presentation {
   course_title: string;
   lesson_title: string;
-  class_number: number;
+  class_number?: number | null;
   slides: Slide[];
 }
 

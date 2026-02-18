@@ -10,6 +10,7 @@ OpenAPI/JSON Schema generation.
 """
 
 from typing import List, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -45,8 +46,8 @@ class Presentation(BaseModel):
     lesson_title: str = Field(
         ..., description="Title of the specific lesson", min_length=5, max_length=200
     )
-    class_number: int = Field(
-        ..., description="Class number from the course outline", ge=1
+    class_number: Optional[int] = Field(
+        None, description="Class number from the course outline (optional)", ge=1
     )
     slides: List[Slide] = Field(
         ...,
@@ -60,7 +61,7 @@ class Presentation(BaseModel):
             "example": {
                 "course_title": "Introduction to Python Programming",
                 "lesson_title": "Variables and Data Types",
-                "class_number": 2,
+                "class_number": 2,  # optional
                 "slides": [
                     {
                         "slide_number": 1,

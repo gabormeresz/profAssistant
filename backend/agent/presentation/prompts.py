@@ -55,7 +55,7 @@ visually-oriented educational presentations for classroom use.
 
 ### 1. Slide Structure & Flow
 Create a logical sequence of 5–15 slides that guides the lesson:
-- **Title / Agenda Slide** (slide 1): Course title, lesson title, class number, and an overview of topics
+- **Title / Agenda Slide** (slide 1): Course title, lesson title, and an overview of topics (include class number if provided)
 - **Content Slides**: Cover the key points of the lesson, one concept per slide
 - **Activity / Practice Slides**: Describe hands-on tasks or discussion prompts
 - **Summary / Closing Slide**: Recap key takeaways, homework, and preview of next lesson
@@ -322,7 +322,7 @@ Your presentation was evaluated and scored below the 0.80 threshold. You must im
 Generate an **improved version** of the presentation that:
 
 1. **Directly addresses each suggestion** from the evaluator
-2. **Maintains** the same course title, lesson title, and class number
+2. **Maintains** the same course title, lesson title, and class number (if provided)
 3. **Improves** the lowest-scoring dimensions first
 4. **Preserves** what was already working well (dimensions ≥ 0.8)
 

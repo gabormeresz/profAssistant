@@ -74,7 +74,7 @@ function PresentationGenerator() {
 
   // Form state
   const [courseTitle, setCourseTitle] = useState("");
-  const [classNumber, setClassNumber] = useState<number>(1);
+  const [classNumber, setClassNumber] = useState<number | null>(null);
   const [classTitle, setClassTitle] = useState("");
   const [learningObjective, setLearningObjective] = useState("");
   const [keyPoints, setKeyPoints] = useState<string[]>([""]);
@@ -125,7 +125,7 @@ function PresentationGenerator() {
       (conversation as SavedPresentation).conversation_type === "presentation",
     restoreFormState: (conversation: SavedPresentation) => {
       setCourseTitle(conversation.course_title);
-      setClassNumber(conversation.class_number);
+      setClassNumber(conversation.class_number ?? null);
       setClassTitle(conversation.class_title);
       if (conversation.learning_objective) {
         setLearningObjective(conversation.learning_objective);
@@ -183,7 +183,8 @@ function PresentationGenerator() {
       };
 
       if (state.courseTitle) setCourseTitle(state.courseTitle);
-      if (state.classNumber) setClassNumber(state.classNumber);
+      if (state.classNumber !== undefined)
+        setClassNumber(state.classNumber ?? null);
       if (state.classTitle) setClassTitle(state.classTitle);
       if (state.learningObjective)
         setLearningObjective(state.learningObjective);
@@ -216,8 +217,9 @@ function PresentationGenerator() {
       return;
     }
     if (
-      classNumber < PRESENTATION.MIN_CLASS_NUMBER ||
-      classNumber > PRESENTATION.MAX_CLASS_NUMBER
+      classNumber !== null &&
+      (classNumber < PRESENTATION.MIN_CLASS_NUMBER ||
+        classNumber > PRESENTATION.MAX_CLASS_NUMBER)
     ) {
       alert(t("presentation.invalidClassNumber"));
       return;
@@ -243,7 +245,7 @@ function PresentationGenerator() {
     await sendMessage({
       message: userComment,
       course_title: courseTitle,
-      class_number: classNumber,
+      class_number: classNumber ?? undefined,
       class_title: classTitle,
       learning_objective: learningObjective,
       key_points: filteredKeyPoints,
@@ -301,7 +303,7 @@ function PresentationGenerator() {
     setUserMessages([]);
     setHasStarted(false);
     setCourseTitle("");
-    setClassNumber(1);
+    setClassNumber(null);
     setClassTitle("");
     setLearningObjective("");
     setKeyPoints([""]);

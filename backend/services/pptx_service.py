@@ -171,7 +171,9 @@ def _build_title_slide(
     _, tf = _add_textbox(slide_obj, Inches(3.0), Inches(4.1), Inches(4), Inches(0.5))
     _set_paragraph(
         tf,
-        f"{_pptx_t(language, 'class')} {presentation.class_number}  ·  {len(presentation.slides)} {_pptx_t(language, 'slides')}",
+        f"{_pptx_t(language, 'class')} {presentation.class_number}  ·  {len(presentation.slides)} {_pptx_t(language, 'slides')}"
+        if presentation.class_number is not None
+        else f"{len(presentation.slides)} {_pptx_t(language, 'slides')}",
         font_size=12,
         color=_GRAY_500,
         alignment=PP_ALIGN.CENTER,
@@ -278,7 +280,7 @@ def generate_pptx(presentation: PresentationModel, language: str = "en") -> byte
         "Generated PPTX: %s – %s (class %d, %d slides)",
         presentation.course_title,
         presentation.lesson_title,
-        presentation.class_number,
+        presentation.class_number or "N/A",
         len(presentation.slides),
     )
     return buf.getvalue()

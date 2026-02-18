@@ -7,8 +7,8 @@ import { PRESENTATION } from "../../utils/constants";
 interface PresentationInputSectionProps {
   courseTitle: string;
   setCourseTitle: Dispatch<SetStateAction<string>>;
-  classNumber: number;
-  setClassNumber: Dispatch<SetStateAction<number>>;
+  classNumber: number | null;
+  setClassNumber: Dispatch<SetStateAction<number | null>>;
   classTitle: string;
   setClassTitle: Dispatch<SetStateAction<string>>;
   learningObjective: string;
@@ -67,10 +67,7 @@ export function PresentationInputSection({
 }: PresentationInputSectionProps) {
   const { t } = useTranslation();
 
-  const isButtonDisabled =
-    !courseTitle.trim() ||
-    !classTitle.trim() ||
-    classNumber < PRESENTATION.MIN_CLASS_NUMBER;
+  const isButtonDisabled = !courseTitle.trim() || !classTitle.trim();
 
   // Helper functions for key points array
   const handleKeyPointChange = (index: number, value: string) => {
@@ -118,16 +115,20 @@ export function PresentationInputSection({
               htmlFor="classNumber"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             >
-              {t("presentation.classNumber")}{" "}
-              <span className="text-red-500 dark:text-red-400">*</span>
+              {t("presentation.classNumber")}
             </label>
             <input
               type="number"
               id="classNumber"
-              value={classNumber}
-              onChange={(e) => setClassNumber(Number(e.target.value))}
+              value={classNumber ?? ""}
+              onChange={(e) =>
+                setClassNumber(e.target.value ? Number(e.target.value) : null)
+              }
               min={PRESENTATION.MIN_CLASS_NUMBER}
               max={PRESENTATION.MAX_CLASS_NUMBER}
+              placeholder={t("presentation.classNumberPlaceholder", {
+                defaultValue: ""
+              })}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>

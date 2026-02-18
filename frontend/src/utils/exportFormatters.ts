@@ -107,9 +107,15 @@ export function presentationToMarkdown(presentation: Presentation): string {
 
   // Title
   sections.push(`# ${presentation.course_title}\n`);
-  sections.push(
-    `## ${t('presentationOutput.classNumber')} ${presentation.class_number}: ${presentation.lesson_title}\n`
-  );
+  if (presentation.class_number != null) {
+    sections.push(
+      `## ${t('presentationOutput.classNumber')} ${presentation.class_number}: ${presentation.lesson_title}\n`
+    );
+  } else {
+    sections.push(
+      `## ${presentation.lesson_title}\n`
+    );
+  }
 
   // Slides
   presentation.slides.forEach((slide) => {
