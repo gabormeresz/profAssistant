@@ -149,7 +149,7 @@ export function StructuredAssessment({
               </p>
             )}
           </div>
-          <div className="flex gap-2 flex-shrink-0">
+          <div className="flex flex-col gap-2 flex-shrink-0">
             <button
               onClick={handleExport}
               className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white text-sm font-medium rounded-md hover:bg-blue-700 dark:hover:bg-blue-400 transition-colors flex items-center gap-2"
