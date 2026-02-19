@@ -45,8 +45,8 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Prepare directories for non-root nginx and set ownership
 RUN mkdir -p /var/cache/nginx /var/run /var/log/nginx /tmp/nginx && \
     chown -R nginx:nginx /var/cache/nginx /var/run /var/log/nginx /usr/share/nginx/html /tmp/nginx && \
-    # Allow non-root nginx to write pid file
-    sed -i 's|/var/run/nginx.pid|/tmp/nginx/nginx.pid|g' /etc/nginx/nginx.conf
+    # Allow non-root nginx to write pid file (handle both /run/ and /var/run/ paths)
+    sed -i 's|pid\s.*/nginx.pid;|pid /tmp/nginx/nginx.pid;|g' /etc/nginx/nginx.conf
 
 EXPOSE 8080
 
