@@ -10,6 +10,7 @@ import {
   SavedConversationsContext,
   type SavedConversationsContextValue
 } from "./savedConversationsContextDef";
+import type { SavedConversation } from "../types/conversation";
 
 interface SavedConversationsProviderProps {
   children: ReactNode;
