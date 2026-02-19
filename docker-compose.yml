@@ -64,8 +64,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # For local dev, frontend calls backend directly on port 8000
-        VITE_API_URL: "http://localhost:8000"
+        # Frontend calls /api/ which nginx reverse-proxies to the backend
+        VITE_API_URL: "/api"
     container_name: profassistant-frontend
     ports:
       - "3000:8080"
