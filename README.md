@@ -144,7 +144,8 @@ Each generation workflow follows a multi-step agentic pipeline:
 ## 📁 Project Structure
 
 ```
-profassistant/
+profAssistant/
+├── .env.example                # All environment variables (single source of truth)
 ├── docker-compose.yml          # Local development compose
 ├── docker-compose.prod.yml     # Production overrides
 │
@@ -225,43 +226,45 @@ profassistant/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/profassistant.git
-cd profassistant
+git clone https://github.com/your-username/profAssistant.git
+cd profAssistant
 ```
 
-### 2. Backend Setup
+### 2. Configure Environment
 
 ```bash
-cd backend
-
-# Install dependencies with uv
-uv sync
-
 # Create your environment file from the template
 cp .env.example .env
 ```
 
-Edit `backend/.env` and fill in your values. The example file is fully commented — at minimum you need to set:
+Edit `.env` and fill in your values.
 
-- **`OPENAI_API_KEY`** — Your OpenAI API key (required for all generation)
+**Required:**
+
+- **`OPENAI_API_KEY`** — Your OpenAI API key (LLM generation & embeddings)
 - **`JWT_SECRET`** & **`ENCRYPTION_KEY`** — Auth secrets (the `.env.example` includes a one-liner to generate both)
 - **`ADMIN_EMAIL`** & **`ADMIN_PASSWORD`** — Seed admin account created on first startup
-- **`TAVILY_API_KEY`** — _(optional)_ Enables the web search & extraction tools via Tavily MCP
 
-> 💡 **Tip:** Generate secure auth keys in one command:
->
-> ```bash
-> python3 -c "import secrets,base64,os; print('JWT_SECRET=' + secrets.token_hex(32)); print('ENCRYPTION_KEY=' + base64.urlsafe_b64encode(os.urandom(32)).decode())"
-> ```
+**Optional but recommended:**
 
-### 3. Start the Wikipedia MCP Server
+- **`TAVILY_API_KEY`** — Web search & extraction tools via [Tavily](https://tavily.com/) MCP
+- **`LANGSMITH_*`** — Tracing & monitoring via [LangSmith](https://smith.langchain.com/)
+
+### 3. Backend Setup - install dependencies with uv
+
+```bash
+cd backend
+uv sync
+```
+
+### 4. Start the Wikipedia MCP Server
 
 ```bash
 cd backend
 uv run wikipedia-mcp --transport sse --port 8765 --enable-cache
 ```
 
-### 4. Start the Backend
+### 5. Start the Backend
 
 In a new terminal:
 
@@ -270,19 +273,14 @@ cd backend
 uv run uvicorn main:app --reload --port 8000
 ```
 
-The API will be available at **http://localhost:8000** (docs at `/docs`).
-
-### 5. Frontend Setup
+### 6. Frontend Setup
 
 In a new terminal:
 
 ```bash
 cd frontend
-
-# Install dependencies
+cp .env.example .env
 npm install
-
-# Start the dev server
 npm run dev
 ```
 
@@ -294,18 +292,33 @@ The app will be available at **http://localhost:5173**.
 
 Docker Compose spins up all three services (frontend, backend, MCP server) in one command.
 
-### 1. Create the Environment File
+### 1. Clone the Repository
 
 ```bash
-# Copy the template and fill in your values
-cp .env.docker.example .env.docker
+git clone https://github.com/your-username/profAssistant.git
+cd profAssistant
 ```
 
-The template is fully documented — see `.env.docker.example` for all available options. The required keys are the same as for local development (`OPENAI_API_KEY`, `JWT_SECRET`, `ENCRYPTION_KEY`, admin credentials).
+### 2. Configure Environment
 
-> **Note:** Docker-internal settings like `MCP_WIKIPEDIA_URL` are already configured in `docker-compose.yml` — you don't need to set them in `.env.docker`.
+```bash
+cp .env.example .env
+```
 
-### 2. Build & Start (Development)
+Edit `.env` and fill in your values.
+
+**Required:**
+
+- **`OPENAI_API_KEY`** — Your OpenAI API key (LLM generation & embeddings)
+- **`JWT_SECRET`** & **`ENCRYPTION_KEY`** — Auth secrets (the `.env.example` includes a one-liner to generate both)
+- **`ADMIN_EMAIL`** & **`ADMIN_PASSWORD`** — Seed admin account created on first startup
+
+**Optional but recommended:**
+
+- **`TAVILY_API_KEY`** — Web search & extraction tools via [Tavily](https://tavily.com/) MCP
+- **`LANGSMITH_*`** — Tracing & monitoring via [LangSmith](https://smith.langchain.com/)
+
+### 3. Build & Start (Development)
 
 ```bash
 docker compose up --build
@@ -317,7 +330,7 @@ docker compose up --build
 | Backend API   | http://localhost:8000            |
 | MCP Wikipedia | http://localhost:8765 (internal) |
 
-### 3. Build & Start (Production)
+### 4. Build & Start (Production)
 
 The production setup uses Nginx as a reverse proxy, exposing only port 80:
 
@@ -332,7 +345,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 
 > **Security note:** The production compose file already sets `COOKIE_SECURE=true` and `COOKIE_SAMESITE=strict` for secure refresh-token cookies.
 
-### 4. Stop & Clean Up
+### 5. Stop & Clean Up
 
 ```bash
 # Stop all services
@@ -357,7 +370,7 @@ All backend settings are centralized in `backend/config.py`:
 | **AuthConfig**       | JWT secret, token expiry, admin credentials, cookie settings | `JWT_SECRET`, `ENCRYPTION_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `COOKIE_SECURE`, `COOKIE_SAMESITE`, `COOKIE_DOMAIN` |
 | **EvaluationConfig** | Approval threshold (0.8), max retries (3), dimension weights | —                                                                                                                    |
 | **UploadConfig**     | Maximum file upload size (default: 10 MB)                    | `MAX_FILE_SIZE`                                                                                                      |
-| **MCPConfig**        | Wikipedia server URL & transport                             | `MCP_WIKIPEDIA_ENABLED`, `MCP_WIKIPEDIA_URL`                                                                         |
+| **MCPConfig**        | Wikipedia server URL & transport, Tavily web search          | `MCP_WIKIPEDIA_ENABLED`, `MCP_WIKIPEDIA_URL`, `TAVILY_API_KEY`                                                       |
 | **DebugConfig**      | Dummy graph toggle for testing (course outline only)         | `USE_DUMMY_GRAPH`                                                                                                    |
 | **LoggingConfig**    | Log level                                                    | `LOG_LEVEL`                                                                                                          |
 

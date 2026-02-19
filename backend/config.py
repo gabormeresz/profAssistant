@@ -7,11 +7,16 @@ All configurable constants and settings should be defined here.
 import base64
 import logging
 import os
+from pathlib import Path
 from typing import Literal
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables.
+# Try project root .env first (single-file setup), then backend/.env as fallback.
+# load_dotenv(override=False) keeps the first value found for each variable.
+_project_root = Path(__file__).resolve().parent.parent
+load_dotenv(_project_root / ".env")
+load_dotenv()  # backend/.env — won't override vars already loaded from root
 
 
 # =============================================================================
