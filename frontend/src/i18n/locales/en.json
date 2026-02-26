@@ -76,19 +76,19 @@
     "features": {
       "courseOutline": {
         "title": "Semester Course Planning",
-        "description": "Generates semester-based course outlines for specified subjects and topics."
+        "description": "Generates a structured syllabus with course structure, topics, and learning objectives."
       },
       "lessonPlan": {
         "title": "Lesson Plan Creation",
-        "description": "Creates detailed lesson plans with objectives, learning suggestions, and assessment recommendations."
+        "description": "Creates detailed lesson plans with objectives, breakdown, activities, and homework."
       },
       "presentation": {
         "title": "Presentation Generation",
-        "description": "Automatically creates presentations from previously prepared lesson plans."
+        "description": "Creates presentations from lesson plans with speaker notes and visual suggestions."
       },
       "assessment": {
         "title": "Test / Assessment Generation",
-        "description": "Creates questions and tasks aligned with the given topic."
+        "description": "Generates questions and tasks with customizable types and answer key."
       }
     },
     "footer": {

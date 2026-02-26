@@ -76,19 +76,19 @@
     "features": {
       "courseOutline": {
         "title": "Féléves tematika tervezése",
-        "description": "Részletes tematikát generál a megadott tárgyhoz és témakörökhöz."
+        "description": "Strukturált tematikát generál a kurzus felépítésével, témaköreivel és tanulási céljaival."
       },
       "lessonPlan": {
         "title": "Óraterv készítése",
-        "description": "Részletes óravázlatokat hoz létre, célokat, tanulási javaslatokat és értékelési javaslatokat ad."
+        "description": "Részletes óravázlatot készít célokkal, lebontással, tevékenységekkel és házi feladattal."
       },
       "presentation": {
         "title": "Órai prezentáció generálása",
-        "description": "Az előzetesen készített óratervből automatikusan készít előadásokat."
+        "description": "Az óravázlat alapján prezentációt állít össze előadói jegyzetekkel és vizuális javaslatokkal."
       },
       "assessment": {
         "title": "Értékelés összeállítása",
-        "description": "Az adott témához illeszkedő kérdéssorokat és feladatokat hoz létre."
+        "description": "Kérdéssorokat és feladatokat generál választható típusokkal, megoldókulccsal."
       }
     },
     "footer": {
