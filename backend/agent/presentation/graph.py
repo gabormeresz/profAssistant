@@ -39,20 +39,21 @@ def build_presentation_graph() -> StateGraph:
     Creates a StateGraph with the following workflow:
 
     1. initialize -> Initialize/load conversation metadata
-    2. build_messages -> Construct the message history
-    3. generate -> Call the LLM with tools bound (initial generation)
-    4. (conditional) -> Either use tools or go to evaluation
-    5. tools -> Execute tool calls (loops back to generate)
-    6. evaluate -> Evaluator agent scores quality (0.0-1.0)
-    7. (conditional) -> Either refine or respond based on:
+    2. ingest_documents -> Process uploaded documents into vector DB
+    3. build_messages -> Construct the message history
+    4. generate -> Call the LLM with tools bound (initial generation)
+    5. (conditional) -> Either use tools or go to evaluation
+    6. tools -> Execute tool calls (loops back to generate)
+    7. evaluate -> Evaluator agent scores quality (0.0-1.0)
+    8. (conditional) -> Either refine or respond based on:
        - Score >= 0.8 -> respond (approved)
        - Score plateau detected -> respond (best effort)
        - Max retries reached -> respond
        - Otherwise -> refine
-    8. refine -> Generate improved version using evaluation history
-    9. (back to evaluate for re-scoring)
-    10. respond -> Generate final structured output
-    11. END
+    9. refine -> Generate improved version using evaluation history
+    10. (back to evaluate for re-scoring)
+    11. respond -> Generate final structured output
+    12. END
 
     Returns:
         The constructed (but not compiled) StateGraph.
