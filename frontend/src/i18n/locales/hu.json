@@ -83,11 +83,11 @@
         "description": "Részletes óravázlatokat hoz létre, célokat, tanulási javaslatokat és értékelési javaslatokat ad."
       },
       "presentation": {
-        "title": "Órai prezentáció összeállítása",
+        "title": "Órai prezentáció generálása",
         "description": "Az előzetesen készített óratervből automatikusan készít előadásokat."
       },
       "assessment": {
-        "title": "Számonkérés összeállítása",
+        "title": "Értékelés összeállítása",
         "description": "Az adott témához illeszkedő kérdéssorokat és feladatokat hoz létre."
       }
     },
