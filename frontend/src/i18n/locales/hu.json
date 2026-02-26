@@ -76,7 +76,7 @@
     "features": {
       "courseOutline": {
         "title": "Féléves tematika tervezése",
-        "description": "Félévente bontott tematikát generál a megadott tárgyhoz és témakörökhoz."
+        "description": "Részletes féléves tematikát generál a megadott tárgyhoz és témakörökhöz."
       },
       "lessonPlan": {
         "title": "Óraterv készítése",
