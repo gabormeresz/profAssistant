@@ -87,7 +87,7 @@
         "description": "Creates presentations from lesson plans with speaker notes and visual suggestions."
       },
       "assessment": {
-        "title": "Test / Assessment Generation",
+        "title": "Assessment Generation",
         "description": "Generates questions and tasks with customizable types and answer key."
       }
     },
