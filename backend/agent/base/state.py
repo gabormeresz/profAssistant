@@ -5,12 +5,10 @@ Each generation module (course_outline, lesson_plan, etc.) inherits
 from these base types and adds only its domain-specific fields.
 """
 
-from typing import TypedDict, List, Dict, Optional, Annotated, Any
+from typing import TypedDict, List, Dict, Optional, Any
 
 from langgraph.graph import MessagesState
 from schemas.evaluation import EvaluationResult
-
-import operator
 
 
 class BaseGenerationInput(TypedDict):
@@ -42,7 +40,6 @@ class BaseGenerationState(MessagesState):
 
     # Document ingestion
     has_ingested_documents: bool
-    research_results: Annotated[List[str], operator.add]
 
     # Generation
     agent_response: Optional[Any]
