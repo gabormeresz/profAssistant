@@ -40,9 +40,9 @@ _INJECTION_PATTERNS: List[re.Pattern] = [
     for p in [
         # Meta-instruction overrides
         r"ignore\s+(all\s+)?(previous|above|prior|earlier|preceding)\s+instructions",
-        r"disregard\s+(everything|all|your|the)\s+(previous|above|prior|rules|instructions)",
-        r"forget\s+(all\s+)?(previous|above|prior|your)\s+(instructions|rules|guidelines)",
-        r"override\s+(all\s+)?(previous|your|system)\s+(instructions|rules|prompt)",
+        r"disregard\s+(?:everything|all(?:\s+the)?|your|the)\s+(?:previous|above|prior|rules|instructions)",
+        r"forget\s+(?:all\s+)?(?:your\s+)?(?:(?:previous|above|prior)\s+)?(?:instructions|rules|guidelines)",
+        r"override\s+(?:all\s+)?(?:your\s+)?(?:previous|system)\s+(?:instructions|rules|prompt)",
         # Role manipulation
         r"you\s+are\s+now\s+(?!going\s+to\s+help)",  # "you are now X" but not "you are now going to help"
         r"act\s+as\s+(?:a\s+)?(?:different|new|another)\s+(?:ai|assistant|bot|system)",
