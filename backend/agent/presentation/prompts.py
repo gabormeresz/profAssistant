@@ -116,12 +116,15 @@ Generate clear, visually-oriented presentations that instructors can use directl
 {SYSTEM_PROMPT_INJECTION_GUARD}"""
 
 
-def get_evaluator_system_prompt(language: str) -> str:
+def get_evaluator_system_prompt(
+    language: str, *, approval_threshold: float = 0.8
+) -> str:
     """
     Get the system prompt for the presentation evaluator.
 
     Args:
         language: The target language for the evaluation feedback.
+        approval_threshold: Minimum overall score for APPROVED verdict.
 
     Returns:
         The formatted system prompt for evaluation.
@@ -238,12 +241,12 @@ Be rigorous but fair — only exceptional content deserves scores above 0.9.
 1. Score each dimension independently (0.0-1.0)
 2. Calculate overall: (alignment × 0.25) + (clarity × 0.20) + (activities × 0.20) \
 + (flow × 0.20) + (completeness × 0.15)
-3. **APPROVED**: Overall score ≥ 0.8
-4. **NEEDS_REFINEMENT**: Overall score < 0.8
+3. **APPROVED**: Overall score ≥ {approval_threshold}
+4. **NEEDS_REFINEMENT**: Overall score < {approval_threshold}
 
 ## Suggestions Guidelines
 
-When score < 0.8, provide 1-3 suggestions that are:
+When score < {approval_threshold}, provide 1-3 suggestions that are:
 - **Specific**: Reference exact slide numbers or content areas
 - **Actionable**: Clear instructions on HOW to improve
 - **Prioritized**: Focus on the lowest-scoring dimensions first
@@ -256,6 +259,8 @@ def get_refinement_prompt(
     original_content: str,
     evaluation_history: list,
     language: str,
+    *,
+    approval_threshold: float = 0.8,
 ) -> str:
     """
     Get the prompt for refining the presentation based on evaluation history.
@@ -264,6 +269,7 @@ def get_refinement_prompt(
         original_content: The original generated content.
         evaluation_history: List of all previous evaluations with scores.
         language: The target language for the refined content.
+        approval_threshold: Minimum overall score for approval.
 
     Returns:
         The formatted refinement prompt.
@@ -301,7 +307,7 @@ def get_refinement_prompt(
 
     return f"""## Refinement Task
 
-Your presentation was evaluated and scored below the 0.80 threshold. You must improve it.
+Your presentation was evaluated and scored below the {approval_threshold} threshold. You must improve it.
 
 ---
 
@@ -324,7 +330,7 @@ Generate an **improved version** of the presentation that:
 1. **Directly addresses each suggestion** from the evaluator
 2. **Maintains** the same course title, lesson title, and class number (if provided)
 3. **Improves** the lowest-scoring dimensions first
-4. **Preserves** what was already working well (dimensions ≥ 0.8)
+4. **Preserves** what was already working well (dimensions ≥ {approval_threshold})
 
 ### Quality Checklist Before Submitting:
 - [ ] Every key point from the lesson appears in the slides
@@ -336,6 +342,6 @@ Generate an **improved version** of the presentation that:
 - [ ] No placeholder or generic content
 
 **Output Language:** {language}
-**Target Score:** ≥ 0.80
+**Target Score:** ≥ {approval_threshold}
 
 Generate the complete improved presentation now."""

@@ -20,7 +20,7 @@ from agent.base.nodes import (
     route_after_evaluate,
 )
 from agent.tool_config import get_tools_for_toolnode
-from config import DBConfig
+from config import DBConfig, EvaluationConfig
 
 from .state import AssessmentState, AssessmentInput, AssessmentOutput
 from .nodes import (
@@ -46,7 +46,7 @@ def build_assessment_graph() -> StateGraph:
     6. tools -> Execute tool calls (loops back to generate)
     7. evaluate -> Evaluator agent scores quality (0.0-1.0)
     8. (conditional) -> Either refine or respond based on:
-       - Score >= 0.8 -> respond (approved)
+       - Score >= APPROVAL_THRESHOLD -> respond (approved)
        - Score plateau detected -> respond (best effort)
        - Max retries reached -> respond
        - Otherwise -> refine
@@ -77,7 +77,13 @@ def build_assessment_graph() -> StateGraph:
     workflow.add_node("evaluate", evaluate_assessment)
     workflow.add_node(
         "refine",
-        partial(refine_content, get_refinement_prompt=get_refinement_prompt),
+        partial(
+            refine_content,
+            get_refinement_prompt=partial(
+                get_refinement_prompt,
+                approval_threshold=EvaluationConfig.APPROVAL_THRESHOLD,
+            ),
+        ),
     )
     workflow.add_node("tools_refine", tool_node)
     workflow.add_node("respond", generate_structured_response)

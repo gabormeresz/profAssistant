@@ -189,6 +189,8 @@ Generate comprehensive, well-structured assessments that educators can use direc
 def get_evaluator_system_prompt(
     language: str,
     question_type_configs: Sequence[Mapping[str, Any]] | None = None,
+    *,
+    approval_threshold: float = 0.8,
 ) -> str:
     """
     Get the system prompt for the assessment evaluator.
@@ -197,6 +199,7 @@ def get_evaluator_system_prompt(
         language: The target language for the evaluation feedback.
         question_type_configs: The requested question distribution
             (used to enforce structure compliance in evaluation).
+        approval_threshold: Minimum overall score for APPROVED verdict.
 
     Returns:
         The formatted system prompt for evaluation.
@@ -353,12 +356,12 @@ Be rigorous but fair - only exceptional content deserves scores above 0.9.
 
 1. Score each dimension independently (0.0-1.0)
 2. Calculate overall: (topics × 0.25) + (quality × 0.25) + (answers × 0.20) + (balance × 0.15) + (completeness × 0.15)
-3. **APPROVED**: Overall score ≥ 0.8
-4. **NEEDS_REFINEMENT**: Overall score < 0.8
+3. **APPROVED**: Overall score ≥ {approval_threshold}
+4. **NEEDS_REFINEMENT**: Overall score < {approval_threshold}
 
 ## Suggestions Guidelines
 
-When score < 0.8, provide 1-3 suggestions that are:
+When score < {approval_threshold}, provide 1-3 suggestions that are:
 - **Specific**: Reference exact questions or sections that need improvement
 - **Actionable**: Clear instructions on HOW to improve
 - **Prioritized**: Focus on the lowest-scoring dimensions first
@@ -377,6 +380,8 @@ def get_refinement_prompt(
     original_content: str,
     evaluation_history: list,
     language: str,
+    *,
+    approval_threshold: float = 0.8,
 ) -> str:
     """
     Get the prompt for refining the assessment based on evaluation history.
@@ -385,6 +390,7 @@ def get_refinement_prompt(
         original_content: The original generated content.
         evaluation_history: List of all previous evaluations with scores.
         language: The target language for the refined content.
+        approval_threshold: Minimum overall score for approval.
 
     Returns:
         The formatted refinement prompt.
@@ -422,7 +428,7 @@ def get_refinement_prompt(
 
     return f"""## Refinement Task
 
-Your assessment was evaluated and scored below the 0.80 threshold. You must improve it.
+Your assessment was evaluated and scored below the {approval_threshold} threshold. You must improve it.
 
 ---
 
@@ -445,7 +451,7 @@ Generate an **improved version** of the assessment that:
 1. **Directly addresses each suggestion** from the evaluator
 2. **Maintains** the same assessment type, course context, and section structure
 3. **Improves** the lowest-scoring dimensions first
-4. **Preserves** what was already working well (dimensions ≥ 0.8)
+4. **Preserves** what was already working well (dimensions ≥ {approval_threshold})
 
 ### Quality Checklist Before Submitting:
 - [ ] Every question is clear and unambiguous
@@ -457,7 +463,7 @@ Generate an **improved version** of the assessment that:
 - [ ] No placeholder or generic content
 
 **Output Language:** {language}
-**Target Score:** ≥ 0.80
+**Target Score:** ≥ {approval_threshold}
 
 Generate the complete improved assessment now.
 

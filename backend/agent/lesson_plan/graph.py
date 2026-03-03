@@ -20,7 +20,7 @@ from agent.base.nodes import (
     route_after_evaluate,
 )
 from agent.tool_config import get_tools_for_toolnode
-from config import DBConfig
+from config import DBConfig, EvaluationConfig
 
 from .state import LessonPlanState, LessonPlanInput, LessonPlanOutput
 from .nodes import (
@@ -46,7 +46,7 @@ def build_lesson_plan_graph() -> StateGraph:
     6. tools -> Execute tool calls (loops back to generate)
     7. evaluate -> Evaluator agent scores quality (0.0-1.0)
     8. (conditional) -> Either refine or respond based on:
-       - Score >= 0.8 -> respond (approved)
+       - Score >= APPROVAL_THRESHOLD -> respond (approved)
        - Score plateau detected -> respond (best effort)
        - Max retries reached -> respond
        - Otherwise -> refine
@@ -56,7 +56,7 @@ def build_lesson_plan_graph() -> StateGraph:
     12. END
 
     The evaluate-refine loop runs a maximum of 3 times or until:
-    - Score reaches 0.8 (approval threshold)
+    - Score reaches APPROVAL_THRESHOLD (configurable in EvaluationConfig)
     - Score stops improving (plateau detection)
 
     Returns:
@@ -82,7 +82,13 @@ def build_lesson_plan_graph() -> StateGraph:
     workflow.add_node("evaluate", evaluate_lesson_plan)
     workflow.add_node(
         "refine",
-        partial(refine_content, get_refinement_prompt=get_refinement_prompt),
+        partial(
+            refine_content,
+            get_refinement_prompt=partial(
+                get_refinement_prompt,
+                approval_threshold=EvaluationConfig.APPROVAL_THRESHOLD,
+            ),
+        ),
     )
     workflow.add_node("tools_refine", tool_node)  # Same ToolNode, different graph entry
     workflow.add_node("respond", generate_structured_response)

@@ -135,12 +135,15 @@ Generate thoughtful, pedagogically sound lesson plans that teachers can use dire
 {SYSTEM_PROMPT_INJECTION_GUARD}"""
 
 
-def get_evaluator_system_prompt(language: str) -> str:
+def get_evaluator_system_prompt(
+    language: str, *, approval_threshold: float = 0.8
+) -> str:
     """
     Get the system prompt for the lesson plan evaluator.
 
     Args:
         language: The target language for the evaluation feedback.
+        approval_threshold: Minimum overall score for APPROVED verdict.
 
     Returns:
         The formatted system prompt for evaluation.
@@ -261,12 +264,12 @@ Be rigorous but fair - only exceptional content deserves scores above 0.9.
 
 1. Score each dimension independently (0.0-1.0)
 2. Calculate overall: (alignment × 0.25) + (structure × 0.20) + (activities × 0.20) + (pacing × 0.20) + (completeness × 0.15)
-3. **APPROVED**: Overall score ≥ 0.8
-4. **NEEDS_REFINEMENT**: Overall score < 0.8
+3. **APPROVED**: Overall score ≥ {approval_threshold}
+4. **NEEDS_REFINEMENT**: Overall score < {approval_threshold}
 
 ## Suggestions Guidelines
 
-When score < 0.8, provide 1-3 suggestions that are:
+When score < {approval_threshold}, provide 1-3 suggestions that are:
 - **Specific**: Reference exact sections or activities that need improvement
 - **Actionable**: Clear instructions on HOW to improve
 - **Prioritized**: Focus on the lowest-scoring dimensions first
@@ -285,6 +288,8 @@ def get_refinement_prompt(
     original_content: str,
     evaluation_history: list,
     language: str,
+    *,
+    approval_threshold: float = 0.8,
 ) -> str:
     """
     Get the prompt for refining the lesson plan based on evaluation history.
@@ -293,16 +298,37 @@ def get_refinement_prompt(
         original_content: The original generated content.
         evaluation_history: List of all previous evaluations with scores.
         language: The target language for the refined content.
+        approval_threshold: Minimum overall score for approval.
 
     Returns:
         The formatted refinement prompt.
     """
     _DIMENSIONS = [
-        ("Learning Alignment", "learning_objectives", "Ensure every activity and section directly supports the stated learning objective"),
-        ("Content Structure", "content_coverage", "Improve the logical flow and ensure key points are comprehensive"),
-        ("Activity Design", "activities", "Make activity instructions clearer and more engaging with specific steps"),
-        ("Pacing", "progression", "Adjust time allocations and ensure logical progression from simple to complex"),
-        ("Completeness", "completeness", "Fill in any missing fields and ensure consistent detail throughout"),
+        (
+            "Learning Alignment",
+            "learning_objectives",
+            "Ensure every activity and section directly supports the stated learning objective",
+        ),
+        (
+            "Content Structure",
+            "content_coverage",
+            "Improve the logical flow and ensure key points are comprehensive",
+        ),
+        (
+            "Activity Design",
+            "activities",
+            "Make activity instructions clearer and more engaging with specific steps",
+        ),
+        (
+            "Pacing",
+            "progression",
+            "Adjust time allocations and ensure logical progression from simple to complex",
+        ),
+        (
+            "Completeness",
+            "completeness",
+            "Fill in any missing fields and ensure consistent detail throughout",
+        ),
     ]
     history_context, focus_instruction = build_eval_context(
         evaluation_history, _DIMENSIONS
@@ -310,7 +336,7 @@ def get_refinement_prompt(
 
     return f"""## Refinement Task
 
-Your lesson plan was evaluated and scored below the 0.80 threshold. You must improve it.
+Your lesson plan was evaluated and scored below the {approval_threshold} threshold. You must improve it.
 
 ---
 
@@ -333,7 +359,7 @@ Generate an **improved version** of the lesson plan that:
 1. **Directly addresses each suggestion** from the evaluator
 2. **Maintains** the same class number, title, and learning objective
 3. **Improves** the lowest-scoring dimensions first
-4. **Preserves** what was already working well (dimensions ≥ 0.8)
+4. **Preserves** what was already working well (dimensions ≥ {approval_threshold})
 
 ### Quality Checklist Before Submitting:
 - [ ] Every activity has clear, step-by-step instructions
@@ -344,6 +370,6 @@ Generate an **improved version** of the lesson plan that:
 - [ ] No placeholder or generic content
 
 **Output Language:** {language}
-**Target Score:** ≥ 0.80
+**Target Score:** ≥ {approval_threshold}
 
 Generate the complete improved lesson plan now."""

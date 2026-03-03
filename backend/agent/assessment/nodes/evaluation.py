@@ -89,7 +89,7 @@ Score each dimension independently, then provide the overall weighted score.
 Provide your evaluation with:
 1. Score for each dimension (0.0-1.0)
 2. Overall weighted score
-3. Verdict (APPROVED if ≥ 0.8, NEEDS_REFINEMENT otherwise)
+3. Verdict (APPROVED if ≥ {EvaluationConfig.APPROVAL_THRESHOLD}, NEEDS_REFINEMENT otherwise)
 4. Brief reasoning
 5. 1-3 specific, actionable suggestions if NEEDS_REFINEMENT"""
 
@@ -98,6 +98,7 @@ Provide your evaluation with:
             content=get_evaluator_system_prompt(
                 language,
                 question_type_configs=state.get("question_type_configs", []),
+                approval_threshold=EvaluationConfig.APPROVAL_THRESHOLD,
             )
         ),
         HumanMessage(content=evaluation_request),
