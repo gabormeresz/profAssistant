@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from config import DBConfig, EvaluationConfig
+from utils.api_helpers import classify_error
 from .graph import build_lesson_plan_graph
 from .state import LessonPlanInput
 from schemas.lesson_plan import LessonPlan
@@ -207,4 +208,4 @@ async def run_lesson_plan_generator(
         yield {"type": "error", "message_key": "errors.generationFailed"}
     except Exception as e:
         logger.error("Lesson plan generation error: %s", e, exc_info=True)
-        yield {"type": "error", "message_key": "errors.generationFailed"}
+        yield {"type": "error", **classify_error(e)}

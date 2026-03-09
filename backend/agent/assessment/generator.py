@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from config import DBConfig, EvaluationConfig
+from utils.api_helpers import classify_error
 from schemas.assessment import (
     ALLOWED_QUESTION_TYPES,
     ALLOWED_ASSESSMENT_TYPES,
@@ -237,4 +238,4 @@ async def run_assessment_generator(
         yield {"type": "error", "message_key": "errors.generationFailed"}
     except Exception as e:
         logger.error("Assessment generation error: %s", e, exc_info=True)
-        yield {"type": "error", "message_key": "errors.generationFailed"}
+        yield {"type": "error", **classify_error(e)}

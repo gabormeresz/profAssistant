@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from config import DBConfig, EvaluationConfig
+from utils.api_helpers import classify_error
 from .graph import build_course_outline_graph
 from .state import CourseOutlineInput
 from schemas.course_outline import CourseOutline
@@ -187,4 +188,4 @@ async def run_course_outline_generator(
         yield {"type": "error", "message_key": "errors.generationFailed"}
     except Exception as e:
         logger.error("Course outline generation error: %s", e, exc_info=True)
-        yield {"type": "error", "message_key": "errors.generationFailed"}
+        yield {"type": "error", **classify_error(e)}

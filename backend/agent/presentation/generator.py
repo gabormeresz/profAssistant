@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from config import DBConfig, EvaluationConfig
+from utils.api_helpers import classify_error
 from .graph import build_presentation_graph
 from .state import PresentationInput
 from schemas.presentation import Presentation
@@ -204,4 +205,4 @@ async def run_presentation_generator(
         yield {"type": "error", "message_key": "errors.generationFailed"}
     except Exception as e:
         logger.error("Presentation generation error: %s", e, exc_info=True)
-        yield {"type": "error", "message_key": "errors.generationFailed"}
+        yield {"type": "error", **classify_error(e)}
