@@ -207,15 +207,6 @@ A GitHub Actions workflow (`.github/workflows/deploy.yml`) auto-deploys on every
    | `VM_USERNAME` | `azureuser`                                            |
    | `VM_SSH_KEY`  | Contents of your SSH private key (`cat ~/.ssh/id_rsa`) |
 
-2. **Ensure git pull works on the VM** (already done if you cloned via git in Step 3).
-
-   For private repos, set the remote URL with a [Personal Access Token](https://github.com/settings/tokens):
-
-   ```bash
-   cd /opt/profassistant
-   git remote set-url origin https://<PAT>@github.com/<your-username>/profAssistant.git
-   ```
-
 ### How it works
 
 1. You push to `main`
