@@ -53,3 +53,6 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Tests
+artifacts/
