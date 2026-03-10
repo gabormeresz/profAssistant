@@ -499,6 +499,7 @@ npm run preview
 | **MCP**          | Wikipedia MCP server (SSE transport)                         |
 | **Export**       | python-pptx (PowerPoint generation)                          |
 | **i18n**         | i18next, react-i18next (EN, HU)                              |
+| **Testing**      | pytest, pytest-asyncio, httpx (ASGITransport)                |
 | **Package Mgmt** | uv (Python), npm (Node.js)                                   |
 | **Deployment**   | Docker, Docker Compose, Nginx, Caddy (HTTPS)                 |
 
