@@ -34,15 +34,15 @@ az login
 # Create a resource group (westeurope is closest for Hungary)
 az group create \
   --name profassistant-rg \
-  --location westeurope
+  --location italynorth
 
-# Create the VM (B2s = 2 vCPU, 4 GB RAM — good balance)
+# Create the VM (Standard_B2als_v2 = 2 vCPU, 4 GB RAM)
 # This also generates SSH keys if you don't have them
 az vm create \
   --resource-group profassistant-rg \
   --name profassistant-vm \
   --image Ubuntu2404 \
-  --size Standard_B2s \
+  --size Standard_B2als_v2 \
   --admin-username azureuser \
   --generate-ssh-keys \
   --public-ip-sku Standard
@@ -67,8 +67,6 @@ az vm show \
   --query publicIps -o tsv
 ```
 
-> **Budget option**: Replace `--size Standard_B2s` with `--size Standard_B1s` (1 vCPU, 1 GB RAM). May be tight for this stack but works for very light testing.
-
 **Now go back to DuckDNS** and set the IP of your subdomain to the public IP you just got.
 
 ---
@@ -79,7 +77,11 @@ az vm show \
 # SSH into the VM
 ssh azureuser@<VM_PUBLIC_IP>
 
-# Clone your repo (or scp the project — see alternatives below)
+# Create the app directory
+sudo mkdir -p /opt/profassistant
+sudo chown azureuser:azureuser /opt/profassistant
+
+# Clone your repo
 git clone https://github.com/<your-username>/profAssistant.git /opt/profassistant
 
 # Run the setup script (installs Docker)
@@ -89,23 +91,6 @@ bash deploy/vm-setup.sh
 # IMPORTANT: log out and back in for Docker group to take effect
 exit
 ssh azureuser@<VM_PUBLIC_IP>
-```
-
-### Alternative: Copy project without git
-
-If the repo is private or you don't want to use git on the VM:
-
-```bash
-# From your LOCAL machine — sync project to VM (excludes unnecessary files)
-rsync -avz --progress \
-  --exclude node_modules \
-  --exclude .git \
-  --exclude __pycache__ \
-  --exclude chroma_db \
-  --exclude '*.pyc' \
-  --exclude .env \
-  /path/to/profAssistant/ \
-  azureuser@<VM_PUBLIC_IP>:/opt/profassistant/
 ```
 
 ---
@@ -183,10 +168,6 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f backend
 cd /opt/profassistant
 git pull
 bash deploy/deploy.sh
-
-# Or if using rsync:
-# (run rsync from local machine first, then on VM:)
-bash deploy/deploy.sh
 ```
 
 ### Quick restart (no rebuild)
@@ -251,11 +232,9 @@ You can also trigger it manually from the **Actions** tab in GitHub.
 | Resource        | Size               | Monthly Cost   |
 | --------------- | ------------------ | -------------- |
 | VM (B2s)        | 2 vCPU, 4 GB RAM   | ~$30           |
-| VM (B1s)        | 1 vCPU, 1 GB RAM   | ~$8            |
 | OS Disk         | 30 GB Standard SSD | ~$2            |
 | Public IP       | Static             | ~$3            |
 | **Total (B2s)** |                    | **~$35/month** |
-| **Total (B1s)** |                    | **~$13/month** |
 
 ---
 
