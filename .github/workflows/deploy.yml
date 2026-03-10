@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v1.0.3 # Pinned to a stable version
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USERNAME }}
@@ -18,6 +18,14 @@ jobs:
           script_stop: true
           command_timeout: 10m
           script: |
+            # 1. Solve the "dubious ownership" issue common in Ubuntu 24.04
+            sudo chown -R azureuser:azureuser /opt/profassistant
+            git config --global --add safe.directory /opt/profassistant
+
+            # 2. Navigate and update
             cd /opt/profassistant
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
+
+            # 3. Deploy
             bash deploy/deploy.sh
