@@ -152,6 +152,7 @@ profAssistant/
 ├── backend/
 │   ├── main.py                 # FastAPI entry point
 │   ├── config.py               # Centralized configuration
+│   ├── rate_limit.py           # Rate limiting configuration
 │   ├── Dockerfile              # Backend multi-stage build
 │   ├── Dockerfile.mcp          # Wikipedia MCP server image
 │   ├── pyproject.toml          # Python dependencies (uv)
@@ -163,8 +164,11 @@ profAssistant/
 │   │   ├── course_outline/     # Course outline generation graph
 │   │   ├── lesson_plan/        # Lesson plan generation graph
 │   │   ├── presentation/       # Presentation generation graph
+│   │   ├── assessment/         # Assessment generation graph
+│   │   ├── input_sanitizer.py  # Prompt injection detection & sanitization
 │   │   ├── model.py            # LLM model factory with presets
 │   │   ├── prompt_enhancer.py  # Intelligent prompt enhancement
+│   │   ├── prompt_shared.py    # Shared prompt constants & guards
 │   │   ├── tool_config.py      # Tool binding configuration
 │   │   └── tools.py            # Web search & RAG search tools
 │   │
@@ -174,19 +178,38 @@ profAssistant/
 │   │   └── conversations.py    # Conversation CRUD & history
 │   │
 │   ├── services/               # Business logic layer
+│   │   ├── api_key_service.py  # Encrypted API key management
 │   │   ├── auth_service.py     # JWT token management
+│   │   ├── conversation_manager.py # Conversation orchestration
 │   │   ├── database.py         # SQLite connection manager
 │   │   ├── mcp_client.py       # MCP server client manager
 │   │   ├── pptx_service.py     # PowerPoint file generation
-│   │   └── rag_pipeline.py     # ChromaDB RAG pipeline
+│   │   ├── rag_pipeline.py     # ChromaDB RAG pipeline
+│   │   ├── session_repository.py       # Session persistence
+│   │   ├── user_repository.py          # User data access
+│   │   └── user_settings_repository.py # User settings data access
 │   │
 │   ├── schemas/                # Pydantic models
-│   └── utils/                  # SSE helpers, file processing
+│   ├── utils/                  # SSE helpers, file processing
+│   └── test_and_evals/         # Tests and LLM evaluations
+│       ├── conftest.py                     # Shared fixtures
+│       ├── 01_system_and_security/         # Auth, prompt injection, DoS, output safety
+│       │   ├── 01_auth_and_resilience/
+│       │   ├── 02_prompt_injection/
+│       │   ├── 03_dos_protection/
+│       │   └── 04_insecure_output/
+│       ├── 02_ai_evaluation/               # RAG, evaluator detection, LLM judge
+│       │   ├── 01_isolated_rag/
+│       │   ├── 02_evaluator_detection/
+│       │   └── 03_llm_judge/
+│       └── 03_performance_and_cost/        # Model profiling & benchmarks
+│           └── 01_model_profiling/
 │
 └── frontend/
     ├── Dockerfile              # Multi-stage build (Vite → Nginx)
     ├── nginx.conf              # Nginx config with API reverse proxy
     ├── package.json            # Node.js dependencies
+    ├── public/                 # Static assets (favicon, icons, etc.)
     │
     └── src/
         ├── App.tsx             # React Router configuration
@@ -196,7 +219,8 @@ profAssistant/
         ├── hooks/              # Custom React hooks (SSE, export, etc.)
         ├── services/           # API client services
         ├── i18n/               # Internationalization (en, hu)
-        └── types/              # TypeScript type definitions
+        ├── types/              # TypeScript type definitions
+        └── utils/              # Utility functions
 ```
 
 ---
