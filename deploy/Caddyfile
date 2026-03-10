@@ -1,0 +1,25 @@
+# ============================================================================
+
+# Caddyfile — HTTPS reverse proxy for ProfAssistant
+
+# ============================================================================
+
+# Caddy auto-provisions a Let's Encrypt certificate for {$DOMAIN_NAME}.
+
+# It proxies all traffic to the frontend nginx, which in turn proxies
+
+# /api/ requests to the backend.
+
+# ============================================================================
+
+{$DOMAIN_NAME} {
+reverse_proxy frontend:8080 { # Preserve SSE streaming for AI generation endpoints
+flush_interval -1
+
+        # Pass real client info to downstream
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+}

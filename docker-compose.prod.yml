@@ -1,11 +1,17 @@
 # ============================================================================
-# Docker Compose — Production Override
+# Docker Compose — Production Override (HTTPS via Caddy)
 # ============================================================================
 # Usage:
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 #
-# In production the frontend nginx reverse-proxies /api/ to the backend,
-# so only port 80 (or 443 with a TLS terminator) needs to be exposed.
+# Architecture:
+#   Internet → Caddy (HTTPS:443) → Frontend nginx (8080) → /api/ → Backend
+#
+# Caddy auto-provisions a Let's Encrypt certificate for your domain.
+#
+# Required environment variables (set in .env):
+#   DOMAIN_NAME     — your domain (e.g., profassistant.duckdns.org)
+#   ALLOWED_ORIGINS — https://<your-domain>
 # ============================================================================
 
 services:
@@ -19,10 +25,10 @@ services:
     ports: !override []
     environment:
       MCP_WIKIPEDIA_URL: "http://mcp-wiki:8765/sse"
-      CORS_ORIGINS: "${ALLOWED_ORIGINS:-https://yourdomain.com}"
+      CORS_ORIGINS: "${ALLOWED_ORIGINS:-https://localhost}"
       LOG_LEVEL: "WARNING"
       USE_DUMMY_GRAPH: "false"
-      # Secure cookie settings for production (HTTPS)
+      # Secure cookie settings for HTTPS
       COOKIE_SECURE: "true"
       COOKIE_SAMESITE: "strict"
     restart: always
@@ -32,8 +38,28 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # In production, the frontend calls /api/ which nginx proxies to backend
         VITE_API_URL: "/api"
-    ports:
-      - "80:8080"
+    # Don't expose frontend port to the host — Caddy proxies it
+    ports: !override []
     restart: always
+
+  # ── Caddy — HTTPS reverse proxy with automatic Let's Encrypt ──────────
+  caddy:
+    image: caddy:2-alpine
+    container_name: profassistant-caddy
+    ports:
+      - "80:80"     # HTTP → HTTPS redirect
+      - "443:443"   # HTTPS
+    environment:
+      DOMAIN_NAME: "${DOMAIN_NAME:?Set DOMAIN_NAME in .env (e.g. profassistant.duckdns.org)}"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data        # TLS certificates
+      - caddy-config:/config    # Caddy config cache
+    depends_on:
+      - frontend
+    restart: always
+
+volumes:
+  caddy-data:
+  caddy-config:
