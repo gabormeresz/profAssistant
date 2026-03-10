@@ -1,0 +1,125 @@
+{
+  "description": "Reference prompt set for LLM-as-a-Judge zero-shot quality validation (Section 2.3) and Model Performance Profiling (Section 3.1). 15 prompts across 5 discipline groups (3 per discipline) with varying class counts.",
+  "prompts": [
+    {
+      "id": "cs_01_data_structures",
+      "discipline": "Computer Science",
+      "topic": "Data Structures and Algorithms",
+      "number_of_classes": 6,
+      "message": "Create a course outline for a second-year undergraduate course on data structures and algorithms. Cover arrays, linked lists, trees, graphs, sorting, and searching. Emphasize time complexity analysis.",
+      "language": "English"
+    },
+    {
+      "id": "cs_02_operating_systems",
+      "discipline": "Computer Science",
+      "topic": "Operating Systems",
+      "number_of_classes": 10,
+      "message": "Design a course outline for an operating systems course. Include process management, memory management, file systems, and concurrency. Target third-year CS students.",
+      "language": "English"
+    },
+    {
+      "id": "cs_03_intro_ml",
+      "discipline": "Computer Science",
+      "topic": "Introduction to Machine Learning",
+      "number_of_classes": 6,
+      "message": "Create an introductory machine learning course for students with basic Python and statistics knowledge. Cover supervised and unsupervised learning, evaluation metrics, and a capstone project.",
+      "language": "English"
+    },
+    {
+      "id": "ns_01_organic_chemistry",
+      "discipline": "Natural Sciences",
+      "topic": "Organic Chemistry",
+      "number_of_classes": 10,
+      "message": "Create a first-semester organic chemistry course outline. Cover nomenclature, functional groups, reaction mechanisms (substitution, elimination, addition), stereochemistry, and spectroscopy basics.",
+      "language": "English"
+    },
+    {
+      "id": "ns_02_cell_biology",
+      "discipline": "Natural Sciences",
+      "topic": "Cell Biology",
+      "number_of_classes": 8,
+      "message": "Design a cell biology course for second-year biology students. Cover cell structure, membrane transport, cell signaling, the cell cycle, and gene expression. Include lab-related activities.",
+      "language": "English"
+    },
+    {
+      "id": "ns_03_thermodynamics",
+      "discipline": "Natural Sciences",
+      "topic": "Engineering Thermodynamics",
+      "number_of_classes": 10,
+      "message": "Create a thermodynamics course for engineering students. Cover the laws of thermodynamics, energy balance, entropy, thermodynamic cycles, and real-world applications to engines and refrigeration.",
+      "language": "English"
+    },
+    {
+      "id": "hum_01_modern_philosophy",
+      "discipline": "Humanities",
+      "topic": "Modern Philosophy: From Descartes to Nietzsche",
+      "number_of_classes": 8,
+      "message": "Create a course outline on modern Western philosophy. Cover rationalism, empiricism, Kantian ethics, existentialism, and the works of Descartes, Hume, Kant, Hegel, and Nietzsche. Emphasize primary text analysis.",
+      "language": "English"
+    },
+    {
+      "id": "hum_02_20th_century_literature",
+      "discipline": "Humanities",
+      "topic": "20th Century World Literature",
+      "number_of_classes": 10,
+      "message": "Design a world literature course covering major 20th-century movements: modernism, postmodernism, magical realism, and postcolonial literature. Include authors from at least 4 continents. Focus on close reading and critical essays.",
+      "language": "English"
+    },
+    {
+      "id": "hum_03_macroeconomics",
+      "discipline": "Humanities",
+      "topic": "Principles of Macroeconomics",
+      "number_of_classes": 8,
+      "message": "Create an introductory macroeconomics course. Cover GDP, inflation, unemployment, fiscal and monetary policy, international trade, and economic growth models. Include real-world data analysis exercises.",
+      "language": "English"
+    },
+    {
+      "id": "ss_01_research_methods",
+      "discipline": "Social Sciences",
+      "topic": "Research Methods in Social Sciences",
+      "number_of_classes": 8,
+      "message": "Create a research methods course for social science students. Cover qualitative and quantitative approaches, survey design, interviews, statistical analysis basics, and research ethics. Students should complete a mini research proposal.",
+      "language": "English"
+    },
+    {
+      "id": "ss_02_social_psychology",
+      "discipline": "Social Sciences",
+      "topic": "Social Psychology",
+      "number_of_classes": 10,
+      "message": "Design a social psychology course covering social cognition, attitudes, conformity, group dynamics, prejudice, aggression, and prosocial behavior. Include classic experiment analyses and applied scenarios.",
+      "language": "English"
+    },
+    {
+      "id": "ss_03_public_policy",
+      "discipline": "Social Sciences",
+      "topic": "Introduction to Public Policy Analysis",
+      "number_of_classes": 6,
+      "message": "Create a course on public policy analysis. Cover policy design, stakeholder analysis, cost-benefit analysis, implementation challenges, and evaluation. Use real policy case studies from healthcare and education.",
+      "language": "English"
+    },
+    {
+      "id": "eng_01_dsp",
+      "discipline": "Engineering",
+      "topic": "Digital Signal Processing",
+      "number_of_classes": 10,
+      "message": "Design a DSP course for electrical engineering students. Cover discrete-time signals, Z-transform, DFT/FFT, digital filter design (FIR and IIR), and applications in audio and communications. Include MATLAB/Python exercises.",
+      "language": "English"
+    },
+    {
+      "id": "eng_02_structural_mechanics",
+      "discipline": "Engineering",
+      "topic": "Structural Mechanics",
+      "number_of_classes": 8,
+      "message": "Create a structural mechanics course for civil engineering students. Cover stress and strain, beam bending, torsion, combined loading, column buckling, and failure theories. Include problem-solving sessions.",
+      "language": "English"
+    },
+    {
+      "id": "eng_03_robotics",
+      "discipline": "Engineering",
+      "topic": "Introduction to Robotics",
+      "number_of_classes": 8,
+      "message": "Design a robotics course covering kinematics, dynamics, sensors, actuators, path planning, and basic control systems. Target third-year engineering students. Include hands-on robot programming labs.",
+      "language": "English"
+    }
+  ]
+}

