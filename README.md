@@ -356,18 +356,26 @@ docker compose up --build
 
 ### 4. Build & Start (Production)
 
-The production setup uses Nginx as a reverse proxy, exposing only port 80:
+The production setup adds **Caddy** for automatic HTTPS (Let's Encrypt) in front of Nginx:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 ```
 
-| Service         | URL                        |
-| --------------- | -------------------------- |
-| Application     | http://localhost (port 80) |
-| API (via proxy) | http://localhost/api/      |
+| Service         | URL                                  |
+| --------------- | ------------------------------------ |
+| Application     | https://your-domain.duckdns.org      |
+| API (via proxy) | https://your-domain.duckdns.org/api/ |
 
-> **Security note:** The production compose file already sets `COOKIE_SECURE=true` and `COOKIE_SAMESITE=strict` for secure refresh-token cookies.
+> **Security note:** The production compose file sets `COOKIE_SECURE=true` and `COOKIE_SAMESITE=strict` for secure refresh-token cookies. Caddy auto-provisions and renews TLS certificates.
+
+### ☁️ Cloud Deployment (Azure VM)
+
+For deploying to a cloud VM with automatic HTTPS and CI/CD, see the full deployment guide:
+
+**→ [`deploy/DEPLOYMENT.md`](deploy/DEPLOYMENT.md)**
+
+Covers: Azure VM creation, DuckDNS + Caddy HTTPS, environment setup, and automatic deploys via GitHub Actions.
 
 ### 5. Stop & Clean Up
 
@@ -492,7 +500,7 @@ npm run preview
 | **Export**       | python-pptx (PowerPoint generation)                          |
 | **i18n**         | i18next, react-i18next (EN, HU)                              |
 | **Package Mgmt** | uv (Python), npm (Node.js)                                   |
-| **Deployment**   | Docker, Docker Compose, Nginx                                |
+| **Deployment**   | Docker, Docker Compose, Nginx, Caddy (HTTPS)                 |
 
 ---
 
