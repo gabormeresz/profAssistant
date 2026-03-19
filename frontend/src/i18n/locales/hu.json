@@ -4,7 +4,11 @@
     "scrollToBottom": "Görgetés az aljára",
     "scrollToTop": "Görgetés a tetejére",
     "fork": "Másolás új generáláshoz",
-    "forkTooltip": "Új generálás indítása az űrlap jelenlegi tartalmával"
+    "forkTooltip": "Új generálás indítása az űrlap jelenlegi tartalmával",
+    "languages": {
+      "english": "Angol",
+      "hungarian": "Magyar"
+    }
   },
   "overlay": {
     "doNotNavigate": "Kérjük, ne navigálj el és ne zárd be az oldalt feldolgozás közben.",

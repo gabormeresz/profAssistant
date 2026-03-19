@@ -167,8 +167,8 @@ export function LessonPlanInputSection({
             onChange={(e) => setLanguage(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="English">English</option>
-            <option value="Hungarian">Hungarian</option>
+            <option value="English">{t("common.languages.english")}</option>
+            <option value="Hungarian">{t("common.languages.hungarian")}</option>
           </select>
         </div>
 
