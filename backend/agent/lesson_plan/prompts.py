@@ -117,6 +117,7 @@ Avoid:
 - Any section that would require the teacher to invent content on the spot
 - Forcefully translating well-known technical terms (e.g. translating "LLM" or "chain-of-thought" into the target language)
 - English structural markers like "Opening:", "Activity:" in non-English output (but keep technical terms in English)
+- Markdown tables (use bullet-point lists for comparisons instead — tables cannot be rendered in the output)
 
 ### 6. University-Level Rigor
 
@@ -154,7 +155,7 @@ Key Points:
 
 Lesson Breakdown:
 
-- Introduction: "Why Concurrency Matters"
+- Introduction: Why Concurrency Matters
 
   Modern applications handle many tasks at once — web servers process thousands of requests, data pipelines fetch from multiple APIs. Sequential execution wastes time waiting.
   Connect to prior knowledge: students already know functions and basic I/O. Now: what happens when your program needs to wait for a network response?
@@ -162,7 +163,7 @@ Lesson Breakdown:
   Ask: "Where in your own projects have you had a program sitting idle, waiting for something?"
   State today's goal: understand the two main concurrency models in Python and know when to use each.
 
-- Core Content 1: "Thread-Based Concurrency"
+- Core Content 1: Thread-Based Concurrency
 
   Definition: a thread is a separate flow of execution within the same process. All threads share memory.
   How it works in Python:
@@ -180,7 +181,7 @@ Lesson Breakdown:
   Ask: "If both threads see counter=5 at the same time, what value do they both write?" → 6, losing one increment.
   Note the GIL: in CPython, threads don't truly run Python code in parallel — the GIL serializes bytecode execution. This is why threading helps with I/O waits but not with computation.
 
-- Core Content 2: "Async/Await and the Event Loop"
+- Core Content 2: Async/Await and the Event Loop
 
   Definition: async programming uses a single thread with an event loop that switches between tasks at `await` points.
   How it works:
@@ -202,27 +203,23 @@ Lesson Breakdown:
   Ask: "What happens if one coroutine calls `requests.get()` (blocking) instead of `aiohttp`?" → The event loop is blocked; no other task can progress until that request completes.
   Subtle point: async code is NOT parallel — it is concurrent. One thing runs at a time, but idle waits are overlapped.
 
-- Core Content 3: "Choosing the Right Model — Comparison and Trade-offs"
+- Core Content 3: Choosing the Right Model — Comparison and Trade-offs
 
-  Direct comparison table for the instructor to present:
-    | Criterion          | threading             | asyncio                 | multiprocessing          |
-    |--------------------|-----------------------|-------------------------|--------------------------|
-    | Best for           | I/O-bound, few tasks  | I/O-bound, many tasks   | CPU-bound                |
-    | Parallelism        | Concurrent (GIL)      | Concurrent (1 thread)   | True parallel (processes)|
-    | Shared state risk  | High (race conditions) | Low (cooperative)       | None (separate memory)   |
-    | Overhead per task  | ~8MB stack/thread     | ~1KB/coroutine          | Full process overhead    |
-    | Code complexity    | Low                   | Medium (async/await)    | Low                      |
+  Direct comparison for the instructor to present:
+    - threading: Best for I/O-bound with few tasks. Concurrent (GIL), high shared state risk (race conditions), ~8MB stack/thread overhead, low code complexity.
+    - asyncio: Best for I/O-bound with many tasks. Concurrent (1 thread), low shared state risk (cooperative), ~1KB/coroutine overhead, medium code complexity (async/await).
+    - multiprocessing: Best for CPU-bound work. True parallel (processes), no shared state risk (separate memory), full process overhead, low code complexity.
   Decision flow: Is it CPU-bound? → multiprocessing. Is it I/O-bound? → How many concurrent tasks? Dozens → threading is fine. Thousands → asyncio.
   Real-world example: a web scraper fetching 10,000 pages — asyncio handles this efficiently; threading would exhaust OS resources.
   Ask: "A data science script runs 8 CPU-heavy model trainings. Which model and why?" → multiprocessing, because threading won't bypass the GIL.
 
-- Application: "Analyzing a Concurrency Problem"
+- Application: Analyzing a Concurrency Problem
 
   Present a scenario: an application fetches data from 5 APIs, processes results (CPU), and writes to a database.
   Students analyze individually: which parts benefit from threading, which from async, which from multiprocessing?
   Discussion: 2-3 students share their analysis. Instructor highlights: the fetch step is I/O-bound (async/threading), processing is CPU-bound (multiprocessing), DB writes are I/O-bound (async/threading). A real system often combines models.
 
-- Summary: "Takeaways and Next Steps"
+- Summary: Takeaways and Next Steps
 
   Consolidate: (1) threading = OS-level, shared memory, GIL-limited; (2) async = event loop, cooperative, lightweight; (3) multiprocessing = true parallelism, separate memory.
   The GIL is the key differentiator for Python specifically — it makes threading unsuitable for CPU-bound work.
