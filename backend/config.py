@@ -48,7 +48,7 @@ class LLMConfig:
     """Configuration for LLM models."""
 
     # Default model assigned to every new user
-    DEFAULT_MODEL: str = "gpt-4o-mini"
+    DEFAULT_MODEL: str = "gpt-5-mini"
 
     # Supported models the user may choose from.
     # Each entry carries an id (OpenAI model name), a human-readable label,
