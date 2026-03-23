@@ -116,7 +116,7 @@
   "lessonPlan": {
     "courseTitle": "Course Title",
     "courseTitlePlaceholder": "e.g., Introduction to Programming",
-    "classNumber": "Class Number",
+    "classNumber": "Lesson Number",
     "classTitle": "Class Title",
     "classTitlePlaceholder": "e.g., Variables and Data Types",
     "learningObjectives": "Learning Objectives",
@@ -135,7 +135,7 @@
     "generateLessonPlan": "Generate Lesson Plan",
     "emptyCourseTitle": "Please enter a course title",
     "emptyClassTitle": "Please enter a class title",
-    "invalidClassNumber": "Please enter a valid class number",
+    "invalidClassNumber": "Please specify which lesson the lesson plan should be prepared for",
     "maxObjectives": "Please provide at most {{max}} learning objectives",
     "maxTopics": "Please provide at most {{max}} key topics",
     "maxActivities": "Please provide at most {{max}} activities"
@@ -143,7 +143,7 @@
   "presentation": {
     "courseTitle": "Course Title",
     "courseTitlePlaceholder": "e.g., Introduction to Programming",
-    "classNumber": "Class Number",
+    "classNumber": "Lesson Number",
     "classTitle": "Class Title",
     "classTitlePlaceholder": "e.g., Variables and Data Types",
     "learningObjective": "Learning Objective",
@@ -165,7 +165,7 @@
     "generatePresentation": "Generate Presentation",
     "emptyCourseTitle": "Please enter a course title",
     "emptyClassTitle": "Please enter a class title",
-    "invalidClassNumber": "Please enter a valid class number",
+    "invalidClassNumber": "Please specify which lesson the presentation should be prepared for",
     "comingSoon": "Presentation generation is coming soon!"
   },
   "assessment": {

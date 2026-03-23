@@ -116,7 +116,7 @@
   "lessonPlan": {
     "courseTitle": "Kurzus Címe",
     "courseTitlePlaceholder": "pl. Bevezetés a Programozásba",
-    "classNumber": "Óra Száma",
+    "classNumber": "Óra Sorszáma",
     "classTitle": "Óra Címe",
     "classTitlePlaceholder": "pl. Változók és Adattípusok",
     "learningObjectives": "Tanulási Célok",
@@ -135,7 +135,7 @@
     "generateLessonPlan": "Óraterv Generálása",
     "emptyCourseTitle": "Kérlek add meg a kurzus címét",
     "emptyClassTitle": "Kérlek add meg az óra címét",
-    "invalidClassNumber": "Kérlek adj meg egy érvényes óraszámot",
+    "invalidClassNumber": "Kérlek add meg hányadik órához készüljön az óraterv",
     "maxObjectives": "Kérlek legfeljebb {{max}} tanulási célt adj meg",
     "maxTopics": "Kérlek legfeljebb {{max}} témát adj meg",
     "maxActivities": "Kérlek legfeljebb {{max}} tevékenységet adj meg"
@@ -143,7 +143,7 @@
   "presentation": {
     "courseTitle": "Kurzus Címe",
     "courseTitlePlaceholder": "pl. Bevezetés a Programozásba",
-    "classNumber": "Óra Száma",
+    "classNumber": "Óra Sorszáma",
     "classTitle": "Óra Címe",
     "classTitlePlaceholder": "pl. Változók és Adattípusok",
     "learningObjective": "Tanulási Cél",
@@ -165,7 +165,7 @@
     "generatePresentation": "Prezentáció Generálása",
     "emptyCourseTitle": "Kérlek add meg a kurzus címét",
     "emptyClassTitle": "Kérlek add meg az óra címét",
-    "invalidClassNumber": "Kérlek adj meg egy érvényes óraszámot",
+    "invalidClassNumber": "Kérlek add meg hányadik órához készüljön a prezentáció",
     "comingSoon": "A prezentáció generálás hamarosan elérhető!"
   },
   "assessment": {
