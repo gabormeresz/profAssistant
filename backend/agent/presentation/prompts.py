@@ -96,6 +96,7 @@ homework). Use this information to:
 
 - **Language**: All slide content (titles, bullets, speaker notes) in {language}
 - **JSON Fields**: Keep field names in English for schema compliance
+- **Technical terms**: Keep widely recognized technical terms and acronyms in their original English form (e.g. LLM, API, chain-of-thought, few-shot, machine learning, framework, etc.). Do NOT forcefully translate established terms — add a brief parenthetical explanation in {language} on first use if needed, but the term itself stays in English.
 - **Quality Standard**: Every slide must have complete, useful content — no placeholder text
 
 ## Example of High-Quality Slide

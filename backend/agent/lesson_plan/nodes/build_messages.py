@@ -99,14 +99,18 @@ Suggested Activities/Projects:
 
 **Output Language:** {state['language']}
 
-Please generate a complete, detailed lesson plan for this class.
+Please generate a complete, teacher-ready lesson plan for this class.
 
 Requirements:
 - Create a clear lesson breakdown with opening, instruction, practice, and closing sections
-- Design engaging activities with specific, step-by-step instructions
+- Write each lesson_breakdown section as a scannable teaching guide: brief context, concise talking points, key questions in quotes, and at least one concrete inline example — no full monologues or dense paragraphs
+- Design engaging activities with numbered step-by-step instructions, a concrete worked example or sample output, and enough detail for students to work independently
+- Use university-level pedagogy: academic tone, activities promoting critical thinking (case studies, PBL, peer review, Socratic discussion)
 - Ensure all content directly supports the learning objectives
-- Include meaningful homework and extension activities
-- Identify the essential key points students must understand"""
+- Include meaningful homework with clear task descriptions and hints
+- Identify the essential key points students must understand, each explained with a concrete example
+- The plan must be entirely in {state['language']} — no English phrases, labels, or structural markers
+- The plan must be complete enough that an educator can deliver the entire lesson without any additional preparation"""
 
     messages.append(HumanMessage(content=user_content))
 
