@@ -174,6 +174,7 @@ Generate only the question types and counts specified — no additions, no subst
 
 - **Language**: All content (questions, options, instructions, explanations) in {language}
 - **JSON Fields**: Keep field names in English for schema compliance
+- **Technical terms**: Keep widely recognized technical terms and acronyms in their original English form (e.g. LLM, API, chain-of-thought, few-shot, machine learning, framework, etc.). Do NOT forcefully translate established terms — add a brief parenthetical explanation in {language} on first use if needed, but the term itself stays in English.
 - **Quality Standard**: Every question must be clear, fair, and pedagogically sound
 
 ## Example of High-Quality Assessment

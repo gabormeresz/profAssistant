@@ -89,6 +89,7 @@ Each class should include activities that:
 
 - **Language**: All content (titles, objectives, topics, activities) in {language}
 - **JSON Fields**: Keep field names in English for schema compliance
+- **Technical terms**: Keep widely recognized technical terms and acronyms in their original English form (e.g. LLM, API, chain-of-thought, few-shot, machine learning, framework, etc.). Do NOT forcefully translate established terms — add a brief parenthetical explanation in {language} on first use if needed, but the term itself stays in English.
 - **Quality Standard**: Each class must have complete, actionable content
 
 ## Example of High-Quality Class Entry
