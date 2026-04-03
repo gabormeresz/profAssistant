@@ -101,7 +101,7 @@ class LLMConfig:
     MODEL_PRESETS: dict[str, dict] = {
         "enhancer": {
             "temperature": 0.5,
-            "max_tokens": 250,
+            "max_tokens": 500,
             "reasoning_effort": "low",
         },
         "generator": {
