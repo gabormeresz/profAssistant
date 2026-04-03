@@ -4,6 +4,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from agent.input_sanitizer import check_prompt_injection, SYSTEM_PROMPT_INJECTION_GUARD
 from agent.model import get_model
+from config import LLMConfig
 
 
 def _build_system_prompt(language: Optional[str], context_text: str) -> str:
@@ -161,6 +162,7 @@ async def prompt_enhancer(
 
     model = get_model(
         api_key=api_key,
+        model_name=LLMConfig.ENHANCER_MODEL,
         purpose="enhancer",
     )
     response = await model.ainvoke(messages)

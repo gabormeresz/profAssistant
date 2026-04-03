@@ -50,6 +50,9 @@ class LLMConfig:
     # Default model assigned to every new user
     DEFAULT_MODEL: str = "gpt-5-mini"
 
+    # Model used for prompt enhancement (always this, ignoring user preference)
+    ENHANCER_MODEL: str = "gpt-4o-mini"
+
     # Supported models the user may choose from.
     # Each entry carries an id (OpenAI model name), a human-readable label,
     # and an i18n description key resolved by the frontend.
