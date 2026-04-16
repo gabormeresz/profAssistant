@@ -16,7 +16,12 @@ export {
 } from "./input";
 
 // UI components
-export { ErrorBanner, LoadingOverlay, ScrollNavigationButtons } from "./ui";
+export {
+  ErrorBanner,
+  FeatureCard,
+  LoadingOverlay,
+  ScrollNavigationButtons
+} from "./ui";
 
 // Course components
 export { StructuredCourseOutline } from "./course";

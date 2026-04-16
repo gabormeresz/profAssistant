@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../hooks/useAuth";
-import { PageHeader } from "../components";
+import { FeatureCard, PageHeader } from "../components";
 import {
   FileText,
   BookOpen,
@@ -129,78 +129,31 @@ function Home() {
       {/* Features Section */}
       <section className="bg-white dark:bg-gray-800 py-16">
         <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-20">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Feature 1 */}
-            <Link to="/course-outline-generator" className="group">
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 hover:shadow-lg transition-shadow">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
-                  <FileText
-                    className="w-6 h-6 text-blue-600 dark:text-blue-400 group-hover:text-white"
-                    strokeWidth={2}
-                  />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-2">
-                  {t("home.features.courseOutline.title")}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  {t("home.features.courseOutline.description")}
-                </p>
-              </div>
-            </Link>
-
-            {/* Feature 2 */}
-            <Link to="/lesson-plan-generator" className="group">
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 hover:shadow-lg transition-shadow">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
-                  <BookOpen
-                    className="w-6 h-6 text-blue-600 dark:text-blue-400 group-hover:text-white"
-                    strokeWidth={2}
-                  />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-2">
-                  {t("home.features.lessonPlan.title")}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  {t("home.features.lessonPlan.description")}
-                </p>
-              </div>
-            </Link>
-
-            {/* Feature 3 - Placeholder */}
-            <Link to="/presentation-generator" className="group">
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 hover:shadow-lg transition-shadow">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
-                  <Presentation
-                    className="w-6 h-6 text-blue-600 dark:text-blue-400 group-hover:text-white"
-                    strokeWidth={2}
-                  />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-2">
-                  {t("home.features.presentation.title")}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  {t("home.features.presentation.description")}
-                </p>
-              </div>
-            </Link>
-
-            {/* Feature 4 - Placeholder */}
-            <Link to="/assessment-generator" className="group">
-              <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 hover:shadow-lg transition-shadow">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-4 group-hover:bg-blue-600 transition-colors">
-                  <ClipboardList
-                    className="w-6 h-6 text-blue-600 dark:text-blue-400 group-hover:text-white"
-                    strokeWidth={2}
-                  />
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-200 mb-2">
-                  {t("home.features.assessment.title")}
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm">
-                  {t("home.features.assessment.description")}
-                </p>
-              </div>
-            </Link>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
+            <FeatureCard
+              to="/course-outline-generator"
+              icon={FileText}
+              title={t("home.features.courseOutline.title")}
+              description={t("home.features.courseOutline.description")}
+            />
+            <FeatureCard
+              to="/lesson-plan-generator"
+              icon={BookOpen}
+              title={t("home.features.lessonPlan.title")}
+              description={t("home.features.lessonPlan.description")}
+            />
+            <FeatureCard
+              to="/presentation-generator"
+              icon={Presentation}
+              title={t("home.features.presentation.title")}
+              description={t("home.features.presentation.description")}
+            />
+            <FeatureCard
+              to="/assessment-generator"
+              icon={ClipboardList}
+              title={t("home.features.assessment.title")}
+              description={t("home.features.assessment.description")}
+            />
           </div>
         </div>
       </section>
