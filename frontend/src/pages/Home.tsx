@@ -169,7 +169,7 @@ function Home() {
               </span>
             </p>
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              © 2025 ProfAssistant. {t("home.footer.rights")}
+              © 2026 ProfAssistant. {t("home.footer.rights")}
             </p>
           </div>
         </div>
