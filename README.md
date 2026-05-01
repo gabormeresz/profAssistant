@@ -496,7 +496,7 @@ npm run preview
 | **Vector DB**    | ChromaDB (embedded, persistent)                              |
 | **Database**     | SQLite (async via aiosqlite)                                 |
 | **Auth**         | JWT (PyJWT), bcrypt, Fernet encryption                       |
-| **MCP**          | Wikipedia MCP server (SSE transport)                         |
+| **MCP**          | Wikipedia MCP (SSE transport), Tavily MCP (Streamable HTTP)  |
 | **Export**       | python-pptx (PowerPoint generation)                          |
 | **i18n**         | i18next, react-i18next (EN, HU)                              |
 | **Testing**      | pytest, pytest-asyncio, httpx (ASGITransport)                |
